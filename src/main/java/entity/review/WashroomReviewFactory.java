@@ -1,4 +1,4 @@
-package entity;
+package entity.review;
 
 public class WashroomReviewFactory {
 }
