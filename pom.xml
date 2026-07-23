@@ -8,9 +8,22 @@
     <artifactId>FlushID</artifactId>
     <version>1.0-SNAPSHOT</version>
     <dependencies>
-
+    	<dependency>
+        	<groupId>org.mongodb</groupId>
+        	<artifactId>mongodb-driver-sync</artifactId>
+  		</dependency>
     </dependencies>
-
+  	<dependencyManagement>
+   		<dependencies>
+    	    <dependency>
+   	        	<groupId>org.mongodb</groupId>
+    	        <artifactId>mongodb-driver-bom</artifactId>
+        	    <version>5.9.0</version>
+            	<type>pom</type>
+     	       <scope>import</scope>
+    	    </dependency>
+  		</dependencies>
+  	</dependencyManagement>
     <build>
         <plugins>
             <plugin>
@@ -18,6 +31,13 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
             </plugin>
+            <plugin>
+   		    	<artifactId>maven-compiler-plugin</artifactId>
+  		    	<version>3.13.0</version>
+    		    <configuration>
+    		      <release>21</release>
+     		   	</configuration>
+    		</plugin>
         </plugins>
     </build>
 
