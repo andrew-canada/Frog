@@ -5,6 +5,8 @@ import entity.review.Review;
 import java.util.ArrayList;
 import java.util.List;
 
+class
+
 public class GenericWashroom {
     private final String floor;
     private final List<Review> reviews;
@@ -24,7 +26,9 @@ public class GenericWashroom {
     }
 
     public List<Review> getReviews(String sortBy) {
-        if sortBy.equals()
+        if sortBy.equals("helpfulness") {
+            ArrayList<Review> tempReviewList = 
+        } else
         return this.reviews;
     }
 }
