@@ -1,4 +1,3 @@
 package use_case.login;
 
-public class LoginInputData {
-}
+public record LoginInputData(String username, String password) { }

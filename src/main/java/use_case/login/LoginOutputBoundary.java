@@ -1,4 +1,3 @@
 package use_case.login;
 
-public interface LoginOutputBoundary {
-}
+public interface LoginOutputBoundary { void present(LoginOutputData outputData); }

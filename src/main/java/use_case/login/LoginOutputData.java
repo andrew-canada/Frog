@@ -1,4 +1,3 @@
 package use_case.login;
 
-public class LoginOutputData {
-}
+public record LoginOutputData(boolean success, String username, String message) { }
