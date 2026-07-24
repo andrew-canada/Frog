@@ -3,9 +3,15 @@ package entity.washroom;
 import entity.review.Review;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
-class
+class HighestOverallComparator implements Comparator<Review> {
+    @Override
+    public int compare(Review o1, Review o2) {
+        return 0;
+    }
+}
 
 public class GenericWashroom {
     private final String floor;
@@ -26,9 +32,10 @@ public class GenericWashroom {
     }
 
     public List<Review> getReviews(String sortBy) {
-        if sortBy.equals("helpfulness") {
-            ArrayList<Review> tempReviewList = 
-        } else
-        return this.reviews;
+        if(sortBy.equals("most recent")){
+
+        } else {
+            return this.reviews;
+        }
     }
 }

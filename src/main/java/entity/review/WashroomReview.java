@@ -2,31 +2,6 @@ package entity.review;
 
 import java.util.Comparator;
 
-class HelpfulnessComparator implements Comparator<Review>{
-    @Override
-    public int compare(Review r1, Review r2) {
-        if(r1.getHelpfulness() > r2.getHelpfulness()) {
-            return -1;
-        } else if(r1.getHelpfulness() == r2.getHelpfulness()) {
-            return 0;
-        } else {
-            return 1;
-        }
-    }
-}
-
-class StarsComparator implements Comparator<Review>{
-    @Override
-    public int compare(Review r1, Review r2) {
-        if(r1.getStars() > r2.getStars()) {
-            return -1;
-        } else if(r1.getStars() == r2.getStars()) {
-            return 0;
-        } else {
-            return 1;
-        }
-    }
-}
 
 public class WashroomReview implements Review{
 
