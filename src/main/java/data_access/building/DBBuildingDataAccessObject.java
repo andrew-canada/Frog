@@ -10,7 +10,9 @@ import entity.GenericBuildingFactory;
 import data_access.DBDataAccessObject;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DBBuildingDataAccessObject extends DBDataAccessObject {
 
@@ -28,7 +30,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	* @param val the value of that field
 	* @return The buildings that match the filter
 	*/
-	public static List<Building> getMatching(String fieldName, String value) {
+	public static <T> List<Building> getMatching(String fieldName, T value) {
 
 		List<Document> docs = getAll(fieldName, value);
 
@@ -47,7 +49,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 * @param value The value the field must equal for the Document to be returned
 	 * @return The list of valid documents
 	 */
-	private static List<Document> getAll(String fieldName, String value) {
+	private static <T> List<Document> getAll(String fieldName, T value) {
 		List<Document> docs = new ArrayList<>();
 		return collection.find(eq(fieldName, value)).into(docs);
 	}
@@ -68,8 +70,37 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 		return building;
 	}
 
-	public static boolean in(String fieldName, String value) {
+	/**
+	 * Return whether the given value is a value for fieldName.
+	 * @param fieldName The database field to assess.
+	 * @param value The value to look for.
+	 * @return True if the value is in the field, False otherwise.
+	 * @param <T> The type of the value, assuming all values of fieldName use the same type.
+	 */
+	public <T> boolean in(String fieldName, T value) {
 
+        Set<Object> values = getDistinct(fieldName);
+		return ((Set<T>) values).contains(value);
+	}
+
+	/**
+	 * Get all unique values of fieldName.
+	 * @param fieldName The database field name to use.
+	 * @return The set of all unique values.
+	 */
+	private Set<Object> getDistinct(String fieldName) {
+		Set<Object> values = new HashSet<>();
+		values = collection.distinct(fieldName, value.getClass()).into(values);
+		return values
+	}
+
+	public void write(Building building) {
+	}
+
+	public void writeAll(Collection<Building> buildings) {
+	}
+
+	public void delete(Building) {
 	}
 
 
