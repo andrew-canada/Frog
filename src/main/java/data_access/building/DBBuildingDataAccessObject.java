@@ -2,12 +2,11 @@ package data_access.building;
 
 import com.mongodb.client.model.Filters;
 import data_access.Condition;
-import data_access.Operator;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 
-import entity.Building;
-import entity.GenericBuildingFactory;
+import entity.building.Building;
+import entity.building.GenericBuildingFactory;
 import data_access.DBDataAccessObject;
 import org.bson.conversions.Bson;
 
