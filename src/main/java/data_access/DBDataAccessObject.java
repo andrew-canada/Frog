@@ -13,7 +13,7 @@ public class DBDataAccessObject {
 	final public MongoClient client;
 	final public MongoDatabase database;
 	
-	public static DBDataAccessObject() {
+	public DBDataAccessObject() {
 	
 		client = MongoClients.create(uri);
 		try {
