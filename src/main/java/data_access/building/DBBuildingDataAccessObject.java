@@ -2,15 +2,13 @@ package data_access.building;
 
 import com.mongodb.client.model.Filters;
 import data_access.Condition;
-
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
+import org.bson.conversions.Bson;
 
 import entity.building.Building;
 import entity.building.GenericBuildingFactory;
-
 import data_access.DBDataAccessObject;
-import org.bson.conversions.Bson;
 
 import java.util.*;
 
@@ -25,7 +23,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	}
 
 	/**
-	* Returns all buildings who have the specified value in fieldName
+	* Returns all buildings who satisfy all the given conditions
 	* @param conditions a list of condition objects that the returned buildings must satisfy
 	* @return The buildings that match all the conditions
 	*/
@@ -76,21 +74,75 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 				doc.getString("buildingCode"),
 				doc.getString("shortName"),
 				doc.getString("longName"),
-				doc.getDouble("latitude"),
-				doc.getDouble("longitude"),
+				getLatitude(doc),
+				getLongitude(doc),
 				doc.getString("controlInfo"));
 		return building;
 	}
 
+	/**
+	 * Writes a single Building object to the database. Latitude and Longitude are converted
+	 * to a location object for geospatial filtering
+	 * @param building The Building object to be written.
+	 */
 	public void write(Building building) {
+		Document doc = new Document();
+		doc.append("buildingCode", building.getBuildingCode());
+		doc.append("shortName", building.getBuildingNameShort());
+		doc.append("longName", building.getBuildingNameLong());
+		doc.append("location", createLocation(building));
+		doc.append("controlInfo", building.getControlInfo());
+
+		collection.insertOne(doc);
 	}
 
-	public void writeAll(Collection<Building> buildings) {
+	/**
+	 * Parse Latitude and Longitude of a Building into a Document
+	 * @param building Building object with longitude and latitude
+	 * @return Document that can be inserted into the database and used for geospatial filters
+	 */
+	private static Document createLocation(Building building) {
+		Document location = new Document("type", "Point");
+		List<Double> coords = new ArrayList<>();
+		coords.add(0, building.getLongitude());
+		coords.add(1, building.getLatitude());
+		location.append("coordinates", coords);
+		return location;
 	}
 
-	public void delete(Building building) {
+	/**
+	 * Return the longitude as a double parsed from a Document containing
+	 * geospatial data
+	 * @param doc Document of valid format:
+	 *            type: "Point"
+	 *            coordinates: [longitude, latitude]
+	 * @return Double representing longitude
+	 */
+	private static double getLongitude(Document doc) {
+		Document location = doc.get("location", doc.getClass());
+		return location.getList("coordinates", double.class).get(0);
 	}
 
+	/**
+	 * Return the latitude as a double parsed from a Document containing
+	 * geospatial data
+	 * @param doc Document of valid format:
+	 *            {type: "Point"
+	 *            coordinates: [longitude, latitude]}
+	 * @return Double representing latitude
+	 */
+	private static double getLatitude(Document doc) {
+		Document location = doc.get("location", doc.getClass());
+		return location.getList("coordinates", double.class).get(1);
+	}
 
-
+	/**
+	 * Deletes every entry in the database that matches the given conditions
+	 * @param conditions List of Condition objects. An object must satisfy
+	 *                   all conditions to be deleted
+	 */
+	public void delete(Iterable<Condition<?>> conditions) {
+		Bson filter = parseConditions(conditions);
+		collection.deleteMany(filter);
+	}
 }
