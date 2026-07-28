@@ -42,6 +42,25 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	}
 
 	/**
+	 * Returns all buildings which satisfy all the given conditions, with database IDs
+	 * @param conditions a list of condition objects that the returned buildings must satisfy
+	 * @return The buildings that match all the conditions mapped to their IDs in the database.
+	 */
+	public static Map<String, Building> getMatchingIDMap(Iterable<Condition<?>> conditions) {
+
+		Bson filter = parseConditions(conditions);
+		List<Document> docs = getAll(filter);
+
+		Map<String, Building> buildings = new HashMap<>();
+		for (Document doc: docs) {
+			Building building = createBuilding(doc);
+			buildings.put(doc.getString("_id"), building);
+		}
+		return buildings;
+
+	}
+
+	/**
 	 * Parses a list of Condition objects into a single Bson filter
 	 * @param conditions list of condition objects to be connected by and statements
 	 * @return a Bson filter representing satisfying all conditions
@@ -84,8 +103,9 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 * Writes a single Building object to the database. Latitude and Longitude are converted
 	 * to a location object for geospatial filtering
 	 * @param building The Building object to be written.
+	 * @return the ID for the written object.
 	 */
-	public void write(Building building) {
+	public String write(Building building) {
 		Document doc = new Document();
 		doc.append("buildingCode", building.getBuildingCode());
 		doc.append("shortName", building.getBuildingNameShort());
@@ -93,7 +113,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 		doc.append("location", createLocation(building));
 		doc.append("controlInfo", building.getControlInfo());
 
-		collection.insertOne(doc);
+		return collection.insertOne(doc).getInsertedId().toString();
 	}
 
 	/**
