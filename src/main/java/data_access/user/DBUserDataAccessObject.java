@@ -2,7 +2,6 @@ package data_access.user;
 
 import com.mongodb.client.model.Filters;
 import data_access.Condition;
-import entity.building.Building;
 import entity.user.LoggedInUser;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
@@ -18,7 +17,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject {
 
     static MongoCollection<Document> collection;
 
-    public DBReviewDataAccessObject() {
+    public DBUserDataAccessObject() {
         super();    // initializes the MongoClient and MongoDatabase from
         // the set URI
         collection = database.getCollection("Users");
