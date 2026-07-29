@@ -83,8 +83,9 @@ public class DBReviewDataAccessObject extends DBDataAccessObject {
      * Writes a single Review object to the database.
      * @param review The Review object to be written.
      */
-    public void write(Review review, String washroomID) {
+    public void write(Review review, String userID, String washroomID) {
         Document doc = new Document();
+        doc.append("userID", userID);
         doc.append("washroomID", washroomID);
         doc.append("stars", review.getStars());
         doc.append("text", review.getText());
