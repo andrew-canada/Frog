@@ -1,7 +1,10 @@
 package data_access.user;
 
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.ReplaceOptions;
 import data_access.Condition;
+import data_access.MongoDocuments;
 import entity.user.LoggedInUser;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
@@ -13,13 +16,19 @@ import data_access.DBDataAccessObject;
 
 import java.util.*;
 
-public class DBUserDataAccessObject extends DBDataAccessObject {
+public class DBUserDataAccessObject extends DBDataAccessObject implements use_case.gateway.UserDataAccessInterface {
 
     static MongoCollection<Document> collection;
+    private entity.User currentApplicationUser;
 
     public DBUserDataAccessObject() {
         super();    // initializes the MongoClient and MongoDatabase from
         // the set URI
+        collection = database.getCollection("Users");
+    }
+
+    public DBUserDataAccessObject(MongoDatabase database) {
+        super(database);
         collection = database.getCollection("Users");
     }
 
@@ -29,17 +38,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject {
      * @return The users that match all the conditions
      */
     public List<LoggedInUser> getMatching(Iterable<Condition<?>> conditions) {
-
-        Bson filter = parseConditions(conditions);
-        List<Document> docs = getAll(filter);
-
-        List<LoggedInUser> users = new ArrayList<>();
-        for (Document doc: docs) {
-            LoggedInUser user = createUser(doc);
-            users.add(user);
-        }
-        return users;
-
+        return new ArrayList<>(getMatchingIDMap(conditions).values());
     }
 
     /**
@@ -55,7 +54,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject {
         Map<String, LoggedInUser> users = new HashMap<>();
         for (Document doc : docs) {
             LoggedInUser user = createUser(doc);
-            users.put(doc.getString("_id"), user);
+            users.put(MongoDocuments.id(doc), user);
         }
         return users;
     }
@@ -65,11 +64,9 @@ public class DBUserDataAccessObject extends DBDataAccessObject {
      * @return a Bson filter representing satisfying all conditions
      */
     private static Bson parseConditions(Iterable<Condition<?>> conditions) {
-        Bson finalFilter;
         List<Bson> filters = new ArrayList<>();
         conditions.forEach((condition) -> filters.add(condition.getFilter()));
-        finalFilter = Filters.and(filters);
-        return finalFilter;
+        return filters.isEmpty() ? new Document() : Filters.and(filters);
     }
 
     /**
@@ -87,12 +84,10 @@ public class DBUserDataAccessObject extends DBDataAccessObject {
      * @param doc Document containing user data for a specific user
      * @return the user object constructed using that data
      */
-    private LoggedInUser createUser(Document doc) {
-        LoggedInUserFactory factory = new LoggedInUserFactory();
-        LoggedInUser user = factory.create(
-                doc.getString("name"),
-                doc.getString("password"));
-        return user;
+    private static LoggedInUser createUser(Document doc) {
+        return new LoggedInUser(value(doc, "unknown", "username", "name"),
+                value(doc, "", "passwordHash", "password"), List.of(),
+                value(doc, "", "personalPlan"));
     }
 
     /**
@@ -100,11 +95,13 @@ public class DBUserDataAccessObject extends DBDataAccessObject {
      * @param user The LoggedInUser object to be written.
      */
     public String write(LoggedInUser user, String washroomID) {
-        Document doc = new Document();
-        doc.append("name", user.getName());
-        doc.append("password", user.getPassword());
-
-        return collection.insertOne(doc).getInsertedId().toString();
+        Document doc = new Document("username", user.getName()).append("passwordHash", user.getPassword())
+                .append("personalPlan", user.getPersonalPlan());
+        if (washroomID != null && !washroomID.isBlank()) doc.append("washroomID", washroomID);
+        collection.replaceOne(Filters.or(Filters.eq("username", user.getName()), Filters.eq("name", user.getName())),
+                doc, new ReplaceOptions().upsert(true));
+        Document persisted = collection.find(Filters.eq("username", user.getName())).first();
+        return persisted == null ? user.getName() : MongoDocuments.id(persisted);
     }
 
     /**
@@ -115,5 +112,34 @@ public class DBUserDataAccessObject extends DBDataAccessObject {
     public void delete(Iterable<Condition<?>> conditions) {
         Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);
+    }
+
+    @Override public Optional<entity.User> get(String username) {
+        List<LoggedInUser> matches = getMatching(List.of(new Condition<>("username", data_access.Operator.EQ, username)));
+        if (matches.isEmpty()) matches = getMatching(List.of(new Condition<>("name", data_access.Operator.EQ, username)));
+        if (matches.isEmpty() || matches.getFirst().getPassword().isBlank()) return Optional.empty();
+        LoggedInUser user = matches.getFirst();
+        return Optional.of(new entity.User(user.getName(), user.getPassword(), user.getPersonalPlan()));
+    }
+
+    @Override public boolean existsByName(String username) { return get(username).isPresent(); }
+
+    @Override public void save(entity.User user) {
+        write(new LoggedInUser(user.username(), user.passwordHash(), List.of(), user.personalPlan()), null);
+    }
+
+    @Override public void setCurrentUser(entity.User user) { currentApplicationUser = user; }
+    @Override public Optional<entity.User> getCurrentUser() { return Optional.ofNullable(currentApplicationUser); }
+    @Override public void removeUser(String username) {
+        delete(List.of(new Condition<>("username", data_access.Operator.EQ, username)));
+        delete(List.of(new Condition<>("name", data_access.Operator.EQ, username)));
+    }
+
+    private static String value(Document document, String fallback, String... fields) {
+        for (String field : fields) {
+            String value = document.getString(field);
+            if (value != null && !value.isBlank()) return value;
+        }
+        return fallback;
     }
 }
