@@ -1,8 +1,8 @@
 package use_case.signup;
 
 import entity.User;
+import org.mindrot.jbcrypt.BCrypt;
 import use_case.gateway.UserDataAccessInterface;
-import use_case.login.Passwords;
 
 public final class SignupInteractor implements SignupInputBoundary {
     private final UserDataAccessInterface users;
@@ -18,7 +18,7 @@ public final class SignupInteractor implements SignupInputBoundary {
         if (users.existsByName(name)) {
             presenter.present(new SignupOutputData(false, null, "That username is already taken")); return;
         }
-        User user = new User(name, Passwords.hash(input.password()));
+        User user = new User(name, BCrypt.hashpw(input.password(), BCrypt.gensalt()), "");
         users.save(user); users.setCurrentUser(user);
         presenter.present(new SignupOutputData(true, name, "Account created for " + name));
     }

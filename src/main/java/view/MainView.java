@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 public final class MainView extends JPanel{
     private final JPanel list=new JPanel(); private final JLabel routeLabel=Theme.label("Select a washroom to explore",13,Theme.MUTED);
     private final CampusMapPanel map=new CampusMapPanel(); private String selectedId="bahen-2";
-    private Consumer<String> onReviews=id->{}; private Consumer<String> onDirections=id->{}; private Runnable onLogin=()->{},onRecommend=()->{},onReport=()->{},onBusyness=()->{};
+    private Consumer<String> onReviews=id->{}; private Consumer<String> onDirections=id->{}; private Runnable onLogin=()->{},onRecommend=()->{},onReport=()->{},onBusyness=()->{}, onAccount=()->{};
     private double latitude=43.6629,longitude=-79.3957;
     public MainView(WashroomListViewModel washrooms,MapViewModel route){setLayout(new BorderLayout());setBackground(Theme.PAPER);
         add(header(),BorderLayout.NORTH);add(sidebar(),BorderLayout.WEST);add(mapArea(),BorderLayout.CENTER);
@@ -19,7 +19,7 @@ public final class MainView extends JPanel{
             if(s.success()){routeLabel.setText("<html><b>"+s.distance()+"</b> · about "+s.duration()+" walk</html>");map.setRouteVisible(true);}});}
     private JComponent header(){JPanel p=new JPanel(new BorderLayout());p.setBackground(Theme.PAPER);p.setBorder(Theme.pad(10,18,10,18));
         JLabel brand=Theme.label("FlushID",20,Theme.BLUE);brand.setFont(brand.getFont().deriveFont(Font.BOLD));p.add(brand,BorderLayout.WEST);
-        JPanel nav=new JPanel(new FlowLayout(FlowLayout.RIGHT,8,0));nav.setOpaque(false);for(JButton b:new JButton[]{nav("Recommend",()->onRecommend.run()),nav("Report status",()->onReport.run()),nav("Busyness",()->onBusyness.run()),nav("Login",()->onLogin.run())})nav.add(b);p.add(nav,BorderLayout.EAST);return p;}
+        JPanel nav=new JPanel(new FlowLayout(FlowLayout.RIGHT,8,0));nav.setOpaque(false);for(JButton b:new JButton[]{nav("Recommend",()->onRecommend.run()),nav("Account",()->onAccount.run()),nav("Report status",()->onReport.run()),nav("Busyness",()->onBusyness.run()),nav("Login",()->onLogin.run())})nav.add(b);p.add(nav,BorderLayout.EAST);return p;}
     private JButton nav(String text,Runnable action){JButton b=Theme.button(text);b.addActionListener(e->action.run());return b;}
     private JComponent sidebar(){JPanel p=new JPanel(new BorderLayout(0,10));p.setPreferredSize(new Dimension(290,0));p.setBackground(Theme.PAPER);p.setBorder(Theme.pad(14,18,14,12));
         JPanel controls=new JPanel(new GridLayout(2,2,8,8));controls.setOpaque(false);JButton location=Theme.button("Location"),filters=Theme.button("Filters");controls.add(location);controls.add(filters);controls.add(new JLabel("Sort by:"));controls.add(new SortDropdownControl());p.add(controls,BorderLayout.NORTH);
@@ -35,7 +35,7 @@ public final class MainView extends JPanel{
             JPanel actions=new JPanel(new GridLayout(1,2,6,0));actions.setOpaque(false);JButton reviews=Theme.button("Reviews"),directions=Theme.button("Directions");
             reviews.addActionListener(e->{selectedId=item.id();onReviews.accept(item.id());});directions.addActionListener(e->{selectedId=item.id();onDirections.accept(item.id());});actions.add(reviews);actions.add(directions);card.add(actions,BorderLayout.SOUTH);list.add(card);list.add(Box.createVerticalStrut(10));}list.revalidate();list.repaint();}
     public void setOnReviews(Consumer<String> c){onReviews=c;}public void setOnDirections(Consumer<String> c){onDirections=c;}
-    public void setOnLogin(Runnable r){onLogin=r;}public void setOnRecommend(Runnable r){onRecommend=r;}public void setOnReport(Runnable r){onReport=r;}public void setOnBusyness(Runnable r){onBusyness=r;}
+    public void setOnLogin(Runnable r){onLogin=r;}public void setOnRecommend(Runnable r){onRecommend=r;}public void setOnAccount(Runnable r){onAccount=r;}public void setOnReport(Runnable r){onReport=r;}public void setOnBusyness(Runnable r){onBusyness=r;}
     public double latitude(){return latitude;}public double longitude(){return longitude;}public String selectedId(){return selectedId;}
     private static final class CampusMapPanel extends JPanel{private boolean route;CampusMapPanel(){setBackground(Theme.CREAM);setBorder(BorderFactory.createLineBorder(Theme.LINE));}
         void setRouteVisible(boolean visible){route=visible;repaint();}@Override protected void paintComponent(Graphics g){super.paintComponent(g);Graphics2D x=(Graphics2D)g.create();x.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
