@@ -3,6 +3,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import data_access.Condition;
 import data_access.MongoDocuments;
+import entity.building.Building;
 import entity.review.WashroomReview;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
@@ -20,6 +21,9 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
 
     static MongoCollection<Document> collection;
     private static MongoCollection<Document> users;
+    static final List<String> allowedAttributes = List.of(new String[] {
+            "washroomID", "authorUsername", "rating", "cleanliness", "comment", "helpfulCount",
+    "createdAt", "seedKey"});
 
     public DBReviewDataAccessObject() {
         super();    // initializes the MongoClient and MongoDatabase from
@@ -41,13 +45,39 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
      */
     public List<Review> getMatching(Iterable<Condition<?>> conditions) {
 
+        return new ArrayList<>(getMatchingIDMap(conditions).values());
+
+    }
+
+    /**
+     * Returns all reviews who satisfy the condition
+     * @param condition a condition object that the returned reviews must satisfy
+     * @return The reviews that match the conditions
+     */
+    public List<Review> getMatching(Condition<?> condition) {
+
+        List<Condition<?>> conditions = new ArrayList<>();
+        conditions.add(condition);
+        return getMatching(conditions);
+
+    }
+
+    /**
+     * Returns all reviews which satisfy all the given conditions, with database IDs
+     * @param conditions a list of condition objects that the returned reviews must satisfy
+     * @return The reviews that match all the conditions mapped to their IDs in the database.
+     */
+    public static Map<String, Review> getMatchingIDMap(Iterable<Condition<?>> conditions) {
+
+        checkAttribute(conditions);
+
         Bson filter = parseConditions(conditions);
         List<Document> docs = getAll(filter);
 
-        List<Review> reviews = new ArrayList<>();
+        Map<String, Review> reviews = new HashMap<>();
         for (Document doc: docs) {
             Review review = createReview(doc);
-            reviews.add(review);
+            reviews.put(MongoDocuments.id(doc), review);
         }
         return reviews;
 
@@ -121,8 +151,41 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
      *                   all conditions to be deleted
      */
     public void delete(Iterable<Condition<?>> conditions) {
+        checkAttribute(conditions);
         Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);
+    }
+
+    /**
+     * Deletes every entry in the database that matches the given condition
+     * @param condition A Condition object that the object must satisfy.
+     */
+    public void delete(Condition<?> condition) {
+        List<Condition<?>> conditions = new ArrayList<>();
+        conditions.add(condition);
+        delete(conditions);
+    }
+
+    /**
+     * Checks the condition against the list of allowed attributes, throwing a
+     * runtime exception if it's not a valid attribute.
+     * @param condition The condition to check.
+     */
+    private static void checkAttribute(Condition<?> condition) {
+        if (!allowedAttributes.contains(condition.getFieldName())) {
+            throw new RuntimeException("Not a valid attribute");
+        }
+    }
+
+    /**
+     * Checks the conditions against the list of allowed attributes, throwing a
+     * runtime exception if it's not a valid attribute.
+     * @param conditions The conditions to check.
+     */
+    private static void checkAttribute(Iterable<Condition<?>> conditions) {
+        for (Condition<?> condition: conditions) {
+            checkAttribute(condition);
+        }
     }
 
     @Override public List<entity.Review> getReviewsForWashroom(String washroomId) {

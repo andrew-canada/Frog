@@ -20,6 +20,8 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements use_ca
 
     static MongoCollection<Document> collection;
     private entity.User currentApplicationUser;
+    static final List<String> allowedAttributes = List.of(new String[] {
+            "username", "passwordHash", "personalPlan"});
 
     public DBUserDataAccessObject() {
         super();    // initializes the MongoClient and MongoDatabase from
@@ -47,6 +49,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements use_ca
      * @return The users that match all the conditions mapped to their IDs in the database.
      */
     public Map<String, LoggedInUser> getMatchingIDMap(Iterable<Condition<?>> conditions) {
+        checkAttribute(conditions);
 
         Bson filter = parseConditions(conditions);
         List<Document> docs = getAll(filter);
@@ -110,8 +113,31 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements use_ca
      *                   all conditions to be deleted
      */
     public void delete(Iterable<Condition<?>> conditions) {
+        checkAttribute(conditions);
         Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);
+    }
+
+    /**
+     * Checks the condition against the list of allowed attributes, throwing a
+     * runtime exception if it's not a valid attribute.
+     * @param condition The condition to check.
+     */
+    private static void checkAttribute(Condition<?> condition) {
+        if (!allowedAttributes.contains(condition.getFieldName())) {
+            throw new RuntimeException("Not a valid attribute");
+        }
+    }
+
+    /**
+     * Checks the conditions against the list of allowed attributes, throwing a
+     * runtime exception if it's not a valid attribute.
+     * @param conditions The conditions to check.
+     */
+    private static void checkAttribute(Iterable<Condition<?>> conditions) {
+        for (Condition<?> condition: conditions) {
+            checkAttribute(condition);
+        }
     }
 
     @Override public Optional<entity.User> get(String username) {

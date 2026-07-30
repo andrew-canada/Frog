@@ -72,6 +72,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
      * @return The washrooms that match all the conditions mapped to their IDs in the database.
      */
     public static Map<String, Washroom> getMatchingIDMap(Iterable<Condition<?>> conditions) {
+        checkAttribute(conditions);
 
         Bson filter = parseConditions(conditions);
         List<Document> docs = getAll(filter);
@@ -198,6 +199,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
      *                   all conditions to be deleted
      */
     public static void delete(Iterable<Condition<?>> conditions) {
+        checkAttribute(conditions);
         Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);
     }

@@ -7,6 +7,7 @@ import com.mongodb.client.model.Updates;
 import data_access.Condition;
 import data_access.MongoDocuments;
 import data_access.Operator;
+
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
@@ -252,9 +253,14 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 
 	public static void main(String[] args) {
 
-		DBBuildingDataAccessObject accessor = new DBBuildingDataAccessObject();
-		accessor.getMatching(
-				new Condition<>("buildingCode", Operator.EQ, "TEST"));
-
+		Building building = GenericBuildingFactory.create(
+				"CH",
+				"Convocation Hall",
+				"Convocation Hall",
+				100.0,
+				20.0,
+				"U of T St. George campus reference location");
+		DBBuildingDataAccessObject buildingDOB = new DBBuildingDataAccessObject();
+		buildingDOB.write(building);
 	}
 }
