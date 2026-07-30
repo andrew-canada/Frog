@@ -32,9 +32,22 @@ import java.util.function.Function;
 
 public final class MainView extends JPanel{
     private final JPanel list=new JPanel(); private final JLabel routeLabel=Theme.label("Select a washroom to explore",13,Theme.MUTED);
-    private final CampusMapPanel map=new CampusMapPanel(); private String selectedId="";private List<WashroomListViewModel.Item> renderedItems=List.of();
-    private Consumer<String> onReviews=id->{}; private Consumer<String> onDirections=id->{}; private Runnable onLogin=()->{},onRecommend=()->{},onReport=()->{},onBusyness=()->{};
-    private Function<String,GeoPoint> addressLookup=address->{throw new IllegalStateException("Address search is unavailable.");};
+    private final CampusMapPanel map = new CampusMapPanel(); 
+    private String selectedId = "";
+    private List<WashroomListViewModel.Item> renderedItems = List.of();
+
+    private Consumer<String> onReviews = id -> {}; 
+    private Consumer<String> onDirections = id -> {}; 
+
+    private Runnable onLogin = () -> {},
+                     onRecommend = () -> {},
+                     onReport = () -> {},
+                     onBusyness = () -> {},
+                     onAccount = () -> {};
+
+    private Function<String, GeoPoint> addressLookup = address -> {
+        throw new IllegalStateException("Address search is unavailable.");
+    };
     private double latitude=43.6629,longitude=-79.3957;
     public MainView(WashroomListViewModel washrooms,MapViewModel route){setLayout(new BorderLayout());setBackground(Theme.PAPER);
         add(header(),BorderLayout.NORTH);add(sidebar(),BorderLayout.WEST);add(mapArea(),BorderLayout.CENTER);
@@ -43,7 +56,7 @@ public final class MainView extends JPanel{
             else {routeLabel.setText(s.message());map.clearRoute();}});}
     private JComponent header(){JPanel p=new JPanel(new BorderLayout());p.setBackground(Theme.PAPER);p.setBorder(Theme.pad(10,18,10,18));
         JLabel brand=Theme.label("FlushID",20,Theme.BLUE);brand.setFont(brand.getFont().deriveFont(Font.BOLD));p.add(brand,BorderLayout.WEST);
-        JPanel nav=new JPanel(new FlowLayout(FlowLayout.RIGHT,8,0));nav.setOpaque(false);for(JButton b:new JButton[]{nav("Recommend",()->onRecommend.run()),nav("Report status",()->onReport.run()),nav("Busyness",()->onBusyness.run()),nav("Login",()->onLogin.run())})nav.add(b);p.add(nav,BorderLayout.EAST);return p;}
+        JPanel nav=new JPanel(new FlowLayout(FlowLayout.RIGHT,8,0));nav.setOpaque(false);for(JButton b:new JButton[]{nav("Recommend",()->onRecommend.run()),nav("Account",()->onAccount.run()),nav("Report status",()->onReport.run()),nav("Busyness",()->onBusyness.run()),nav("Login",()->onLogin.run())})nav.add(b);p.add(nav,BorderLayout.EAST);return p;}
     private JButton nav(String text,Runnable action){JButton b=Theme.button(text);b.addActionListener(e->action.run());return b;}
     private JComponent sidebar(){JPanel p=new JPanel(new BorderLayout(0,10));p.setPreferredSize(new Dimension(290,0));p.setBackground(Theme.PAPER);p.setBorder(Theme.pad(14,18,14,12));
         JPanel controls=new JPanel(new GridLayout(2,2,8,8));controls.setOpaque(false);JButton location=Theme.button("Location"),filters=Theme.button("Filters");controls.add(location);controls.add(filters);controls.add(new JLabel("Sort by:"));controls.add(new SortDropdownControl());p.add(controls,BorderLayout.NORTH);
@@ -63,8 +76,15 @@ public final class MainView extends JPanel{
     public void setWashrooms(List<Washroom> washrooms){map.setWashrooms(washrooms);}
     public void setAddressLookup(Function<String,GeoPoint> lookup){addressLookup=lookup==null?address->{throw new IllegalStateException("Address search is unavailable.");}:lookup;}
     public void setOnReviews(Consumer<String> c){onReviews=c;}public void setOnDirections(Consumer<String> c){onDirections=c;}
-    public void setOnLogin(Runnable r){onLogin=r;}public void setOnRecommend(Runnable r){onRecommend=r;}public void setOnReport(Runnable r){onReport=r;}public void setOnBusyness(Runnable r){onBusyness=r;}
-    public void showRouting(){routeLabel.setText("Requesting a live walking route from GraphHopper…");}
+    public void setOnLogin(Runnable r) { onLogin = r; }
+    public void setOnRecommend(Runnable r) { onRecommend = r; }
+    public void setOnAccount(Runnable r) { onAccount = r; }
+    public void setOnReport(Runnable r) { onReport = r; }
+    public void setOnBusyness(Runnable r) { onBusyness = r; }
+
+    public void showRouting() {
+        routeLabel.setText("Requesting a live walking route from GraphHopper…");
+    }
     public double latitude(){return latitude;}public double longitude(){return longitude;}public String selectedId(){return selectedId;}
     private static final class CampusMapPanel extends JPanel {
         private final JXMapViewer viewer;

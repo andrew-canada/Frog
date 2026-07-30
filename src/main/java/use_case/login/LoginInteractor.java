@@ -1,6 +1,7 @@
 package use_case.login;
 
 import entity.User;
+import org.mindrot.jbcrypt.BCrypt;
 import use_case.gateway.UserDataAccessInterface;
 
 public final class LoginInteractor implements LoginInputBoundary {
@@ -11,7 +12,7 @@ public final class LoginInteractor implements LoginInputBoundary {
     }
     @Override public void execute(LoginInputData input) {
         User user = users.get(input.username()).orElse(null);
-        if (user == null || !Passwords.matches(input.password(), user.passwordHash())) {
+        if (user == null || !BCrypt.checkpw(input.password(), user.passwordHash())) {
             presenter.present(new LoginOutputData(false, null, "Incorrect username or password")); return;
         }
         users.setCurrentUser(user);
