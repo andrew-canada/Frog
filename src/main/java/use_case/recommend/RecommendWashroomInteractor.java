@@ -31,10 +31,10 @@ public final class RecommendWashroomInteractor implements RecommendWashroomInput
     private Scored score(Washroom w, RecommendWashroomInputData in) {
         int distance = (int) Math.round(distance(in.latitude(), in.longitude(), w.building().latitude(), w.building().longitude()));
         List<StatusReport> recent = reports.getRecentForWashroom(w.id(), LocalDateTime.now().minusHours(4));
-        double busy = recent.stream().mapToInt(StatusReport::busyness).average().orElse(2.5);
+        double busy = recent.stream().mapToInt(StatusReport::busyness).average().orElse(0);
         double rating = w.reviewSummary().averageRating() / 5.0;
         double proximity = Math.max(0, 1 - distance / 2000.0);
-        double quiet = 1 - busy / 5.0;
+        double quiet = recent.isEmpty() ? 0 : 1 - busy / 5.0;
         double match = (!in.accessibleOnly() || w.accessible()) ? 1 : 0;
         double wr = in.inAHurry() ? .20 : .40, wp = in.inAHurry() ? .45 : .25,
                 wq = in.inAHurry() ? .25 : .20, wm = in.inAHurry() ? .10 : .15;

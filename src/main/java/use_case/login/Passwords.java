@@ -6,7 +6,7 @@ import java.util.Base64;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
-/** JDK-only salted password hashing for the in-memory demo. */
+/** JDK-only salted password hashing; MongoDB stores only the encoded PBKDF2 result. */
 public final class Passwords {
     private static final int ITERATIONS = 120_000;
     private static final SecureRandom RANDOM = new SecureRandom();

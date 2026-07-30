@@ -17,8 +17,13 @@ public final class GetDirectionsInteractor implements GetDirectionsInputBoundary
     @Override public void execute(GetDirectionsInputData in) {
         Washroom w=washrooms.getById(in.washroomId()).orElse(null);
         if (w==null) { presenter.present(new GetDirectionsOutputData(false,List.of(),0,0,"Washroom not found")); return; }
-        Route route=routes.getRoute(new GeoPoint(in.originLatitude(),in.originLongitude()),
-                new GeoPoint(w.building().latitude(),w.building().longitude()));
-        presenter.present(new GetDirectionsOutputData(true,route.points(),route.distanceMeters(),route.timeSeconds(),"Route ready"));
+        try {
+            Route route=routes.getRoute(new GeoPoint(in.originLatitude(),in.originLongitude()),
+                    new GeoPoint(w.building().latitude(),w.building().longitude()));
+            presenter.present(new GetDirectionsOutputData(true,route.points(),route.distanceMeters(),route.timeSeconds(),"Route ready"));
+        } catch (RuntimeException failure) {
+            String message = failure.getMessage() == null ? "Directions are temporarily unavailable" : failure.getMessage();
+            presenter.present(new GetDirectionsOutputData(false,List.of(),0,0,message));
+        }
     }
 }

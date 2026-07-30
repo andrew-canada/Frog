@@ -35,22 +35,6 @@ public final class RecommendationView extends JPanel{
         actions.setOpaque(false);
         JButton directions=Theme.primary("Get directions"),reviews=Theme.button("See reviews");directions.addActionListener(e->onDirections.run());reviews.addActionListener(e->onReviews.run());actions.add(directions);actions.add(reviews);card.add(actions);center.add(card);add(center);
         model.addPropertyChangeListener(e->render(model.getState()));}
-    private void render(RecommendationViewModel.State s) {
-        if (s.error()!=null) {
-            name.setText(s.error());
-            return;
-        }
-        if(s.name().isBlank()) return;
-        selectedId=s.washroomId();
-        name.setText(s.name());
-        meta.setText(String.format("★ %.1f  ·  %d m  ·  busyness %.1f/5  ·  %s%s",s.rating(),s.distanceMeters(),s.busyness(),s.gender(),s.accessible()?" · accessible":""));
-        chips.removeAll();
-        for(Map.Entry<String,Double> reason:s.reasons().entrySet()){
-            JLabel chip=Theme.label(reason.getKey()+" +"+String.format("%.2f",reason.getValue()),12,Theme.BLUE);
-            chip.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.BLUE),Theme.pad(5,8,5,8)));
-            chips.add(chip);
-        }
-        chips.revalidate();
-    }
+    private void render(RecommendationViewModel.State s){if(s.error()!=null){name.setText(s.error());return;}if(s.name().isBlank())return;selectedId=s.washroomId();name.setText(s.name());String live=s.busyness()>0?String.format("busyness %.1f/5",s.busyness()):"no recent status reports";meta.setText(String.format("★ %.1f  ·  %d m  ·  %s  ·  %s%s",s.rating(),s.distanceMeters(),live,s.gender(),s.accessible()?" · accessible":""));chips.removeAll();for(Map.Entry<String,Double> reason:s.reasons().entrySet()){JLabel chip=Theme.label(reason.getKey()+" +"+String.format("%.2f",reason.getValue()),12,Theme.BLUE);chip.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.BLUE),Theme.pad(5,8,5,8)));chips.add(chip);}chips.revalidate();}
     public boolean inAHurry(){return hurry.isSelected();}public String selectedId(){return selectedId;}public void setOnFind(Runnable r){onFind=r;}public void setOnDirections(Runnable r){onDirections=r;}public void setOnReviews(Runnable r){onReviews=r;}public void setOnBack(Runnable r){onBack=r;}
 }

@@ -5,7 +5,6 @@ import entity.StatusReport;
 import use_case.gateway.EnrollmentDataAccessInterface;
 import use_case.gateway.StatusReportDataAccessInterface;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,11 +25,15 @@ public final class BusynessStatsInteractor implements BusynessStatsInputBoundary
             final int h=hour;
             double crowd=observations.stream().filter(r->r.timestamp().getHour()==h).mapToInt(StatusReport::busyness).average().orElse(Double.NaN);
             int students=meetings.stream().filter(m->h>=m.startHour() && h<m.endHour()).mapToInt(EnrollmentMeeting::enrollment).sum();
-            double predicted=Math.min(5, 1 + students/100.0);
+            boolean hasTimetable=!meetings.isEmpty();
+            double predicted=hasTimetable?Math.min(5, 1 + students/100.0):Double.NaN;
             boolean hasCrowd=!Double.isNaN(crowd);
-            double blended=hasCrowd ? crowd*.65 + predicted*.35 : predicted;
-            buckets.add(new BusynessStatsOutputData.HourBucket(hour, Math.max(1, Math.min(5, blended)), hasCrowd?"reports":"timetable"));
+            double blended=hasCrowd&&hasTimetable?crowd*.65+predicted*.35:hasCrowd?crowd:hasTimetable?predicted:0;
+            buckets.add(new BusynessStatsOutputData.HourBucket(hour, Math.max(0, Math.min(5, blended)),
+                    hasCrowd&&hasTimetable?"reports + enrollment":hasCrowd?"reports":hasTimetable?"enrollment":"no data"));
         }
-        presenter.present(new BusynessStatsOutputData(buckets, "Crowdsourced reports blended with timetable enrolment"));
+        String note=observations.isEmpty()&&meetings.isEmpty()?"No status or enrollment data is stored yet"
+                :"MongoDB status reports blended with stored timetable enrollment";
+        presenter.present(new BusynessStatsOutputData(buckets,note));
     }
 }
