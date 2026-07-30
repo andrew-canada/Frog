@@ -15,7 +15,11 @@ import java.util.List;
  */
 public class Condition<T extends Comparable<? super T>> {
 
-    final Bson filter;
+    private final Bson filter;
+
+    private final String fieldName;
+    private final Operator operator;
+    private final T value;
 
     public Condition(String fieldName, Operator operator, T value) {
         if (operator == Operator.EQ) {
@@ -37,10 +41,26 @@ public class Condition<T extends Comparable<? super T>> {
         } else {
             throw new IllegalArgumentException();
         }
+
+        this.fieldName = fieldName;
+        this.operator = operator;
+        this.value = value;
     }
 
     public Bson getFilter() {
         return filter;
+    }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public Operator getOperator() {
+        return operator;
+    }
+
+    public T getValue() {
+        return value;
     }
 
 }

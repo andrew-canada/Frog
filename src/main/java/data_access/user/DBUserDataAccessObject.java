@@ -28,7 +28,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject {
      * @param conditions a list of condition objects that the returned users must satisfy
      * @return The users that match all the conditions
      */
-    public static List<LoggedInUser> getMatching(Iterable<Condition<?>> conditions) {
+    public List<LoggedInUser> getMatching(Iterable<Condition<?>> conditions) {
 
         Bson filter = parseConditions(conditions);
         List<Document> docs = getAll(filter);
@@ -47,7 +47,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject {
      * @param conditions a list of condition objects that the returned users must satisfy
      * @return The users that match all the conditions mapped to their IDs in the database.
      */
-    public static Map<String, LoggedInUser> getMatchingIDMap(Iterable<Condition<?>> conditions) {
+    public Map<String, LoggedInUser> getMatchingIDMap(Iterable<Condition<?>> conditions) {
 
         Bson filter = parseConditions(conditions);
         List<Document> docs = getAll(filter);
@@ -87,8 +87,9 @@ public class DBUserDataAccessObject extends DBDataAccessObject {
      * @param doc Document containing user data for a specific user
      * @return the user object constructed using that data
      */
-    private static LoggedInUser createUser(Document doc) {
-        User user = LoggedInUserFactory.create(
+    private LoggedInUser createUser(Document doc) {
+        LoggedInUserFactory factory = new LoggedInUserFactory();
+        LoggedInUser user = factory.create(
                 doc.getString("name"),
                 doc.getString("password"));
         return user;

@@ -6,7 +6,5 @@ import java.util.List;
 
 public interface Washroom {
 
-    public Building getBuilding();
-
-    public List<Review> getReviews();
+    public String getFloor();
 }

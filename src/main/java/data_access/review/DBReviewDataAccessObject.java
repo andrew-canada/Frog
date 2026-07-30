@@ -2,6 +2,7 @@ package data_access.review;
 
 import com.mongodb.client.model.Filters;
 import data_access.Condition;
+import entity.review.WashroomReview;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
@@ -28,7 +29,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject {
      * @param conditions a list of condition objects that the returned reviews must satisfy
      * @return The reviews that match all the conditions
      */
-    public static List<Review> getMatching(Iterable<Condition<?>> conditions) {
+    public List<Review> getMatching(Iterable<Condition<?>> conditions) {
 
         Bson filter = parseConditions(conditions);
         List<Document> docs = getAll(filter);
@@ -70,8 +71,9 @@ public class DBReviewDataAccessObject extends DBDataAccessObject {
      * @param doc Document containing review data for a specific review
      * @return the review object constructed using that data
      */
-    private static Review createReview(Document doc) {
-        Review review = WashroomReviewFactory.create(
+    private Review createReview(Document doc) {
+        WashroomReviewFactory factory = new WashroomReviewFactory();
+        Review review = factory.create(
                 doc.getInteger("stars"),
                 doc.getString("text"),
                 doc.getInteger("helpfuls"),

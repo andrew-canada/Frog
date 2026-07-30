@@ -10,7 +10,6 @@ public class GenericBuilding implements Building {
     private double latitude;
     private double longitude;
     private String controlInfo;
-    private List<Washroom> washroomList;
 
     public GenericBuilding(
             String buildingCode,
@@ -18,8 +17,7 @@ public class GenericBuilding implements Building {
             String buildingNameLong,
             double latitude,
             double longitude,
-            String controlInfo,
-            List<Washroom> washroomList
+            String controlInfo
     ) {
         this.buildingCode = buildingCode;
         this.buildingNameShort = buildingNameShort;
@@ -27,7 +25,6 @@ public class GenericBuilding implements Building {
         this.latitude = latitude;
         this.longitude = longitude;
         this.controlInfo = controlInfo;
-        this.washroomList = washroomList;
     }
 
     @Override
@@ -50,8 +47,11 @@ public class GenericBuilding implements Building {
         return controlInfo;
     }
 
-    @Override
-    public List<Washroom> getWashroomList() {
-        return washroomList;
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
     }
 }

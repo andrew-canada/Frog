@@ -2,6 +2,7 @@ package data_access.building;
 
 import com.mongodb.client.model.Filters;
 import data_access.Condition;
+import data_access.Operator;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
@@ -15,6 +16,8 @@ import java.util.*;
 public class DBBuildingDataAccessObject extends DBDataAccessObject {
 
 	static MongoCollection<Document> collection;
+	static final List<String> allowedAttributes = List.of(new String[] {
+            "buildingCode", "shortName", "longName", "location", "controlInfo"});
 	
 	public DBBuildingDataAccessObject() {
 		super();    // initializes the MongoClient and MongoDatabase from
@@ -29,6 +32,8 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	*/
 	public static List<Building> getMatching(Iterable<Condition<?>> conditions) {
 
+		checkAttribute(conditions);
+
 		Bson filter = parseConditions(conditions);
 		List<Document> docs = getAll(filter);
 
@@ -42,11 +47,26 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	}
 
 	/**
+	 * Returns all buildings who satisfy the condition
+	 * @param condition a condition object that the returned buildings must satisfy
+	 * @return The buildings that match the conditions
+	 */
+	public static List<Building> getMatching(Condition<?> condition) {
+
+		List<Condition<?>> conditions = new ArrayList<>();
+		conditions.add(condition);
+		return getMatching(conditions);
+
+	}
+
+	/**
 	 * Returns all buildings which satisfy all the given conditions, with database IDs
 	 * @param conditions a list of condition objects that the returned buildings must satisfy
 	 * @return The buildings that match all the conditions mapped to their IDs in the database.
 	 */
 	public static Map<String, Building> getMatchingIDMap(Iterable<Condition<?>> conditions) {
+
+		checkAttribute(conditions);
 
 		Bson filter = parseConditions(conditions);
 		List<Document> docs = getAll(filter);
@@ -54,9 +74,22 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 		Map<String, Building> buildings = new HashMap<>();
 		for (Document doc: docs) {
 			Building building = createBuilding(doc);
-			buildings.put(doc.getString("_id"), building);
+			buildings.put(doc.getObjectId("_id").toString(), building);
 		}
 		return buildings;
+
+	}
+
+	/**
+	 * Returns all buildings which satisfy the given condition, with database IDs
+	 * @param condition a condition object that the returned buildings must satisfy
+	 * @return The buildings that match the condition mapped to their IDs in the database.
+	 */
+	public static Map<String, Building> getMatchingIDMap(Condition<?> condition) {
+
+		List<Condition<?>> conditions = new ArrayList<>();
+		conditions.add(condition);
+		return getMatchingIDMap(conditions);
 
 	}
 
@@ -140,7 +173,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 */
 	private static double getLongitude(Document doc) {
 		Document location = doc.get("location", doc.getClass());
-		return location.getList("coordinates", double.class).get(0);
+		return location.getList("coordinates", Double.class).get(0);
 	}
 
 	/**
@@ -153,7 +186,29 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 */
 	private static double getLatitude(Document doc) {
 		Document location = doc.get("location", doc.getClass());
-		return location.getList("coordinates", double.class).get(1);
+		return location.getList("coordinates", Double.class).get(1);
+	}
+
+	/**
+	 * Checks the condition against the list of allowed attributes, throwing a
+	 * runtime exception if it's not a valid attribute.
+	 * @param condition The condition to check.
+	 */
+	private static void checkAttribute(Condition<?> condition) {
+		if (!allowedAttributes.contains(condition.getFieldName())) {
+			throw new RuntimeException("Not a valid attribute");
+		}
+	}
+
+	/**
+	 * Checks the conditions against the list of allowed attributes, throwing a
+	 * runtime exception if it's not a valid attribute.
+	 * @param conditions The conditions to check.
+	 */
+	private static void checkAttribute(Iterable<Condition<?>> conditions) {
+		for (Condition<?> condition: conditions) {
+			checkAttribute(condition);
+		}
 	}
 
 	/**
@@ -162,7 +217,27 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 *                   all conditions to be deleted
 	 */
 	public void delete(Iterable<Condition<?>> conditions) {
+		checkAttribute(conditions);
+
 		Bson filter = parseConditions(conditions);
 		collection.deleteMany(filter);
+	}
+
+	/**
+	 * Deletes every entry in the database that matches the given condition
+	 * @param condition A Condition object that the object must satisfy.
+	 */
+	public void delete(Condition<?> condition) {
+		List<Condition<?>> conditions = new ArrayList<>();
+		conditions.add(condition);
+		delete(conditions);
+	}
+
+	public static void main(String[] args) {
+
+		DBBuildingDataAccessObject accessor = new DBBuildingDataAccessObject();
+		accessor.getMatching(
+				new Condition<>("buildingCode", Operator.EQ, "TEST"));
+
 	}
 }
