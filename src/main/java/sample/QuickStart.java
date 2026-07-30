@@ -12,8 +12,8 @@ import com.mongodb.client.MongoDatabase;
 
 public class QuickStart {
     public static void main(String[] args) {
-        // Replace the placeholder with your MongoDB deployment's connection string
-        String uri = "mongodb+srv://eleanorneal_db_user:lNth5u9FuYk4NzPN@flushid.jpqnasb.mongodb.net/?appName=FlushID";
+        String uri = System.getenv("MONGODB_URI");
+        if (uri == null || uri.isBlank()) throw new IllegalStateException("Set MONGODB_URI first");
         try (MongoClient mongoClient = MongoClients.create(uri)) {
             MongoDatabase database = mongoClient.getDatabase("sample_mflix");
             MongoCollection<Document> collection = database.getCollection("movies");

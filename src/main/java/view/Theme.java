@@ -12,7 +12,7 @@ final class Theme {
     static Border pad(int t,int l,int b,int r){return BorderFactory.createEmptyBorder(t,l,b,r);}
     static JLabel label(String text,int size,Color color){JLabel l=new JLabel(text);l.setFont(l.getFont().deriveFont((float)size));l.setForeground(color);return l;}
     static JLabel title(String text){JLabel l=label(text,22,INK);l.setFont(l.getFont().deriveFont(Font.BOLD));return l;}
-    static JButton button(String text){JButton b=new JButton(text);b.setFocusPainted(false);b.setBackground(PAPER);b.setForeground(INK);b.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(LINE),pad(8,14,8,14)));return b;}
-    static JButton primary(String text){JButton b=button(text);b.setBackground(BLUE);b.setForeground(Color.WHITE);return b;}
+    static JButton button(String text){JButton b=new JButton(text);b.setFocusPainted(false);b.setOpaque(true);b.setContentAreaFilled(true);b.setBackground(PAPER);b.setForeground(Color.BLACK);b.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(LINE),pad(8,14,8,14)));return b;}
+    static JButton primary(String text){return button(text);}
     static JPanel page(){JPanel p=new JPanel();p.setBackground(PAPER);p.setBorder(pad(20,24,20,24));return p;}
 }

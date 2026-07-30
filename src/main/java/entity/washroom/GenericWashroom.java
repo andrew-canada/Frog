@@ -9,7 +9,7 @@ import java.util.List;
 class HighestOverallComparator implements Comparator<Review> {
     @Override
     public int compare(Review o1, Review o2) {
-        return 0;
+        return Integer.compare(o2.getStars(), o1.getStars());
     }
 }
 

@@ -1,6 +1,7 @@
 package entity.user;
 
 import entity.review.Review;
+import java.util.ArrayList;
 import java.util.List;
 
 public class LoggedInUser implements User{
@@ -12,13 +13,13 @@ public class LoggedInUser implements User{
     public LoggedInUser(String name, String password) {
         this.name = name;
         this.password = password;
-        this.reviews = null;
+        this.reviews = new ArrayList<>();
     }
 
     public LoggedInUser(String name, String password, List<Review> reviews) {
         this.name = name;
         this.password = password;
-        this.reviews = reviews;
+        this.reviews = new ArrayList<>(reviews);
     }
 
     @Override
@@ -27,7 +28,7 @@ public class LoggedInUser implements User{
     }
 
     public String getPassword() {
-        return this.name;
+        return this.password;
     }
 
     public void addReview(Review review) {
