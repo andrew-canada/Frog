@@ -13,7 +13,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class LoginView implements ActionListener {
+public final class LoginView implements ActionListener {
     private JFrame windowFrame;
     private final JPanel panel1, panel2, panel3, panel4;
     private final JLabel usernameLabel, passwordLabel;
