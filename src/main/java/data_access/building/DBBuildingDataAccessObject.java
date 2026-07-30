@@ -1,7 +1,11 @@
 package data_access.building;
 
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.Updates;
 import data_access.Condition;
+import data_access.MongoDocuments;
 import data_access.Operator;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
@@ -25,24 +29,18 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 		collection = database.getCollection("Buildings");
 	}
 
+	public DBBuildingDataAccessObject(MongoDatabase database) {
+		super(database);
+		collection = database.getCollection("Buildings");
+	}
+
 	/**
 	* Returns all buildings who satisfy all the given conditions
 	* @param conditions a list of condition objects that the returned buildings must satisfy
 	* @return The buildings that match all the conditions
 	*/
 	public static List<Building> getMatching(Iterable<Condition<?>> conditions) {
-
-		checkAttribute(conditions);
-
-		Bson filter = parseConditions(conditions);
-		List<Document> docs = getAll(filter);
-
-		List<Building> buildings = new ArrayList<>();
-		for (Document doc: docs) {
-			Building building = createBuilding(doc);
-			buildings.add(building);
-		}
-		return buildings;
+		return new ArrayList<>(getMatchingIDMap(conditions).values());
 
 	}
 
@@ -74,7 +72,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 		Map<String, Building> buildings = new HashMap<>();
 		for (Document doc: docs) {
 			Building building = createBuilding(doc);
-			buildings.put(doc.getObjectId("_id").toString(), building);
+			buildings.put(MongoDocuments.id(doc), building);
 		}
 		return buildings;
 
@@ -99,11 +97,9 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 * @return a Bson filter representing satisfying all conditions
 	 */
 	private static Bson parseConditions(Iterable<Condition<?>> conditions) {
-		Bson finalFilter;
 		List<Bson> filters = new ArrayList<>();
 		conditions.forEach((condition) -> filters.add(condition.getFilter()));
-		finalFilter = Filters.and(filters);
-		return finalFilter;
+		return filters.isEmpty() ? new Document() : Filters.and(filters);
 	}
 
 	/**
@@ -122,14 +118,10 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 * @return the Building object constructed using that data
 	 */
 	private static Building createBuilding(Document doc) {
-		Building building = GenericBuildingFactory.create(
-				doc.getString("buildingCode"),
-				doc.getString("shortName"),
-				doc.getString("longName"),
-				getLatitude(doc),
-				getLongitude(doc),
-				doc.getString("controlInfo"));
-		return building;
+		return new entity.Building(
+				MongoDocuments.string(doc, MongoDocuments.id(doc), "buildingCode", "code"),
+				MongoDocuments.string(doc, "Unknown building", "longName", "shortName", "name"),
+				getLatitude(doc), getLongitude(doc));
 	}
 
 	/**
@@ -172,8 +164,10 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 * @return Double representing longitude
 	 */
 	private static double getLongitude(Document doc) {
-		Document location = doc.get("location", doc.getClass());
-		return location.getList("coordinates", Double.class).get(0);
+		Document location = doc.get("location", Document.class);
+		List<?> coordinates = location == null ? List.of() : location.getList("coordinates", Object.class, List.of());
+		return coordinates.size() > 0 && coordinates.get(0) instanceof Number coordinate
+				? coordinate.doubleValue() : MongoDocuments.number(doc, 0, "longitude", "lng");
 	}
 
 	/**
@@ -185,8 +179,10 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 * @return Double representing latitude
 	 */
 	private static double getLatitude(Document doc) {
-		Document location = doc.get("location", doc.getClass());
-		return location.getList("coordinates", Double.class).get(1);
+		Document location = doc.get("location", Document.class);
+		List<?> coordinates = location == null ? List.of() : location.getList("coordinates", Object.class, List.of());
+		return coordinates.size() > 1 && coordinates.get(1) instanceof Number coordinate
+				? coordinate.doubleValue() : MongoDocuments.number(doc, 0, "latitude", "lat");
 	}
 
 	/**
@@ -231,6 +227,27 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 		List<Condition<?>> conditions = new ArrayList<>();
 		conditions.add(condition);
 		delete(conditions);
+	}
+
+	/** Production campus-location seed used by the current Swing application. */
+	public List<entity.Building> ensureLocations(List<entity.Building> locations) {
+		List<entity.Building> persisted = new ArrayList<>();
+		for (entity.Building location : locations) {
+			List<Building> existing = getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
+			if (existing.isEmpty()) write(location);
+			Document geoPoint = new Document("type", "Point")
+					.append("coordinates", List.of(location.longitude(), location.latitude()));
+			collection.updateOne(Filters.eq("buildingCode", location.code()),
+					Updates.combine(
+							Updates.set("longName", location.name()),
+							Updates.set("location", geoPoint),
+							Updates.setOnInsert("shortName", location.name()),
+							Updates.setOnInsert("controlInfo", "U of T St. George campus reference location")
+					), new UpdateOptions().upsert(true));
+			List<Building> refreshed = getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
+			if (!refreshed.isEmpty()) persisted.add((entity.Building) refreshed.getFirst());
+		}
+		return List.copyOf(persisted);
 	}
 
 	public static void main(String[] args) {

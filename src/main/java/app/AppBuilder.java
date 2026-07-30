@@ -1,14 +1,14 @@
 package app;
 
 import data_access.DBDataAccessObject;
-import data_access.building.MongoBuildingDataAccessObject;
+import data_access.building.DBBuildingDataAccessObject;
 import data_access.enrollment.DBEnrollmentDataAccessObject;
-import data_access.review.MongoReviewDataAccessObject;
+import data_access.review.DBReviewDataAccessObject;
 import data_access.route.GraphhopperRouteDataAccessObject;
 import data_access.route.GraphhopperGeocodingDataAccessObject;
 import data_access.status.DBStatusReportDataAccessObject;
-import data_access.user.MongoUserDataAccessObject;
-import data_access.washroom.MongoWashroomDataAccessObject;
+import data_access.user.DBUserDataAccessObject;
+import data_access.washroom.DBWashroomDataAccessObject;
 import entity.Washroom;
 import interface_adapter.account.AccountViewModel;
 import interface_adapter.account.change_password.ChangePasswordController;
@@ -57,12 +57,12 @@ public final class AppBuilder {
         catch (RuntimeException failure) { connection.close(); throw new IllegalStateException("Could not connect to the configured MongoDB database.", failure); }
 
         var database = connection.database();
-        var buildings = new MongoBuildingDataAccessObject(database);
+        var buildings = new DBBuildingDataAccessObject(database);
         var campusLocations = buildings.ensureLocations(UofTCampusLocations.coreLocations());
-        var washrooms = new MongoWashroomDataAccessObject(database);
+        var washrooms = new DBWashroomDataAccessObject(database);
         washrooms.ensureCampusWashrooms(campusLocations);
-        var reviews = new MongoReviewDataAccessObject(database);
-        var users = new MongoUserDataAccessObject(database);
+        var reviews = new DBReviewDataAccessObject(database);
+        var users = new DBUserDataAccessObject(database);
         var reports = new DBStatusReportDataAccessObject(database);
         var routes = new GraphhopperRouteDataAccessObject(graphhopperKey);
         var geocoding = new GraphhopperGeocodingDataAccessObject(graphhopperKey);
@@ -164,7 +164,7 @@ public final class AppBuilder {
         main.showRouting();
         CompletableFuture.runAsync(()->controller.execute(main.latitude(),main.longitude(),washroomId));
     }
-    private static Optional<Washroom> selected(MongoWashroomDataAccessObject washrooms,MainView main){return main.selectedId().isBlank()?Optional.empty():washrooms.getById(main.selectedId());}
+    private static Optional<Washroom> selected(DBWashroomDataAccessObject washrooms,MainView main){return main.selectedId().isBlank()?Optional.empty():washrooms.getById(main.selectedId());}
     private static void noWashroom(Component parent){JOptionPane.showMessageDialog(parent,"The database does not contain a selectable washroom.","No washrooms",JOptionPane.WARNING_MESSAGE);}
     private static String listName(Washroom washroom){return switch(washroom.building().code()){
         case "BA" -> "Bahen Centre";

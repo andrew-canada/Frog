@@ -1,7 +1,8 @@
 package data_access.review;
-
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import data_access.Condition;
+import data_access.MongoDocuments;
 import entity.review.WashroomReview;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
@@ -12,16 +13,25 @@ import entity.review.WashroomReviewFactory;
 import entity.washroom.Washroom;
 import data_access.DBDataAccessObject;
 
+import java.time.LocalDate;
 import java.util.*;
 
-public class DBReviewDataAccessObject extends DBDataAccessObject {
+public class DBReviewDataAccessObject extends DBDataAccessObject implements use_case.view_reviews.ReviewDataAccessInterface {
 
     static MongoCollection<Document> collection;
+    private static MongoCollection<Document> users;
 
     public DBReviewDataAccessObject() {
         super();    // initializes the MongoClient and MongoDatabase from
         // the set URI
         collection = database.getCollection("Reviews");
+        users = database.getCollection("Users");
+    }
+
+    public DBReviewDataAccessObject(MongoDatabase database) {
+        super(database);
+        collection = database.getCollection("Reviews");
+        users = database.getCollection("Users");
     }
 
     /**
@@ -49,11 +59,9 @@ public class DBReviewDataAccessObject extends DBDataAccessObject {
      * @return a Bson filter representing satisfying all conditions
      */
     private static Bson parseConditions(Iterable<Condition<?>> conditions) {
-        Bson finalFilter;
         List<Bson> filters = new ArrayList<>();
         conditions.forEach((condition) -> filters.add(condition.getFilter()));
-        finalFilter = Filters.and(filters);
-        return finalFilter;
+        return filters.isEmpty() ? new Document() : Filters.and(filters);
     }
 
     /**
@@ -71,14 +79,15 @@ public class DBReviewDataAccessObject extends DBDataAccessObject {
      * @param doc Document containing review data for a specific review
      * @return the review object constructed using that data
      */
-    private Review createReview(Document doc) {
-        WashroomReviewFactory factory = new WashroomReviewFactory();
-        Review review = factory.create(
-                doc.getInteger("stars"),
-                doc.getString("text"),
-                doc.getInteger("helpfuls"),
-                doc.getInteger("unhelpfuls"));
-        return review;
+    private static Review createReview(Document doc) {
+        double rating = clamp(MongoDocuments.number(doc, 1, "rating", "stars"));
+        double cleanliness = clamp(MongoDocuments.number(doc, rating, "cleanliness"));
+        return new entity.Review(MongoDocuments.id(doc),
+                MongoDocuments.string(doc, "unknown", "washroomId", "washroomID"),
+                author(doc), rating, cleanliness,
+                MongoDocuments.string(doc, "", "comment", "text"),
+                Math.max(0, MongoDocuments.integer(doc, 0, "helpfulCount", "helpfuls")),
+                MongoDocuments.date(doc, LocalDate.now(), "createdAt", "date"));
     }
 
     /**
@@ -86,6 +95,15 @@ public class DBReviewDataAccessObject extends DBDataAccessObject {
      * @param review The Review object to be written.
      */
     public void write(Review review, String userID, String washroomID) {
+        if (review instanceof entity.Review applicationReview) {
+            Document doc = new Document("washroomId", applicationReview.washroomId())
+                    .append("authorUsername", applicationReview.authorUsername())
+                    .append("rating", applicationReview.rating()).append("cleanliness", applicationReview.cleanliness())
+                    .append("comment", applicationReview.comment()).append("helpfulCount", applicationReview.helpfulCount())
+                    .append("createdAt", applicationReview.createdAt().toString());
+            collection.insertOne(doc);
+            return;
+        }
         Document doc = new Document();
         doc.append("userID", userID);
         doc.append("washroomID", washroomID);
@@ -106,4 +124,43 @@ public class DBReviewDataAccessObject extends DBDataAccessObject {
         Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);
     }
+
+    @Override public List<entity.Review> getReviewsForWashroom(String washroomId) {
+        List<entity.Review> result = new ArrayList<>();
+        for (Review review : getMatching(List.<Condition<?>>of())) {
+            entity.Review applicationReview = (entity.Review) review;
+            if (applicationReview.washroomId().equals(washroomId)) result.add(applicationReview);
+        }
+        return List.copyOf(result);
+    }
+
+    @Override public entity.ReviewSummary getSummary(String washroomId) {
+        List<entity.Review> found = getReviewsForWashroom(washroomId);
+        if (found.isEmpty()) return entity.ReviewSummary.empty();
+        return new entity.ReviewSummary(found.stream().mapToDouble(entity.Review::rating).average().orElse(0),
+                found.stream().mapToDouble(entity.Review::cleanliness).average().orElse(0), found.size());
+    }
+
+    @Override public List<entity.Review> getReviewsByUser(String username) {
+        List<entity.Review> result = new ArrayList<>();
+        for (Review legacyReview : getMatching(List.<Condition<?>>of())) {
+            entity.Review review = (entity.Review) legacyReview;
+            if (username.equals(review.authorUsername())) result.add(review);
+        }
+        return List.copyOf(result);
+    }
+
+    public void save(entity.Review review) {
+        write(review, review.authorUsername(), review.washroomId());
+    }
+
+    private static String author(Document review) {
+        String direct = MongoDocuments.string(review, "", "authorUsername", "username");
+        if (!direct.isBlank()) return direct;
+        String userId = MongoDocuments.string(review, "", "userId", "userID");
+        Document user = MongoDocuments.findById(users, userId);
+        return user == null ? "Anonymous" : MongoDocuments.string(user, "Anonymous", "username", "name");
+    }
+
+    private static double clamp(double rating) { return Math.max(1, Math.min(5, rating)); }
 }
