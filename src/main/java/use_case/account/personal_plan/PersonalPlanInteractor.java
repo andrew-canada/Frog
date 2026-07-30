@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
+    public static final String GEMINI_API_KEY_ENV = "GEMINI_API_KEY";
 
     private final UserDataAccessInterface users;
     private final PersonalPlanOutputBoundary presenter;
@@ -30,8 +31,13 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
         } else if (!isInt(inputData.nTrips())) {
             presenter.present(new PersonalPlanOutputData(false, "Please input an integer", ""));
         } else {
+            String apiKey = System.getenv(GEMINI_API_KEY_ENV);
+            if (apiKey == null || apiKey.isBlank()) {
+                presenter.present(new PersonalPlanOutputData(false, "Set " + GEMINI_API_KEY_ENV + " to generate a personal plan", ""));
+                return;
+            }
             try {
-                Client client = Client.builder().apiKey("AQ.Ab8RN6JTaB9s9SAQxfYGrJB2DUfG9Xldcl2easfE5gAZ5VcauA").build();
+                Client client = Client.builder().apiKey(apiKey).build();
                 GenerateContentResponse response = client.models.generateContent("gemini-3.6-flash", "This is a UOFT time table, generate a schedule of washroom breaks such that there are " + inputData.nTrips() + "washroom trips: " + calendar, null);
                 String personalPlan = response.text();
                 users.removeUser(user.username());

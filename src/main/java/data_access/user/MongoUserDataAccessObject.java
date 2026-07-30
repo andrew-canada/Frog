@@ -21,19 +21,23 @@ public final class MongoUserDataAccessObject implements UserDataAccessInterface 
         String storedName = value(document, username, "username", "name");
         String passwordHash = value(document, "", "passwordHash", "password");
         if (passwordHash.isBlank()) return Optional.empty();
-        return Optional.of(new User(storedName, passwordHash));
+        return Optional.of(new User(storedName, passwordHash, value(document, "", "personalPlan")));
     }
 
     @Override public boolean existsByName(String username) { return get(username).isPresent(); }
 
     @Override public void save(User user) {
-        Document document = new Document("username", user.username()).append("passwordHash", user.passwordHash());
+        Document document = new Document("username", user.username()).append("passwordHash", user.passwordHash())
+                .append("personalPlan", user.personalPlan());
         users.replaceOne(Filters.or(Filters.eq("username", user.username()), Filters.eq("name", user.username())),
                 document, new ReplaceOptions().upsert(true));
     }
 
     @Override public void setCurrentUser(User user) { currentUser = user; }
     @Override public Optional<User> getCurrentUser() { return Optional.ofNullable(currentUser); }
+    @Override public void removeUser(String username) {
+        users.deleteOne(Filters.or(Filters.eq("username", username), Filters.eq("name", username)));
+    }
 
     private static String value(Document document, String fallback, String... fields) {
         for (String field : fields) {
@@ -43,4 +47,3 @@ public final class MongoUserDataAccessObject implements UserDataAccessInterface 
         return fallback;
     }
 }
-

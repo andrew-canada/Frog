@@ -6,9 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="Frog" />
+        <module name="FlushID" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="24" />
+    <bytecodeTargetLevel target="24">
+      <module name="Frog" target="24" />
+    </bytecodeTargetLevel>
   </component>
 </project>

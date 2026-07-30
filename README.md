@@ -10,6 +10,7 @@ Requirements:
 - Maven 3.9 or newer, or IntelliJ IDEA with Maven support
 - A MongoDB connection string with access to the `FlushID` database
 - A GraphHopper API key
+- A Gemini API key only if you use **Personal Washroom Plan**
 
 Set credentials in the process environment. Do not paste them into Java source, the POM, or a committed configuration file.
 
@@ -17,6 +18,7 @@ Set credentials in the process environment. Do not paste them into Java source, 
 $env:MONGODB_URI = Read-Host "MongoDB connection string"
 $env:MONGODB_DATABASE = "FlushID"
 $env:GRAPHHOPPER_API_KEY = Read-Host "GraphHopper API key"
+$env:GEMINI_API_KEY = Read-Host "Gemini API key"
 ```
 
 The database-name variable is optional and defaults to `FlushID`.
@@ -30,7 +32,7 @@ mvn clean test
 mvn compile exec:java
 ```
 
-You can also run `app.Main` directly from IntelliJ. Add `MONGODB_URI`, `MONGODB_DATABASE`, and `GRAPHHOPPER_API_KEY` to the Main run configuration's environment variables first.
+You can also run `app.Main` directly from IntelliJ. Add `MONGODB_URI`, `MONGODB_DATABASE`, `GRAPHHOPPER_API_KEY`, and (for Personal Washroom Plan) `GEMINI_API_KEY` to the Main run configuration's environment variables first.
 
 ## What is live
 
