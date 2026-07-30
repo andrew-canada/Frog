@@ -15,6 +15,7 @@ public final class ChangeUsernamePresenter implements ChangeUsernameOutputBounda
 
     public void present(ChangeUsernameOutputData outputData) {
 
+        System.out.println("in the presenter:" + outputData.success());
         AccountState state = viewModel.getState();
         state.setChangeUsernameMessage(outputData.message());
         state.setChangeUsernameSuccess(outputData.success());

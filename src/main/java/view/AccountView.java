@@ -35,6 +35,8 @@ public final class AccountView extends JPanel {
     private final JPanel changePassword = Theme.page();
     private final JPanel deleteAccount = Theme.page();
 
+    private final JButton back = Theme.button("← Back to Map");
+
     private final JLabel accountLabel = new JLabel();
     private final JLabel personalPlanLabel = new JLabel();
     private final JLabel personalPlanStatusLabel = new JLabel();
@@ -68,7 +70,7 @@ public final class AccountView extends JPanel {
     public AccountView(AccountViewModel viewModel, ChangeUsernameController changeUsernameController, ChangePasswordController changePasswordController, DeleteAccountController deleteAccountController, PersonalPlanController personalPlanController) {
 
         this.viewModel = viewModel;
-        viewModel.addPropertyChangeListener(e->render(viewModel.getState()));
+        viewModel.getState().addPropertyChangeListener(e->render(viewModel.getState()));
 
         this.changeUsernameController = changeUsernameController;
         this.changePasswordController = changePasswordController;
@@ -86,7 +88,6 @@ public final class AccountView extends JPanel {
         titleWords.add(accountLabel, BorderLayout.SOUTH);
 
         title.add(titleWords, BorderLayout.WEST);
-        JButton back = Theme.button("← Back to Map");
         back.addActionListener(e->onBack.run());
         title.add(back, BorderLayout.EAST);
         add(title, BorderLayout.NORTH);
@@ -176,7 +177,6 @@ public final class AccountView extends JPanel {
                         changeUsernameContent.removeAll();
                         changeUsernameContent.add(Theme.label("New Username:", 14, Theme.INK));
                         changeUsernameContent.add(usernameField);
-                        changeUsernameContent.add(usernameStatusLabel);
 
                         changeUsernameContent.revalidate();
                         changeUsernameContent.repaint();
@@ -184,6 +184,7 @@ public final class AccountView extends JPanel {
                         changeUsernameButtons.removeAll();
                         changeUsernameButtons.add(confirmUsernameButton, BorderLayout.WEST);
                         changeUsernameButtons.add(cancelUsernameButton, BorderLayout.CENTER);
+                        changeUsernameButtons.add(usernameStatusLabel, BorderLayout.EAST);
 
                         changeUsernameButtons.revalidate();
                         changeUsernameButtons.repaint();
@@ -207,7 +208,7 @@ public final class AccountView extends JPanel {
                     public void actionPerformed(ActionEvent evt) {
 
                         changeUsernameContent.removeAll();
-
+                        changeUsernameContent.add(usernameStatusLabel);
                         changeUsernameContent.revalidate();
                         changeUsernameContent.repaint();
 
@@ -259,12 +260,8 @@ public final class AccountView extends JPanel {
                 new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
 
-                        changePasswordContent.remove(0);
-                        changePasswordContent.remove(passwordField);
-                        changePasswordContent.remove(0);
-                        changePasswordContent.remove(confirmPasswordField);
-                        changePasswordContent.remove(passwordStatusLabel);
-
+                        changePasswordContent.removeAll();
+                        changePasswordContent.add(passwordStatusLabel);
                         changePasswordContent.revalidate();
                         changePasswordContent.repaint();
 
@@ -339,10 +336,25 @@ public final class AccountView extends JPanel {
         personalPlanLabel.setText(state.getPersonalPlan());
         personalPlanStatusLabel.setText(state.getPersonalPlanMessage());
 
+        System.out.println(state.getChangeUsernameSuccess());
+
         if (state.getChangeUsernameSuccess()) {
             cancelUsernameButton.doClick();
+            state.setChangeUsernameSuccess(false);
         }
         usernameStatusLabel.setText(state.getChangeUsernameMessage());
+
+        if (state.getChangePasswordSuccess()) {
+            cancelPasswordButton.doClick();
+            state.setChangePasswordSuccess(false);
+        }
+        passwordStatusLabel.setText(state.getChangePasswordMessage());
+
+        if (state.getDeleteAccountSuccess()) {
+            back.doClick();
+            cancelDeleteAccountButton.doClick();
+            state.setDeleteAccountSuccess(false);
+        }
 
         personalPlan.revalidate();
         personalPlan.repaint();
