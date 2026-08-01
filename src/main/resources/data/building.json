@@ -1,0 +1,1028 @@
+[
+    {
+        "ID": "CA",
+        "name": "370 Huron Street",
+        "latitude": "43.664562",
+        "longitude": "-79.40078"
+    },
+    {
+        "ID": "SX",
+        "name": "40 Sussex Avenue",
+        "latitude": "43.665005",
+        "longitude": "-79.401955"
+    },
+    {
+        "ID": "XG",
+        "name": "665 Spadina Avenue",
+        "latitude": "43.66441",
+        "longitude": "-79.402275"
+    },
+    {
+        "ID": "IA",
+        "name": "703 Spadina Avenue",
+        "latitude": "43.66573",
+        "longitude": "-79.402725"
+    },
+    {
+        "ID": "FA",
+        "name": "720 Spadina Avenue",
+        "latitude": "43.665813",
+        "longitude": "-79.403755"
+    },
+    {
+        "ID": "AP",
+        "name": "Anthropology Building",
+        "latitude": "43.659912",
+        "longitude": "-79.398422"
+    },
+    {
+        "ID": "AB",
+        "name": "Astronomy & Astrophysics Building",
+        "latitude": "43.660618",
+        "longitude": "-79.397324"
+    },
+    {
+        "ID": "BF",
+        "name": "Bancroft Building",
+        "latitude": "43.660931",
+        "longitude": "-79.399727"
+    },
+    {
+        "ID": "NB",
+        "name": "Borden Building North",
+        "latitude": "43.660477",
+        "longitude": "-79.400253"
+    },
+    {
+        "ID": "SB",
+        "name": "Borden Building South",
+        "latitude": "43.660175",
+        "longitude": "-79.399742"
+    },
+    {
+        "ID": "ST",
+        "name": "Central Steam Plant",
+        "latitude": "43.660069",
+        "longitude": "-79.398041"
+    },
+    {
+        "ID": "BN",
+        "name": "Clara Benson Building",
+        "latitude": "43.662971",
+        "longitude": "-79.400246"
+    },
+    {
+        "ID": "BL",
+        "name": "Claude T. Bissell Building",
+        "latitude": "43.665207",
+        "longitude": "-79.399399"
+    },
+    {
+        "ID": "CH",
+        "name": "Convocation Hall",
+        "latitude": "43.6609",
+        "longitude": "-79.39547"
+    },
+    {
+        "ID": "PT",
+        "name": "D.L. Pratt Building",
+        "latitude": "43.659615",
+        "longitude": "-79.394745"
+    },
+    {
+        "ID": "DA",
+        "name": "Daniels Building",
+        "latitude": "43.659821",
+        "longitude": "-79.400757"
+    },
+    {
+        "ID": "ER",
+        "name": "Early Learning Centre",
+        "latitude": "43.663944",
+        "longitude": "-79.401024"
+    },
+    {
+        "ID": "ES",
+        "name": "Earth Sciences Centre",
+        "latitude": "43.660454",
+        "longitude": "-79.399353"
+    },
+    {
+        "ID": "EA",
+        "name": "Engineering Annex",
+        "latitude": "43.659615",
+        "longitude": "-79.395424"
+    },
+    {
+        "ID": "LG",
+        "name": "Fasken Building",
+        "latitude": "43.664078",
+        "longitude": "-79.402092"
+    },
+    {
+        "ID": "GB",
+        "name": "Galbraith Building",
+        "latitude": "43.659885",
+        "longitude": "-79.396355"
+    },
+    {
+        "ID": "GD",
+        "name": "Graduate House (Grad Room)",
+        "latitude": "43.663586",
+        "longitude": "-79.401543"
+    },
+    {
+        "ID": "DR",
+        "name": "J. Robert S. Prichard Alumni House",
+        "latitude": "43.662086",
+        "longitude": "-79.396767"
+    },
+    {
+        "ID": "KP",
+        "name": "Koffler House",
+        "latitude": "43.660583",
+        "longitude": "-79.400604"
+    },
+    {
+        "ID": "LM",
+        "name": "Lash Miller Chemical Laboratories",
+        "latitude": "43.661713",
+        "longitude": "-79.397942"
+    },
+    {
+        "ID": "GM",
+        "name": "Luella Massey Studio Theatre",
+        "latitude": "43.664356",
+        "longitude": "-79.401115"
+    },
+    {
+        "ID": "MM",
+        "name": "Macdonald-Mowat House",
+        "latitude": "43.661793",
+        "longitude": "-79.397041"
+    },
+    {
+        "ID": "GE",
+        "name": "Max Gluskin House",
+        "latitude": "43.666077",
+        "longitude": "-79.399902"
+    },
+    {
+        "ID": "MP",
+        "name": "McLennan Physical Laboratories",
+        "latitude": "43.660912",
+        "longitude": "-79.39859"
+    },
+    {
+        "ID": "MY",
+        "name": "Myhal Centre for Engineering Innovation & Entrepreneurship",
+        "latitude": "43.660862",
+        "longitude": "-79.396538"
+    },
+    {
+        "ID": "PG",
+        "name": "Physical Geography Building",
+        "latitude": "43.660397",
+        "longitude": "-79.39653"
+    },
+    {
+        "ID": "RW",
+        "name": "Ramsay Wright Laboratories",
+        "latitude": "43.663555",
+        "longitude": "-79.398872"
+    },
+    {
+        "ID": "RT",
+        "name": "Rotman School of Management",
+        "latitude": "43.66534",
+        "longitude": "-79.398384"
+    },
+    {
+        "ID": "SF",
+        "name": "Sandford Fleming Building",
+        "latitude": "43.660259",
+        "longitude": "-79.395134"
+    },
+    {
+        "ID": "GS",
+        "name": "School of Graduate Studies",
+        "latitude": "43.662022",
+        "longitude": "-79.397194"
+    },
+    {
+        "ID": "SS",
+        "name": "Sidney Smith Hall",
+        "latitude": "43.662418",
+        "longitude": "-79.398651"
+    },
+    {
+        "ID": "SI",
+        "name": "Simcoe Hall",
+        "latitude": "43.660851",
+        "longitude": "-79.395782"
+    },
+    {
+        "ID": "TR",
+        "name": "Soldiers' Tower",
+        "latitude": "43.663593",
+        "longitude": "-79.395218"
+    },
+    {
+        "ID": "SC",
+        "name": "Sussex Court",
+        "latitude": "43.664906",
+        "longitude": "-79.40094"
+    },
+    {
+        "ID": "FC",
+        "name": "The Faculty Club",
+        "latitude": "43.661152",
+        "longitude": "-79.40049"
+    },
+    {
+        "ID": "GU",
+        "name": "U of T Graduate Students' Union",
+        "latitude": "43.660809",
+        "longitude": "-79.400337"
+    },
+    {
+        "ID": "GI",
+        "name": "George Ignatieff Theatre",
+        "latitude": "43.665897",
+        "longitude": "-79.397148"
+    },
+    {
+        "ID": "LA",
+        "name": "Gerald Larkin Building",
+        "latitude": "43.665665",
+        "longitude": "-79.396927"
+    },
+    {
+        "ID": "HI",
+        "name": "St. Hilda's College",
+        "latitude": "43.66571",
+        "longitude": "-79.397804"
+    },
+    {
+        "ID": "TC",
+        "name": "Trinity College & Residence",
+        "latitude": "43.665138",
+        "longitude": "-79.395538"
+    },
+    {
+        "ID": "MU",
+        "name": "John W. Graham Library",
+        "latitude": "43.665127",
+        "longitude": "-79.396423"
+    },
+    {
+        "ID": "AS",
+        "name": "Aerospace Building",
+        "latitude": "43.782436",
+        "longitude": "-79.466232"
+    },
+    {
+        "ID": "WS | Warren Stevens Building",
+        "name": "Athletic Centre",
+        "latitude": "43.662861",
+        "longitude": "-79.401039"
+    },
+    {
+        "ID": "BK",
+        "name": "Back Campus Fields",
+        "latitude": "43.663799",
+        "longitude": "-79.396317"
+    },
+    {
+        "ID": "VI",
+        "name": "Nona Macdonald Visitors Centre",
+        "latitude": "43.661175",
+        "longitude": "-79.396225"
+    },
+    {
+        "ID": "VO",
+        "name": "St. Volodymyr Institute",
+        "latitude": "43.661999",
+        "longitude": "-79.402168"
+    },
+    {
+        "ID": "RL",
+        "name": "Robarts Library",
+        "latitude": "43.664902",
+        "longitude": "-79.399551"
+    },
+    {
+        "ID": "RB",
+        "name": "Thomas Fisher Rare Book Library",
+        "latitude": "43.664089",
+        "longitude": "-79.398994"
+    },
+    {
+        "ID": "UD",
+        "name": "U of T Libraries at Downsview",
+        "latitude": "43.783909",
+        "longitude": "-79.468735"
+    },
+    {
+        "ID": "KX",
+        "name": "Knox College",
+        "latitude": "43.661446",
+        "longitude": "-79.396721"
+    },
+    {
+        "ID": "KX",
+        "name": "Knox Residence",
+        "latitude": "43.661446",
+        "longitude": "-79.396721"
+    },
+    {
+        "ID": "MA",
+        "name": "Massey College",
+        "latitude": "43.66457",
+        "longitude": "-79.397362"
+    },
+    {
+        "ID": "WY",
+        "name": "Wycliffe College",
+        "latitude": "43.664642",
+        "longitude": "-79.39505"
+    },
+    {
+        "ID": "IN",
+        "name": "Innis College",
+        "latitude": "43.66555",
+        "longitude": "-79.399529"
+    },
+    {
+        "ID": "IS",
+        "name": "Innis Residence",
+        "latitude": "43.665829",
+        "longitude": "-79.398911"
+    },
+    {
+        "ID": "MO",
+        "name": "Morrison Hall",
+        "latitude": "43.663128",
+        "longitude": "-79.397636"
+    },
+    {
+        "ID": "MU",
+        "name": "Munk School of Global Affairs & Public Policy",
+        "latitude": "43.664967",
+        "longitude": "-79.396698"
+    },
+    {
+        "ID": "NR",
+        "name": "New College III Residences",
+        "latitude": "43.661087",
+        "longitude": "-79.400856"
+    },
+    {
+        "ID": "SD",
+        "name": "Sir Daniel Wilson Residence",
+        "latitude": "43.662518",
+        "longitude": "-79.397476"
+    },
+    {
+        "ID": "WE",
+        "name": "Wetmore Hall",
+        "latitude": "43.662289",
+        "longitude": "-79.40052"
+    },
+    {
+        "ID": "WT",
+        "name": "Whitney Hall",
+        "latitude": "43.664028",
+        "longitude": "-79.397858"
+    },
+    {
+        "ID": "WI",
+        "name": "Wilson Hall",
+        "latitude": "43.661549",
+        "longitude": "-79.400879"
+    },
+    {
+        "ID": "UP",
+        "name": "University College Union",
+        "latitude": "43.663387",
+        "longitude": "-79.397491"
+    },
+    {
+        "ID": "UC",
+        "name": "University College",
+        "latitude": "43.662689",
+        "longitude": "-79.395508"
+    },
+    {
+        "ID": "WW",
+        "name": "Woodsworth College",
+        "latitude": "43.666374",
+        "longitude": "-79.399071"
+    },
+    {
+        "ID": "CN",
+        "name": "Chestnut Residence & Conference Centre",
+        "latitude": "43.654099",
+        "longitude": "-79.38501"
+    },
+    {
+        "ID": "KT | Toronto Western Hospital",
+        "name": "Krembil Discovery Tower",
+        "latitude": "43.654224",
+        "longitude": "-79.40509"
+    },
+    {
+        "ID": "ED",
+        "name": "123 Edward Street",
+        "latitude": "43.655704",
+        "longitude": "-79.386711"
+    },
+    {
+        "ID": "RU",
+        "name": "Rehabilitation Sciences Building",
+        "latitude": "43.655563",
+        "longitude": "-79.388969"
+    },
+    {
+        "ID": "WR",
+        "name": "Dr. Eric Jackman Institute of Child Study",
+        "latitude": "43.669624",
+        "longitude": "-79.406166"
+    },
+    {
+        "ID": "DN",
+        "name": "Dentistry Building",
+        "latitude": "43.656307",
+        "longitude": "-79.387138"
+    },
+    {
+        "ID": "C1",
+        "name": "30 Charles Street West",
+        "latitude": "43.668915",
+        "longitude": "-79.387177"
+    },
+    {
+        "ID": "C2",
+        "name": "35 Charles Street West",
+        "latitude": "43.667965",
+        "longitude": "-79.387337"
+    },
+    {
+        "ID": "ZC",
+        "name": "88 College Street",
+        "latitude": "43.66077",
+        "longitude": "-79.387779"
+    },
+    {
+        "ID": "OH",
+        "name": "Odette (Louis) Hall",
+        "latitude": "43.666409",
+        "longitude": "-79.388664"
+    },
+    {
+        "ID": "LI",
+        "name": "Lillian Massey Building",
+        "latitude": "43.668346",
+        "longitude": "-79.393677"
+    },
+    {
+        "ID": "SK",
+        "name": "Factor-Inwentash Faculty of Social Work",
+        "latitude": "43.668171",
+        "longitude": "-79.39769"
+    },
+    {
+        "ID": "OI",
+        "name": "Ontario Institute for Studies in Education",
+        "latitude": "43.668224",
+        "longitude": "-79.398438"
+    },
+    {
+        "ID": "BH",
+        "name": "Founders House",
+        "latitude": "43.665546",
+        "longitude": "-79.38929"
+    },
+    {
+        "ID": "SR",
+        "name": "Sorbara Hall",
+        "latitude": "43.665722",
+        "longitude": "-79.388962"
+    },
+    {
+        "ID": "BS",
+        "name": "St. Basil's Church",
+        "latitude": "43.666401",
+        "longitude": "-79.389099"
+    },
+    {
+        "ID": "MG",
+        "name": "Margaret Addison Hall",
+        "latitude": "43.668213",
+        "longitude": "-79.392235"
+    },
+    {
+        "ID": "ML",
+        "name": "39A Queen's Park Crescent East",
+        "latitude": "43.664341",
+        "longitude": "-79.389778"
+    },
+    {
+        "ID": "JP",
+        "name": "90 Wellesley Street West",
+        "latitude": "43.664131",
+        "longitude": "-79.389526"
+    },
+    {
+        "ID": "M2",
+        "name": "MaRS Centre West Tower",
+        "latitude": "43.6595",
+        "longitude": "-79.389671"
+    },
+    {
+        "ID": "AD",
+        "name": "Strategic Enrolment Management",
+        "latitude": "43.668015",
+        "longitude": "-79.400467"
+    },
+    {
+        "ID": "BR",
+        "name": "Brennan Hall",
+        "latitude": "43.666359",
+        "longitude": "-79.389763"
+    },
+    {
+        "ID": "KL",
+        "name": "John M. Kelly Library",
+        "latitude": "43.664852",
+        "longitude": "-79.389519"
+    },
+    {
+        "ID": "PH",
+        "name": "Phelan House",
+        "latitude": "43.665825",
+        "longitude": "-79.389389"
+    },
+    {
+        "ID": "SH",
+        "name": "Sheptytsky House",
+        "latitude": "43.666012",
+        "longitude": "-79.389496"
+    },
+    {
+        "ID": "CZ",
+        "name": "229 College Street",
+        "latitude": "43.658062",
+        "longitude": "-79.397423"
+    },
+    {
+        "ID": "JH",
+        "name": "Jackman Humanities Building",
+        "latitude": "43.667736",
+        "longitude": "-79.400291"
+    },
+    {
+        "ID": "GH",
+        "name": "Gilson House",
+        "latitude": "43.665733",
+        "longitude": "-79.389999"
+    },
+    {
+        "ID": "LC",
+        "name": "Loretto College",
+        "latitude": "43.667294",
+        "longitude": "-79.390053"
+    },
+    {
+        "ID": "MZ",
+        "name": "McCorkell House",
+        "latitude": "43.665436",
+        "longitude": "-79.38987"
+    },
+    {
+        "ID": "AH",
+        "name": "Muzzo Family Alumni Hall",
+        "latitude": "43.664822",
+        "longitude": "-79.390167"
+    },
+    {
+        "ID": "SV",
+        "name": "Sullivan House",
+        "latitude": "43.66539",
+        "longitude": "-79.389961"
+    },
+    {
+        "ID": "LH",
+        "name": "65 Charles Street West",
+        "latitude": "43.667854",
+        "longitude": "-79.389893"
+    },
+    {
+        "ID": "AN",
+        "name": "Annesley Hall",
+        "latitude": "43.667862",
+        "longitude": "-79.393044"
+    },
+    {
+        "ID": "SN",
+        "name": "Stephenson House",
+        "latitude": "43.667847",
+        "longitude": "-79.389832"
+    },
+    {
+        "ID": "TT",
+        "name": "455 Spadina Avenue",
+        "latitude": "43.658241",
+        "longitude": "-79.399887"
+    },
+    {
+        "ID": "GA",
+        "name": "Gage Building",
+        "latitude": "43.658165",
+        "longitude": "-79.397194"
+    },
+    {
+        "ID": "CR",
+        "name": "Carr Hall",
+        "latitude": "43.66523",
+        "longitude": "-79.390411"
+    },
+    {
+        "ID": "EH",
+        "name": "Elmsley Hall",
+        "latitude": "43.666935",
+        "longitude": "-79.390244"
+    },
+    {
+        "ID": "GC",
+        "name": "Goldring Student Centre",
+        "latitude": "43.667721",
+        "longitude": "-79.39222"
+    },
+    {
+        "ID": "RJ",
+        "name": "Rowell Jackman Hall",
+        "latitude": "43.667568",
+        "longitude": "-79.390862"
+    },
+    {
+        "ID": "RG",
+        "name": "Regis College",
+        "latitude": "43.664028",
+        "longitude": "-79.390259"
+    },
+    {
+        "ID": "TH",
+        "name": "Toronto School of Theology",
+        "latitude": "43.664757",
+        "longitude": "-79.390533"
+    },
+    {
+        "ID": "RM",
+        "name": "254-256 McCaul Street",
+        "latitude": "43.658493",
+        "longitude": "-79.393555"
+    },
+    {
+        "ID": "MK | The Observatory",
+        "name": "Munk School of Global Affairs & Public Policy",
+        "latitude": "43.667461",
+        "longitude": "-79.398567"
+    },
+    {
+        "ID": "FS",
+        "name": "Fisher House",
+        "latitude": "43.665516",
+        "longitude": "-79.390717"
+    },
+    {
+        "ID": "MH",
+        "name": "More House",
+        "latitude": "43.665695",
+        "longitude": "-79.390816"
+    },
+    {
+        "ID": "TF",
+        "name": "Teefy Hall",
+        "latitude": "43.665325",
+        "longitude": "-79.3909"
+    },
+    {
+        "ID": "BW",
+        "name": "Burwash Hall",
+        "latitude": "43.667408",
+        "longitude": "-79.391609"
+    },
+    {
+        "ID": "LB",
+        "name": "Burwash Hall, Lower Houses",
+        "latitude": "43.666557",
+        "longitude": "-79.390793"
+    },
+    {
+        "ID": "BY",
+        "name": "255 Beverley Street",
+        "latitude": "43.65847",
+        "longitude": "-79.395569"
+    },
+    {
+        "ID": "WO",
+        "name": "Woodsworth Residence",
+        "latitude": "43.667461",
+        "longitude": "-79.399117"
+    },
+    {
+        "ID": "EX",
+        "name": "Exam Centre",
+        "latitude": "43.658546",
+        "longitude": "-79.392921"
+    },
+    {
+        "ID": "FI",
+        "name": "Fields Institute for Research in Mathematical Sciences",
+        "latitude": "43.658634",
+        "longitude": "-79.39756"
+    },
+    {
+        "ID": "PI",
+        "name": "59 Queen's Park Crescent East",
+        "latitude": "43.665688",
+        "longitude": "-79.391037"
+    },
+    {
+        "ID": "UB",
+        "name": "Burwash Hall, Upper Houses",
+        "latitude": "43.667313",
+        "longitude": "-79.391106"
+    },
+    {
+        "ID": "BT",
+        "name": "Isabel Bader Theatre",
+        "latitude": "43.667324",
+        "longitude": "-79.392563"
+    },
+    {
+        "ID": "UY",
+        "name": "700 University Avenue",
+        "latitude": "43.65881",
+        "longitude": "-79.390991"
+    },
+    {
+        "ID": "WO",
+        "name": "Rotman Commerce",
+        "latitude": "43.667267",
+        "longitude": "-79.399429"
+    },
+    {
+        "ID": "OA",
+        "name": "263 McCaul Street",
+        "latitude": "43.658779",
+        "longitude": "-79.392509"
+    },
+    {
+        "ID": "SU",
+        "name": "Student Commons",
+        "latitude": "43.658752",
+        "longitude": "-79.397919"
+    },
+    {
+        "ID": "PR",
+        "name": "E.J. Pratt Library",
+        "latitude": "43.666313",
+        "longitude": "-79.391396"
+    },
+    {
+        "ID": "VA",
+        "name": "Varsity Centre & Arena",
+        "latitude": "43.667164",
+        "longitude": "-79.397324"
+    },
+    {
+        "ID": "CO",
+        "name": "162 St. George Street",
+        "latitude": "43.667049",
+        "longitude": "-79.399925"
+    },
+    {
+        "ID": "CX",
+        "name": "Communications House",
+        "latitude": "43.658943",
+        "longitude": "-79.393585"
+    },
+    {
+        "ID": "PB",
+        "name": "Leslie Dan Pharmacy Building",
+        "latitude": "43.659935",
+        "longitude": "-79.391708"
+    },
+    {
+        "ID": "WB",
+        "name": "Wallberg Memorial Building",
+        "latitude": "43.658966",
+        "longitude": "-79.395599"
+    },
+    {
+        "ID": "BC",
+        "name": "Birge-Carnegie Library",
+        "latitude": "43.667141",
+        "longitude": "-79.393028"
+    },
+    {
+        "ID": "WA",
+        "name": "123 St. George Street",
+        "latitude": "43.666939",
+        "longitude": "-79.399185"
+    },
+    {
+        "ID": "NL",
+        "name": "C. David Naylor Building",
+        "latitude": "43.660381",
+        "longitude": "-79.391899"
+    },
+    {
+        "ID": "HS",
+        "name": "Health Sciences Building",
+        "latitude": "43.659088",
+        "longitude": "-79.392784"
+    },
+    {
+        "ID": "KS",
+        "name": "Koffler Student Centre",
+        "latitude": "43.659023",
+        "longitude": "-79.396912"
+    },
+    {
+        "ID": "EP",
+        "name": "Stewart Building",
+        "latitude": "43.659245",
+        "longitude": "-79.392052"
+    },
+    {
+        "ID": "VC",
+        "name": "Victoria College Building",
+        "latitude": "43.666908",
+        "longitude": "-79.392128"
+    },
+    {
+        "ID": "GO",
+        "name": "Goldring Centre for High Performance Sport",
+        "latitude": "43.666817",
+        "longitude": "-79.398293"
+    },
+    {
+        "ID": "NF",
+        "name": "Northrop Frye Hall",
+        "latitude": "43.666443",
+        "longitude": "-79.39212"
+    },
+    {
+        "ID": "HU",
+        "name": "215 Huron Street",
+        "latitude": "43.659321",
+        "longitude": "-79.398361"
+    },
+    {
+        "ID": "FE",
+        "name": "371 Bloor Street West",
+        "latitude": "43.666756",
+        "longitude": "-79.402321"
+    },
+    {
+        "ID": "FG",
+        "name": "FitzGerald Building",
+        "latitude": "43.660076",
+        "longitude": "-79.392342"
+    },
+    {
+        "ID": "EM",
+        "name": "Emmanuel College",
+        "latitude": "43.666729",
+        "longitude": "-79.392822"
+    },
+    {
+        "ID": "IR",
+        "name": "121 St. George Street",
+        "latitude": "43.666702",
+        "longitude": "-79.399094"
+    },
+    {
+        "ID": "FH",
+        "name": "Falconer Hall",
+        "latitude": "43.666695",
+        "longitude": "-79.394012"
+    },
+    {
+        "ID": "CS",
+        "name": "School of Continuing Studies",
+        "latitude": "43.666718",
+        "longitude": "-79.399918"
+    },
+    {
+        "ID": "CU",
+        "name": "Cumberland House",
+        "latitude": "43.659435",
+        "longitude": "-79.395927"
+    },
+    {
+        "ID": "DC",
+        "name": "Donnelly Centre for Cellular & Biomolecular Research",
+        "latitude": "43.659966",
+        "longitude": "-79.392807"
+    },
+    {
+        "ID": "EJ",
+        "name": "Edward Johnson Building",
+        "latitude": "43.666573",
+        "longitude": "-79.394608"
+    },
+    {
+        "ID": "EL",
+        "name": "Electrometallurgy Lab",
+        "latitude": "43.659512",
+        "longitude": "-79.395309"
+    },
+    {
+        "ID": "CG",
+        "name": "Canadiana Gallery",
+        "latitude": "43.661903",
+        "longitude": "-79.392967"
+    },
+    {
+        "ID": "MR",
+        "name": "McMurrich Building",
+        "latitude": "43.661293",
+        "longitude": "-79.392982"
+    },
+    {
+        "ID": "MB",
+        "name": "Lassonde Mining Building",
+        "latitude": "43.659599",
+        "longitude": "-79.393417"
+    },
+    {
+        "ID": "BA & VN",
+        "name": "Bahen Centre for Information Technology",
+        "latitude": "43.659573",
+        "longitude": "-79.397369"
+    },
+    {
+        "ID": "HH",
+        "name": "Hart House",
+        "latitude": "43.663776",
+        "longitude": "-79.394524"
+    },
+    {
+        "ID": "HA",
+        "name": "Haultain Building",
+        "latitude": "43.659981",
+        "longitude": "-79.393639"
+    },
+    {
+        "ID": "LW",
+        "name": "Jackman Law Building & Flavelle House",
+        "latitude": "43.665779",
+        "longitude": "-79.393997"
+    },
+    {
+        "ID": "SO",
+        "name": "Louis B. Stewart Observatory",
+        "latitude": "43.663177",
+        "longitude": "-79.394676"
+    },
+    {
+        "ID": "MC",
+        "name": "Mechanical Engineering Building",
+        "latitude": "43.660103",
+        "longitude": "-79.393913"
+    },
+    {
+        "ID": "MS",
+        "name": "Medical Sciences Building",
+        "latitude": "43.660748",
+        "longitude": "-79.393517"
+    },
+    {
+        "ID": "RS",
+        "name": "Rosebrugh Building",
+        "latitude": "43.659882",
+        "longitude": "-79.39315"
+    },
+    {
+        "ID": "SM",
+        "name": "Sigmund Samuel Library Building",
+        "latitude": "43.662251",
+        "longitude": "-79.39402"
+    },
+    {
+        "ID": "VP",
+        "name": "Varsity Pavilion",
+        "latitude": "43.666431",
+        "longitude": "-79.396431"
+    },
+    {
+        "ID": "FP",
+        "name": "Lot R \u2013 Landmark Garage",
+        "latitude": "43.662685",
+        "longitude": "-79.393715"
+    }
+]

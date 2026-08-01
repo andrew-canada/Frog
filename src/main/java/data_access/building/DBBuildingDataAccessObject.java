@@ -16,7 +16,9 @@ import entity.building.Building;
 import entity.building.GenericBuildingFactory;
 import data_access.DBDataAccessObject;
 
+import java.io.*;
 import java.util.*;
+import javax.json.*;
 
 public class DBBuildingDataAccessObject extends DBDataAccessObject {
 
@@ -40,7 +42,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	* @param conditions a list of condition objects that the returned buildings must satisfy
 	* @return The buildings that match all the conditions
 	*/
-	public static List<Building> getMatching(Iterable<Condition<?>> conditions) {
+	public static List<entity.Building> getMatching(Iterable<Condition<?>> conditions) {
 		return new ArrayList<>(getMatchingIDMap(conditions).values());
 
 	}
@@ -50,7 +52,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 * @param condition a condition object that the returned buildings must satisfy
 	 * @return The buildings that match the conditions
 	 */
-	public static List<Building> getMatching(Condition<?> condition) {
+	public static List<entity.Building> getMatching(Condition<?> condition) {
 
 		List<Condition<?>> conditions = new ArrayList<>();
 		conditions.add(condition);
@@ -63,16 +65,16 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 * @param conditions a list of condition objects that the returned buildings must satisfy
 	 * @return The buildings that match all the conditions mapped to their IDs in the database.
 	 */
-	public static Map<String, Building> getMatchingIDMap(Iterable<Condition<?>> conditions) {
+	public static Map<String, entity.Building> getMatchingIDMap(Iterable<Condition<?>> conditions) {
 
 		checkAttribute(conditions);
 
 		Bson filter = parseConditions(conditions);
 		List<Document> docs = getAll(filter);
 
-		Map<String, Building> buildings = new HashMap<>();
+		Map<String, entity.Building> buildings = new HashMap<>();
 		for (Document doc: docs) {
-			Building building = createBuilding(doc);
+			entity.Building building = createBuilding(doc);
 			buildings.put(MongoDocuments.id(doc), building);
 		}
 		return buildings;
@@ -84,7 +86,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 * @param condition a condition object that the returned buildings must satisfy
 	 * @return The buildings that match the condition mapped to their IDs in the database.
 	 */
-	public static Map<String, Building> getMatchingIDMap(Condition<?> condition) {
+	public static Map<String, entity.Building> getMatchingIDMap(Condition<?> condition) {
 
 		List<Condition<?>> conditions = new ArrayList<>();
 		conditions.add(condition);
@@ -118,7 +120,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 * @param doc Document containing building data for a specific building
 	 * @return the Building object constructed using that data
 	 */
-	private static Building createBuilding(Document doc) {
+	private static entity.Building createBuilding(Document doc) {
 		return new entity.Building(
 				MongoDocuments.string(doc, MongoDocuments.id(doc), "buildingCode", "code"),
 				MongoDocuments.string(doc, "Unknown building", "longName", "shortName", "name"),
@@ -251,16 +253,41 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 		return List.copyOf(persisted);
 	}
 
-	public static void main(String[] args) {
+	public static List<Building> loadBuildings(String filename) throws Exception {
+		List<Building> buildings = new ArrayList<>();
 
-		Building building = GenericBuildingFactory.create(
-				"CH",
-				"Convocation Hall",
-				"Convocation Hall",
-				100.0,
-				20.0,
-				"U of T St. George campus reference location");
+		try (Reader reader = new FileReader(filename);
+            JsonReader jsonReader = Json.createReader(reader)) {
+
+			JsonArray jsonArray = jsonReader.readArray();
+
+			for (JsonValue value : jsonArray) {
+				JsonObject obj = (JsonObject) value;
+
+				String id = obj.getString("ID");
+				String name = obj.getString("name");
+
+				// Stored as strings in the JSON
+				double latitude = Double.parseDouble(obj.getString("latitude"));
+				double longitude = Double.parseDouble(obj.getString("longitude"));
+
+				buildings.add(new entity.Building(id, name, latitude, longitude));
+			}
+		}
+
+		return buildings;
+	}
+
+	public static void main(String[] args) throws FileNotFoundException {
 		DBBuildingDataAccessObject buildingDOB = new DBBuildingDataAccessObject();
-		buildingDOB.write(building);
+		try{
+			List<Building> buildingList = loadBuildings("src/main/resources/data/building.json");
+			for(Building building: buildingList) {
+				buildingDOB.write(building);
+			}
+		}catch (Exception e) {
+			System.out.println("Building entrance failed. ");
+		}
+
 	}
 }

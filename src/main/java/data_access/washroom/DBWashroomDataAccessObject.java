@@ -18,6 +18,9 @@ import entity.washroom.Washroom;
 import entity.washroom.GenericWashroomFactory;
 import data_access.DBDataAccessObject;
 
+import javax.json.*;
+import java.io.FileReader;
+import java.io.Reader;
 import java.util.*;
 
 public class DBWashroomDataAccessObject extends DBDataAccessObject implements use_case.gateway.WashroomDataAccessInterface {
@@ -296,7 +299,38 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
         return Math.sqrt(x * x + y * y) * 6_371_000;
     }
 
+    public static List<Washroom> loadWashrooms(String filename) throws Exception {
+        List<Washroom> washroomList = new ArrayList<>();
+        try (Reader reader = new FileReader(filename);
+             JsonReader jsonReader = Json.createReader(reader)) {
+
+            JsonArray jsonArray = jsonReader.readArray();
+
+            DBBuildingDataAccessObject dbBuildingDataAccessObject = new DBBuildingDataAccessObject();
+
+            for (JsonValue value : jsonArray) {
+                JsonObject obj = (JsonObject) value;
+
+                String id = obj.getString("ID");
+                String name = obj.getString("name");
+                String gender = obj.getString("gender");
+                Condition condition = new Condition("BuildingCode", Operator.EQ, id);
+                if(!dbBuildingDataAccessObject.getMatching(condition).isEmpty()){
+                    washroomList.add(new entity.Washroom(id,
+                            name,
+                            dbBuildingDataAccessObject.getMatching(condition).get(0)),
+
+                    );
+
+                }
+            }
+        }
+
+        return washroomList;
+    }
+
     public static void main(String[] args) {
+        /*
         Washroom washroom = GenericWashroomFactory.create("1");
         DBWashroomDataAccessObject accessor = new DBWashroomDataAccessObject();
         DBBuildingDataAccessObject baccessor = new DBBuildingDataAccessObject();
@@ -304,5 +338,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
         accessor.write(washroom,
                 (String) baccessor.getMatchingIDMap(
                         new Condition<String>("buildingCode", Operator.EQ, "TEST")).keySet().toArray()[0]);
+                        */
+
     }
 }
