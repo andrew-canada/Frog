@@ -16,7 +16,7 @@ public final class Washroom implements entity.washroom.Washroom {
     private final String locationDescription;
     private ReviewSummary reviewSummary;
 
-    public Washroom(String id, String name, Building building, String floor, boolean accessible,
+    public Washroom(String id, String name, entity.Building building, String floor, boolean accessible,
                     Gender gender, int numToilets, int numSinks, String locationDescription,
                     ReviewSummary reviewSummary) {
         this.id = require(id, "id");
@@ -43,7 +43,7 @@ public final class Washroom implements entity.washroom.Washroom {
 
     public String id() { return id; }
     public String name() { return name; }
-    public Building building() { return building; }
+    public entity.Building building() { return building; }
     public String floor() { return floor; }
     @Override public String getFloor() { return floor; }
     public boolean accessible() { return accessible; }

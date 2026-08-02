@@ -8,6 +8,7 @@ import data_access.Condition;
 import data_access.MongoDocuments;
 import data_access.Operator;
 import data_access.building.DBBuildingDataAccessObject;
+import entity.ReviewSummary;
 import entity.building.Building;
 import entity.building.GenericBuildingFactory;
 import org.bson.Document;
@@ -299,8 +300,8 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
         return Math.sqrt(x * x + y * y) * 6_371_000;
     }
 
-    public static List<Washroom> loadWashrooms(String filename) throws Exception {
-        List<Washroom> washroomList = new ArrayList<>();
+    public static List<entity.Washroom> loadWashrooms(String filename) throws Exception {
+        List<entity.Washroom> washroomList = new ArrayList<>();
         try (Reader reader = new FileReader(filename);
              JsonReader jsonReader = Json.createReader(reader)) {
 
@@ -313,15 +314,32 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
                 String id = obj.getString("ID");
                 String name = obj.getString("name");
-                String gender = obj.getString("gender");
-                Condition condition = new Condition("BuildingCode", Operator.EQ, id);
-                if(!dbBuildingDataAccessObject.getMatching(condition).isEmpty()){
-                    washroomList.add(new entity.Washroom(id,
+                String genderStr = obj.getString("gender");
+                entity.Washroom.Gender gender = null;
+                if(genderStr.equals(entity.Washroom.Gender.MEN)) {
+                    gender = entity.Washroom.Gender.MEN;
+                } else if(genderStr.equals(entity.Washroom.Gender.WOMEN)) {
+                    gender = entity.Washroom.Gender.WOMEN;
+                } else {
+                    gender = entity.Washroom.Gender.ALL_GENDER;
+                }
+
+                boolean accessible = obj.getBoolean("accessible");
+                Condition condition = new Condition("buildingCode", Operator.EQ, id);
+                List<entity.Building> matchingBuildings = DBBuildingDataAccessObject.getMatching(condition);
+                if(!matchingBuildings.isEmpty()){
+                    washroomList.add(new entity.Washroom(
+                            id,
                             name,
-                            dbBuildingDataAccessObject.getMatching(condition).get(0)),
-
-                    );
-
+                            (matchingBuildings.getFirst()),
+                            "No data",
+                            accessible,
+                            gender,
+                            0,
+                            0,
+                            "Example description",
+                            new ReviewSummary(0,0,0)
+                    ));
                 }
             }
         }
@@ -330,15 +348,24 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
     }
 
     public static void main(String[] args) {
-        /*
-        Washroom washroom = GenericWashroomFactory.create("1");
-        DBWashroomDataAccessObject accessor = new DBWashroomDataAccessObject();
-        DBBuildingDataAccessObject baccessor = new DBBuildingDataAccessObject();
+        try{
+            DBWashroomDataAccessObject dbwashroomDAO = new DBWashroomDataAccessObject();
+            Condition condition = new Condition<>("floor", Operator.NE, "00");
+            dbwashroomDAO.delete(condition);
+            List<entity.Washroom> washroomList = dbwashroomDAO.loadWashrooms("src/main/resources/data/washrooms.json");
+            for(entity.Washroom washroom : washroomList) {
+                write(washroom, washroom.id());
+                System.out.println(washroom.toString());
 
-        accessor.write(washroom,
-                (String) baccessor.getMatchingIDMap(
-                        new Condition<String>("buildingCode", Operator.EQ, "TEST")).keySet().toArray()[0]);
-                        */
+            }
+
+        }catch (Exception e) {
+            System.out.println(e);
+            System.out.println(e.getCause());
+            System.out.println(e.getMessage());
+            System.out.println("Error.");
+        }
+
 
     }
 }

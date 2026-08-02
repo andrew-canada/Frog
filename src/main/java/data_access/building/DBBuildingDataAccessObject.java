@@ -236,7 +236,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	public List<entity.Building> ensureLocations(List<entity.Building> locations) {
 		List<entity.Building> persisted = new ArrayList<>();
 		for (entity.Building location : locations) {
-			List<Building> existing = getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
+			List<entity.Building> existing = getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
 			if (existing.isEmpty()) write(location);
 			Document geoPoint = new Document("type", "Point")
 					.append("coordinates", List.of(location.longitude(), location.latitude()));
@@ -247,7 +247,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 							Updates.setOnInsert("shortName", location.name()),
 							Updates.setOnInsert("controlInfo", "U of T St. George campus reference location")
 					), new UpdateOptions().upsert(true));
-			List<Building> refreshed = getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
+			List<entity.Building> refreshed = getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
 			if (!refreshed.isEmpty()) persisted.add((entity.Building) refreshed.getFirst());
 		}
 		return List.copyOf(persisted);
@@ -279,12 +279,15 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	}
 
 	public static void main(String[] args) throws FileNotFoundException {
-		DBBuildingDataAccessObject buildingDOB = new DBBuildingDataAccessObject();
+		DBBuildingDataAccessObject buildingDAO = new DBBuildingDataAccessObject();
+		Condition condition = new Condition<>("buildingCode", Operator.NE, "00");
+		buildingDAO.delete(condition);
 		try{
 			List<Building> buildingList = loadBuildings("src/main/resources/data/building.json");
 			for(Building building: buildingList) {
-				buildingDOB.write(building);
+				buildingDAO.write(building);
 			}
+		System.out.println("Success!");
 		}catch (Exception e) {
 			System.out.println("Building entrance failed. ");
 		}

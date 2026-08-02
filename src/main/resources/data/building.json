@@ -282,7 +282,7 @@
         "longitude": "-79.466232"
     },
     {
-        "ID": "WS | Warren Stevens Building",
+        "ID": "WS",
         "name": "Athletic Centre",
         "latitude": "43.662861",
         "longitude": "-79.401039"
@@ -426,7 +426,7 @@
         "longitude": "-79.38501"
     },
     {
-        "ID": "KT | Toronto Western Hospital",
+        "ID": "KT",
         "name": "Krembil Discovery Tower",
         "latitude": "43.654224",
         "longitude": "-79.40509"
@@ -684,7 +684,7 @@
         "longitude": "-79.393555"
     },
     {
-        "ID": "MK | The Observatory",
+        "ID": "MK",
         "name": "Munk School of Global Affairs & Public Policy",
         "latitude": "43.667461",
         "longitude": "-79.398567"
@@ -960,7 +960,7 @@
         "longitude": "-79.393417"
     },
     {
-        "ID": "BA & VN",
+        "ID": "BA",
         "name": "Bahen Centre for Information Technology",
         "latitude": "43.659573",
         "longitude": "-79.397369"
