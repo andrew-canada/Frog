@@ -3,6 +3,7 @@ package data_access.review;
 import entity.Review;
 import entity.ReviewSummary;
 import use_case.view_reviews.ReviewDataAccessInterface;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,17 +22,25 @@ public final class InMemoryReviewDataAccessObject implements ReviewDataAccessInt
                 "Quiet in the morning. One sink was out of service.", 4, LocalDate.of(2026, 4, 16)));
     }
 
-    public InMemoryReviewDataAccessObject(List<Review> seed) { reviews.addAll(seed); }
-    @Override public List<Review> getReviewsForWashroom(String id) {
+    public InMemoryReviewDataAccessObject(List<Review> seed) {
+        reviews.addAll(seed);
+    }
+
+    @Override
+    public List<Review> getReviewsForWashroom(String id) {
         return reviews.stream().filter(r -> r.washroomId().equals(id)).toList();
     }
-    @Override public ReviewSummary getSummary(String id) {
+
+    @Override
+    public ReviewSummary getSummary(String id) {
         List<Review> found = getReviewsForWashroom(id);
         if (found.isEmpty()) return ReviewSummary.empty();
         return new ReviewSummary(found.stream().mapToDouble(Review::rating).average().orElse(0),
                 found.stream().mapToDouble(Review::cleanliness).average().orElse(0), found.size());
     }
-    @Override public List<Review> getReviewsByUser(String username) {
+
+    @Override
+    public List<Review> getReviewsByUser(String username) {
         return reviews.stream().filter(r -> username.equals(r.authorUsername())).toList();
     }
 }

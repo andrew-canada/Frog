@@ -5,6 +5,13 @@ public enum MaintenanceIssue {
     OUT_OF_SOAP("Out of soap"), BROKEN_FIXTURE("Broken fixture"), OTHER("Other");
 
     private final String label;
-    MaintenanceIssue(String label) { this.label = label; }
-    @Override public String toString() { return label; }
+
+    MaintenanceIssue(String label) {
+        this.label = label;
+    }
+
+    @Override
+    public String toString() {
+        return label;
+    }
 }

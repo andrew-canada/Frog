@@ -1,11 +1,15 @@
 package app;
 
 import entity.Building;
+
 import java.util.List;
 
-/** Stable reference locations shown on the St. George campus map. */
+/**
+ * Stable reference locations shown on the St. George campus map.
+ */
 public final class UofTCampusLocations {
-    private UofTCampusLocations() { }
+    private UofTCampusLocations() {
+    }
 
     public static List<Building> coreLocations() {
         return List.of(

@@ -8,7 +8,7 @@ public final class PersonalPlanController {
     private final PersonalPlanInputBoundary interactor;
 
     public PersonalPlanController(PersonalPlanInputBoundary interactor) {
-        this.interactor=interactor;
+        this.interactor = interactor;
     }
 
     public void execute(String calendarPath, String nTrips) {

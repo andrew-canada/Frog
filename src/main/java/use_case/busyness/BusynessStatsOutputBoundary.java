@@ -1,2 +1,5 @@
 package use_case.busyness;
-public interface BusynessStatsOutputBoundary { void present(BusynessStatsOutputData outputData); }
+
+public interface BusynessStatsOutputBoundary {
+    void present(BusynessStatsOutputData outputData);
+}

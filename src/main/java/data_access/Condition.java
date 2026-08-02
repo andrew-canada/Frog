@@ -11,6 +11,7 @@ import java.util.List;
  * Class representing a condition to be fed into the DatabaseAccessObject methods
  * such as Condition("buildingCode", Operator.EQ, "BA") for the condition that the buildingCode
  * field must equal "BA"
+ *
  * @param <T> the type of the value
  */
 public class Condition<T extends Comparable<? super T>> {

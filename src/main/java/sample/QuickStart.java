@@ -1,6 +1,7 @@
 package sample;
 
 import static com.mongodb.client.model.Filters.eq;
+
 import org.bson.Document;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;

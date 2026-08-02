@@ -15,7 +15,8 @@ public final class ChangePasswordInteractor implements ChangePasswordInputBounda
         this.presenter = presenter;
     }
 
-    @Override public void execute(ChangePasswordInputData input) {
+    @Override
+    public void execute(ChangePasswordInputData input) {
 
         User user = users.getCurrentUser().orElse(null);
 

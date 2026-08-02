@@ -4,15 +4,19 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
-/** Tolerant BSON helpers for reading both the original and current FlushID schemas. */
+/**
+ * Tolerant BSON helpers for reading both the original and current FlushID schemas.
+ */
 public final class MongoDocuments {
-    private MongoDocuments() { }
+    private MongoDocuments() {
+    }
 
     public static String id(Document document) {
         Object value = document.get("_id");
@@ -45,7 +49,10 @@ public final class MongoDocuments {
         for (String key : keys) {
             Object value = document.get(key);
             if (value instanceof Number number) return number.doubleValue();
-            if (value != null) try { return Double.parseDouble(value.toString()); } catch (NumberFormatException ignored) { }
+            if (value != null) try {
+                return Double.parseDouble(value.toString());
+            } catch (NumberFormatException ignored) {
+            }
         }
         return fallback;
     }
@@ -68,7 +75,10 @@ public final class MongoDocuments {
             Object value = document.get(key);
             if (value instanceof Date date) return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
             if (value instanceof LocalDateTime dateTime) return dateTime;
-            if (value instanceof String text) try { return LocalDateTime.parse(text); } catch (RuntimeException ignored) { }
+            if (value instanceof String text) try {
+                return LocalDateTime.parse(text);
+            } catch (RuntimeException ignored) {
+            }
         }
         Object id = document.get("_id");
         if (id instanceof ObjectId objectId) {

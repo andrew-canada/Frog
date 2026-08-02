@@ -19,6 +19,6 @@ public class GenericBuildingFactory {
                 latitude,
                 longitude,
                 controlInfo
-                );
+        );
     }
 }

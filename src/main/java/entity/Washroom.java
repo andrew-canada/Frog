@@ -3,7 +3,7 @@ package entity;
 import java.util.Objects;
 
 public final class Washroom implements entity.washroom.Washroom {
-    public enum Gender { ALL_GENDER, WOMEN, MEN }
+    public enum Gender {ALL_GENDER, WOMEN, MEN}
 
     private final String id;
     private final String name;
@@ -41,16 +41,52 @@ public final class Washroom implements entity.washroom.Washroom {
         return value;
     }
 
-    public String id() { return id; }
-    public String name() { return name; }
-    public entity.Building building() { return building; }
-    public String floor() { return floor; }
-    @Override public String getFloor() { return floor; }
-    public boolean accessible() { return accessible; }
-    public Gender gender() { return gender; }
-    public int numToilets() { return numToilets; }
-    public int numSinks() { return numSinks; }
-    public String locationDescription() { return locationDescription; }
-    public ReviewSummary reviewSummary() { return reviewSummary; }
-    public void updateReviewSummary(ReviewSummary summary) { this.reviewSummary = Objects.requireNonNull(summary); }
+    public String id() {
+        return id;
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public entity.Building building() {
+        return building;
+    }
+
+    public String floor() {
+        return floor;
+    }
+
+    @Override
+    public String getFloor() {
+        return floor;
+    }
+
+    public boolean accessible() {
+        return accessible;
+    }
+
+    public Gender gender() {
+        return gender;
+    }
+
+    public int numToilets() {
+        return numToilets;
+    }
+
+    public int numSinks() {
+        return numSinks;
+    }
+
+    public String locationDescription() {
+        return locationDescription;
+    }
+
+    public ReviewSummary reviewSummary() {
+        return reviewSummary;
+    }
+
+    public void updateReviewSummary(ReviewSummary summary) {
+        this.reviewSummary = Objects.requireNonNull(summary);
+    }
 }

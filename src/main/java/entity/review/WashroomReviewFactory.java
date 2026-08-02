@@ -1,6 +1,6 @@
 package entity.review;
 
-public class WashroomReviewFactory implements ReviewFactory{
+public class WashroomReviewFactory implements ReviewFactory {
 
     @Override
     public WashroomReview create(int stars, String text) {

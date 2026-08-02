@@ -13,7 +13,8 @@ public final class ChangeUsernameInteractor implements ChangeUsernameInputBounda
         this.presenter = presenter;
     }
 
-    @Override public void execute(ChangeUsernameInputData input) {
+    @Override
+    public void execute(ChangeUsernameInputData input) {
 
         User user = users.getCurrentUser().orElse(null);
 

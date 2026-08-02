@@ -12,4 +12,5 @@ public record FilterInputData(
         boolean accessible,
         List<String> genders,
         Building building,
-        boolean ownReviews) {};
+        boolean ownReviews) {
+};

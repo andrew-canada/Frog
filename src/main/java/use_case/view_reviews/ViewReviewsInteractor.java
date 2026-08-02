@@ -4,6 +4,7 @@ import entity.Review;
 import entity.ReviewSummary;
 import entity.Washroom;
 import use_case.gateway.WashroomDataAccessInterface;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -19,9 +20,13 @@ public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
         this.presenter = presenter;
     }
 
-    @Override public void execute(ViewReviewsInputData input) {
+    @Override
+    public void execute(ViewReviewsInputData input) {
         Washroom washroom = washrooms.getById(input.washroomId()).orElse(null);
-        if (washroom == null) { presenter.presentError("Washroom not found"); return; }
+        if (washroom == null) {
+            presenter.presentError("Washroom not found");
+            return;
+        }
         ReviewSummary summary = reviews.getSummary(washroom.id());
         List<ViewReviewsOutputData.ReviewDisplay> display = reviews.getReviewsForWashroom(washroom.id()).stream()
                 .sorted(Comparator.comparingInt(Review::helpfulCount).reversed())

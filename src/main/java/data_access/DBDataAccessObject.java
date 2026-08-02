@@ -5,7 +5,9 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
-/** Owns the application's single MongoDB client and exposes its configured database. */
+/**
+ * Owns the application's single MongoDB client and exposes its configured database.
+ */
 public class DBDataAccessObject implements AutoCloseable {
     public static final String URI_ENV = "MONGODB_URI";
     public static final String DATABASE_ENV = "MONGODB_DATABASE";
@@ -14,7 +16,9 @@ public class DBDataAccessObject implements AutoCloseable {
     public final MongoDatabase database;
     private final boolean ownsClient;
 
-    /** Preserves the team DAO constructors while moving credentials to environment variables. */
+    /**
+     * Preserves the team DAO constructors while moving credentials to environment variables.
+     */
     public DBDataAccessObject() {
         this(requiredUri(), configuredDatabaseName());
     }
@@ -25,7 +29,9 @@ public class DBDataAccessObject implements AutoCloseable {
         ownsClient = true;
     }
 
-    /** Allows additive adapters/subclasses to share a client owned by the composition root. */
+    /**
+     * Allows additive adapters/subclasses to share a client owned by the composition root.
+     */
     protected DBDataAccessObject(MongoDatabase database) {
         this.client = null;
         this.database = database;
@@ -36,14 +42,21 @@ public class DBDataAccessObject implements AutoCloseable {
         return new DBDataAccessObject(requiredUri(), configuredDatabaseName());
     }
 
-    public MongoDatabase database() { return database; }
+    public MongoDatabase database() {
+        return database;
+    }
 
-    /** Fails at startup instead of waiting for the first user action to discover a bad connection. */
+    /**
+     * Fails at startup instead of waiting for the first user action to discover a bad connection.
+     */
     public void verifyConnection() {
         database.runCommand(new Document("ping", 1));
     }
 
-    @Override public void close() { if (ownsClient && client != null) client.close(); }
+    @Override
+    public void close() {
+        if (ownsClient && client != null) client.close();
+    }
 
     private static String requiredUri() {
         String uri = System.getenv(URI_ENV);

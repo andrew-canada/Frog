@@ -1,10 +1,11 @@
 package entity.user;
 
 import entity.review.Review;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class LoggedInUser implements User{
+public class LoggedInUser implements User {
 
     private final String name;
     private final String password;
@@ -35,7 +36,9 @@ public class LoggedInUser implements User{
         return this.password;
     }
 
-    public String getPersonalPlan() { return personalPlan; }
+    public String getPersonalPlan() {
+        return personalPlan;
+    }
 
     public void addReview(Review review) {
         this.reviews.add(review);

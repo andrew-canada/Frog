@@ -14,6 +14,7 @@ import org.jxmapviewer.cache.FileBasedLocalCache;
 import org.jxmapviewer.viewer.DefaultTileFactory;
 import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.viewer.TileFactoryInfo;
+
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
@@ -30,68 +31,240 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public final class MainView extends JPanel{
-    private final JPanel list=new JPanel(); private final JLabel routeLabel=Theme.label("Select a washroom to explore",13,Theme.MUTED);
-    private final CampusMapPanel map = new CampusMapPanel(); 
+public final class MainView extends JPanel {
+    private final JPanel list = new JPanel();
+    private final JLabel routeLabel = Theme.label("Select a washroom to explore", 13, Theme.MUTED);
+    private final CampusMapPanel map = new CampusMapPanel();
     private String selectedId = "";
     private List<WashroomListViewModel.Item> renderedItems = List.of();
 
-    private Consumer<String> onReviews = id -> {}; 
-    private Consumer<String> onDirections = id -> {}; 
+    private Consumer<String> onReviews = id -> {
+    };
+    private Consumer<String> onDirections = id -> {
+    };
 
-    private Runnable onLogin = () -> {},
-                     onRecommend = () -> {},
-                     onReport = () -> {},
-                     onBusyness = () -> {},
-                     onAccount = () -> {};
+    private Runnable onLogin = () -> {
+    },
+            onRecommend = () -> {
+            },
+            onReport = () -> {
+            },
+            onBusyness = () -> {
+            },
+            onAccount = () -> {
+            };
 
     private Function<String, GeoPoint> addressLookup = address -> {
         throw new IllegalStateException("Address search is unavailable.");
     };
-    private double latitude=43.6629,longitude=-79.3957;
-    public MainView(WashroomListViewModel washrooms,MapViewModel route){setLayout(new BorderLayout());setBackground(Theme.PAPER);
-        add(header(),BorderLayout.NORTH);add(sidebar(),BorderLayout.WEST);add(mapArea(),BorderLayout.CENTER);
-        map.setOnWashroomSelected(this::selectWashroom);washrooms.addPropertyChangeListener(e->renderList(washrooms.getState().items()));route.addPropertyChangeListener(e->{MapViewModel.State s=route.getState();
-            if(s.success()){routeLabel.setText("<html><b>"+s.distance()+"</b> · about "+s.duration()+" walk · live GraphHopper route</html>");map.setRoute(s.points());}
-            else {routeLabel.setText(s.message());map.clearRoute();}});}
-    private JComponent header(){JPanel p=new JPanel(new BorderLayout());p.setBackground(Theme.PAPER);p.setBorder(Theme.pad(10,18,10,18));
-        JLabel brand=Theme.label("FlushID",20,Theme.BLUE);brand.setFont(brand.getFont().deriveFont(Font.BOLD));p.add(brand,BorderLayout.WEST);
-        JPanel nav=new JPanel(new FlowLayout(FlowLayout.RIGHT,8,0));nav.setOpaque(false);for(JButton b:new JButton[]{nav("Recommend",()->onRecommend.run()),nav("Account",()->onAccount.run()),nav("Report status",()->onReport.run()),nav("Busyness",()->onBusyness.run()),nav("Login",()->onLogin.run())})nav.add(b);p.add(nav,BorderLayout.EAST);return p;}
-    private JButton nav(String text,Runnable action){JButton b=Theme.button(text);b.addActionListener(e->action.run());return b;}
-    private JComponent sidebar(){JPanel p=new JPanel(new BorderLayout(0,10));p.setPreferredSize(new Dimension(290,0));p.setBackground(Theme.PAPER);p.setBorder(Theme.pad(14,18,14,12));
-        JPanel controls=new JPanel(new GridLayout(2,2,8,8));controls.setOpaque(false);JButton location=Theme.button("Location"),filters=Theme.button("Filters");controls.add(location);controls.add(filters);controls.add(new JLabel("Sort by:"));controls.add(new SortDropdownControl());p.add(controls,BorderLayout.NORTH);
-        location.addActionListener(e->new LocationInputDialog(SwingUtilities.getWindowAncestor(this),addressLookup,(lat,lng)->{latitude=lat;longitude=lng;map.setOrigin(new GeoPoint(lat,lng));routeLabel.setText("Location updated — choose directions");}).setVisible(true));
-        filters.addActionListener(e->JOptionPane.showMessageDialog(this,new FilterPanel(),"Filters",JOptionPane.PLAIN_MESSAGE));
-        list.setLayout(new BoxLayout(list,BoxLayout.Y_AXIS));list.setBackground(Theme.PAPER);JScrollPane scroll=new JScrollPane(list);scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);p.add(scroll,BorderLayout.CENTER);return p;}
-    private JComponent mapArea(){JPanel p=new JPanel(new BorderLayout(0,10));p.setBackground(Theme.PAPER);p.setBorder(Theme.pad(14,12,14,18));
-        JPanel bar=new JPanel(new BorderLayout());bar.setBackground(Theme.CREAM);bar.setBorder(Theme.pad(10,12,10,12));bar.add(routeLabel);JButton clear=Theme.button("Clear route");clear.addActionListener(e->{map.clearRoute();routeLabel.setText("Select a washroom to explore");});bar.add(clear,BorderLayout.EAST);p.add(bar,BorderLayout.NORTH);p.add(map);return p;}
-    public void renderList(List<WashroomListViewModel.Item> items){renderedItems=List.copyOf(items);list.removeAll();if(!items.isEmpty()&&(selectedId.isBlank()||items.stream().noneMatch(item->item.id().equals(selectedId))))selectedId=items.getFirst().id();map.setSelectedWashroom(selectedId);for(var item:items){JPanel card=new JPanel(new BorderLayout(4,4));card.setMaximumSize(new Dimension(Integer.MAX_VALUE,106));card.setBackground(item.id().equals(selectedId)?Theme.PALE_BLUE:Theme.PAPER);
-            card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(item.id().equals(selectedId)?Theme.BLUE:Theme.LINE),Theme.pad(10,10,10,10)));
-            JLabel name=Theme.label(item.name(),14,item.id().equals(selectedId)?Theme.BLUE:Theme.INK);name.setFont(name.getFont().deriveFont(Font.BOLD));card.add(name,BorderLayout.NORTH);
-            JLabel details=Theme.label(String.format("★ %.1f · %d m away",item.rating(),item.distanceMeters()),12,Theme.MUTED);card.add(details,BorderLayout.CENTER);
-            JPanel actions=new JPanel(new FlowLayout(FlowLayout.LEFT,6,0));actions.setOpaque(false);JButton reviews=Theme.button("Reviews"),directions=Theme.button("Directions");reviews.setPreferredSize(new Dimension(78,28));directions.setPreferredSize(new Dimension(94,28));
-            MouseAdapter select=new MouseAdapter(){@Override public void mouseClicked(MouseEvent event){selectWashroom(item.id());}};card.addMouseListener(select);name.addMouseListener(select);details.addMouseListener(select);card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));name.setCursor(card.getCursor());details.setCursor(card.getCursor());
-            reviews.addActionListener(e->{selectWashroom(item.id());onReviews.accept(item.id());});directions.addActionListener(e->{selectWashroom(item.id());onDirections.accept(item.id());});actions.add(reviews);actions.add(directions);card.add(actions,BorderLayout.SOUTH);list.add(card);list.add(Box.createVerticalStrut(10));}list.revalidate();list.repaint();}
-    private void selectWashroom(String id){if(id==null||id.isBlank()||id.equals(selectedId))return;selectedId=id;renderList(renderedItems);}
-    public void setWashrooms(List<Washroom> washrooms){map.setWashrooms(washrooms);}
-    public void setAddressLookup(Function<String,GeoPoint> lookup){addressLookup=lookup==null?address->{throw new IllegalStateException("Address search is unavailable.");}:lookup;}
-    public void setOnReviews(Consumer<String> c){onReviews=c;}public void setOnDirections(Consumer<String> c){onDirections=c;}
-    public void setOnLogin(Runnable r) { onLogin = r; }
-    public void setOnRecommend(Runnable r) { onRecommend = r; }
-    public void setOnAccount(Runnable r) { onAccount = r; }
-    public void setOnReport(Runnable r) { onReport = r; }
-    public void setOnBusyness(Runnable r) { onBusyness = r; }
+    private double latitude = 43.6629, longitude = -79.3957;
+
+    public MainView(WashroomListViewModel washrooms, MapViewModel route) {
+        setLayout(new BorderLayout());
+        setBackground(Theme.PAPER);
+        add(header(), BorderLayout.NORTH);
+        add(sidebar(), BorderLayout.WEST);
+        add(mapArea(), BorderLayout.CENTER);
+        map.setOnWashroomSelected(this::selectWashroom);
+        washrooms.addPropertyChangeListener(e -> renderList(washrooms.getState().items()));
+        route.addPropertyChangeListener(e -> {
+            MapViewModel.State s = route.getState();
+            if (s.success()) {
+                routeLabel.setText("<html><b>" + s.distance() + "</b> · about " + s.duration() + " walk · live GraphHopper route</html>");
+                map.setRoute(s.points());
+            } else {
+                routeLabel.setText(s.message());
+                map.clearRoute();
+            }
+        });
+    }
+
+    private JComponent header() {
+        JPanel p = new JPanel(new BorderLayout());
+        p.setBackground(Theme.PAPER);
+        p.setBorder(Theme.pad(10, 18, 10, 18));
+        JLabel brand = Theme.label("FlushID", 20, Theme.BLUE);
+        brand.setFont(brand.getFont().deriveFont(Font.BOLD));
+        p.add(brand, BorderLayout.WEST);
+        JPanel nav = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        nav.setOpaque(false);
+        for (JButton b : new JButton[]{nav("Recommend", () -> onRecommend.run()), nav("Account", () -> onAccount.run()), nav("Report status", () -> onReport.run()), nav("Busyness", () -> onBusyness.run()), nav("Login", () -> onLogin.run())})
+            nav.add(b);
+        p.add(nav, BorderLayout.EAST);
+        return p;
+    }
+
+    private JButton nav(String text, Runnable action) {
+        JButton b = Theme.button(text);
+        b.addActionListener(e -> action.run());
+        return b;
+    }
+
+    private JComponent sidebar() {
+        JPanel p = new JPanel(new BorderLayout(0, 10));
+        p.setPreferredSize(new Dimension(290, 0));
+        p.setBackground(Theme.PAPER);
+        p.setBorder(Theme.pad(14, 18, 14, 12));
+        JPanel controls = new JPanel(new GridLayout(2, 2, 8, 8));
+        controls.setOpaque(false);
+        JButton location = Theme.button("Location"), filters = Theme.button("Filters");
+        controls.add(location);
+        controls.add(filters);
+        controls.add(new JLabel("Sort by:"));
+        controls.add(new SortDropdownControl());
+        p.add(controls, BorderLayout.NORTH);
+        location.addActionListener(e -> new LocationInputDialog(SwingUtilities.getWindowAncestor(this), addressLookup, (lat, lng) -> {
+            latitude = lat;
+            longitude = lng;
+            map.setOrigin(new GeoPoint(lat, lng));
+            routeLabel.setText("Location updated — choose directions");
+        }).setVisible(true));
+        filters.addActionListener(e -> JOptionPane.showMessageDialog(this, new FilterPanel(), "Filters", JOptionPane.PLAIN_MESSAGE));
+        list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
+        list.setBackground(Theme.PAPER);
+        JScrollPane scroll = new JScrollPane(list);
+        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        p.add(scroll, BorderLayout.CENTER);
+        return p;
+    }
+
+    private JComponent mapArea() {
+        JPanel p = new JPanel(new BorderLayout(0, 10));
+        p.setBackground(Theme.PAPER);
+        p.setBorder(Theme.pad(14, 12, 14, 18));
+        JPanel bar = new JPanel(new BorderLayout());
+        bar.setBackground(Theme.CREAM);
+        bar.setBorder(Theme.pad(10, 12, 10, 12));
+        bar.add(routeLabel);
+        JButton clear = Theme.button("Clear route");
+        clear.addActionListener(e -> {
+            map.clearRoute();
+            routeLabel.setText("Select a washroom to explore");
+        });
+        bar.add(clear, BorderLayout.EAST);
+        p.add(bar, BorderLayout.NORTH);
+        p.add(map);
+        return p;
+    }
+
+    public void renderList(List<WashroomListViewModel.Item> items) {
+        renderedItems = List.copyOf(items);
+        list.removeAll();
+        if (!items.isEmpty() && (selectedId.isBlank() || items.stream().noneMatch(item -> item.id().equals(selectedId))))
+            selectedId = items.getFirst().id();
+        map.setSelectedWashroom(selectedId);
+        for (var item : items) {
+            JPanel card = new JPanel(new BorderLayout(4, 4));
+            card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 106));
+            card.setBackground(item.id().equals(selectedId) ? Theme.PALE_BLUE : Theme.PAPER);
+            card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(item.id().equals(selectedId) ? Theme.BLUE : Theme.LINE), Theme.pad(10, 10, 10, 10)));
+            JLabel name = Theme.label(item.name(), 14, item.id().equals(selectedId) ? Theme.BLUE : Theme.INK);
+            name.setFont(name.getFont().deriveFont(Font.BOLD));
+            card.add(name, BorderLayout.NORTH);
+            JLabel details = Theme.label(String.format("★ %.1f · %d m away", item.rating(), item.distanceMeters()), 12, Theme.MUTED);
+            card.add(details, BorderLayout.CENTER);
+            JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+            actions.setOpaque(false);
+            JButton reviews = Theme.button("Reviews"), directions = Theme.button("Directions");
+            reviews.setPreferredSize(new Dimension(78, 28));
+            directions.setPreferredSize(new Dimension(94, 28));
+            MouseAdapter select = new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent event) {
+                    selectWashroom(item.id());
+                }
+            };
+            card.addMouseListener(select);
+            name.addMouseListener(select);
+            details.addMouseListener(select);
+            card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            name.setCursor(card.getCursor());
+            details.setCursor(card.getCursor());
+            reviews.addActionListener(e -> {
+                selectWashroom(item.id());
+                onReviews.accept(item.id());
+            });
+            directions.addActionListener(e -> {
+                selectWashroom(item.id());
+                onDirections.accept(item.id());
+            });
+            actions.add(reviews);
+            actions.add(directions);
+            card.add(actions, BorderLayout.SOUTH);
+            list.add(card);
+            list.add(Box.createVerticalStrut(10));
+        }
+        list.revalidate();
+        list.repaint();
+    }
+
+    private void selectWashroom(String id) {
+        if (id == null || id.isBlank() || id.equals(selectedId)) return;
+        selectedId = id;
+        renderList(renderedItems);
+    }
+
+    public void setWashrooms(List<Washroom> washrooms) {
+        map.setWashrooms(washrooms);
+    }
+
+    public void setAddressLookup(Function<String, GeoPoint> lookup) {
+        addressLookup = lookup == null ? address -> {
+            throw new IllegalStateException("Address search is unavailable.");
+        } : lookup;
+    }
+
+    public void setOnReviews(Consumer<String> c) {
+        onReviews = c;
+    }
+
+    public void setOnDirections(Consumer<String> c) {
+        onDirections = c;
+    }
+
+    public void setOnLogin(Runnable r) {
+        onLogin = r;
+    }
+
+    public void setOnRecommend(Runnable r) {
+        onRecommend = r;
+    }
+
+    public void setOnAccount(Runnable r) {
+        onAccount = r;
+    }
+
+    public void setOnReport(Runnable r) {
+        onReport = r;
+    }
+
+    public void setOnBusyness(Runnable r) {
+        onBusyness = r;
+    }
 
     public void showRouting() {
         routeLabel.setText("Requesting a live walking route from GraphHopper…");
     }
-    public double latitude(){return latitude;}public double longitude(){return longitude;}public String selectedId(){return selectedId;}
+
+    public double latitude() {
+        return latitude;
+    }
+
+    public double longitude() {
+        return longitude;
+    }
+
+    public String selectedId() {
+        return selectedId;
+    }
+
     private static final class CampusMapPanel extends JPanel {
         private final JXMapViewer viewer;
         private List<GeoPoint> route = List.of();
         private List<Washroom> washrooms = List.of();
         private String selectedWashroomId = "";
-        private Consumer<String> onWashroomSelected = id -> { };
+        private Consumer<String> onWashroomSelected = id -> {
+        };
         private final Map<String, Rectangle> markerHitTargets = new HashMap<>();
         private GeoPoint origin = new GeoPoint(43.6629, -79.3957);
 
@@ -126,7 +299,8 @@ public final class MainView extends JPanel{
             viewer.addMouseWheelListener(new ZoomMouseWheelListenerCursor(viewer));
             viewer.addKeyListener(new PanKeyListener(viewer));
             viewer.addMouseListener(new MouseAdapter() {
-                @Override public void mouseClicked(MouseEvent event) {
+                @Override
+                public void mouseClicked(MouseEvent event) {
                     if (!SwingUtilities.isLeftMouseButton(event)) return;
                     for (Map.Entry<String, Rectangle> target : markerHitTargets.entrySet()) {
                         if (target.getValue().contains(event.getPoint())) {
@@ -158,7 +332,8 @@ public final class MainView extends JPanel{
         }
 
         void setOnWashroomSelected(Consumer<String> action) {
-            onWashroomSelected = action == null ? id -> { } : action;
+            onWashroomSelected = action == null ? id -> {
+            } : action;
         }
 
         void setOrigin(GeoPoint value) {
@@ -243,7 +418,8 @@ public final class MainView extends JPanel{
             if (viewer == null || washrooms.isEmpty() || viewer.getWidth() == 0) return;
             Set<GeoPosition> positions = new HashSet<>();
             positions.add(toPosition(origin));
-            for (Washroom washroom : washrooms) positions.add(new GeoPosition(washroom.building().latitude(), washroom.building().longitude()));
+            for (Washroom washroom : washrooms)
+                positions.add(new GeoPosition(washroom.building().latitude(), washroom.building().longitude()));
             viewer.zoomToBestFit(positions, .72);
         }
 

@@ -19,7 +19,8 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
         this.presenter = presenter;
     }
 
-    @Override public void execute(PersonalPlanInputData inputData) {
+    @Override
+    public void execute(PersonalPlanInputData inputData) {
 
         User user = users.getCurrentUser().orElse(null);
         String calendar = getFile(inputData.calendarPath());

@@ -13,7 +13,8 @@ public final class DeleteAccountInteractor implements DeleteAccountInputBoundary
         this.presenter = presenter;
     }
 
-    @Override public void execute() {
+    @Override
+    public void execute() {
 
         User user = users.getCurrentUser().orElse(null);
 

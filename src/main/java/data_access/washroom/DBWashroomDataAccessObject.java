@@ -2,21 +2,17 @@ package data_access.washroom;
 
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
 import data_access.Condition;
 import data_access.MongoDocuments;
 import data_access.Operator;
 import data_access.building.DBBuildingDataAccessObject;
 import entity.ReviewSummary;
-import entity.building.Building;
-import entity.building.GenericBuildingFactory;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
 
 import entity.washroom.Washroom;
-import entity.washroom.GenericWashroomFactory;
 import data_access.DBDataAccessObject;
 
 import javax.json.*;
@@ -29,7 +25,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
     static MongoCollection<Document> collection;
     private static MongoCollection<Document> buildings;
     private static MongoCollection<Document> reviews;
-    static final List<String> allowedAttributes = List.of(new String[] {
+    static final List<String> allowedAttributes = List.of(new String[]{
             "buildingID", "floor"});
 
     public DBWashroomDataAccessObject() {
@@ -49,6 +45,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
     /**
      * Returns all washrooms who satisfy all the given conditions
+     *
      * @param conditions a list of condition objects that the returned washrooms must satisfy
      * @return The washrooms that match all the conditions
      */
@@ -59,6 +56,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
     /**
      * Returns all buildings who satisfy the condition
+     *
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the conditions
      */
@@ -72,6 +70,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
     /**
      * Returns all washrooms which satisfy all the given conditions, with database IDs
+     *
      * @param conditions a list of condition objects that the returned washrooms must satisfy
      * @return The washrooms that match all the conditions mapped to their IDs in the database.
      */
@@ -91,6 +90,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
     /**
      * Returns all buildings which satisfy the given condition, with database IDs
+     *
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the condition mapped to their IDs in the database.
      */
@@ -104,6 +104,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
     /**
      * Parses a list of Condition objects into a single Bson filter
+     *
      * @param conditions list of condition objects to be connected by and statements
      * @return a Bson filter representing satisfying all conditions
      */
@@ -115,6 +116,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
     /**
      * Return a list of Documents which match the specified parameters
+     *
      * @param filter the filter that must be satisfied for the Document to be returned
      * @return The list of valid documents
      */
@@ -125,6 +127,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
     /**
      * Creates a washroom object out of the inputted Document
+     *
      * @param doc Document containing washroom data for a specific washroom
      * @return the washroom object constructed using that data
      */
@@ -136,7 +139,8 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
             String buildingCode = MongoDocuments.string(doc, buildingId, "buildingCode");
             buildingDocument = buildings.find(new Document("buildingCode", buildingCode)).first();
         }
-        if (buildingDocument == null) throw new IllegalStateException("Washroom " + id + " references a missing building.");
+        if (buildingDocument == null)
+            throw new IllegalStateException("Washroom " + id + " references a missing building.");
         entity.Building building = toApplicationBuilding(buildingDocument);
         String floor = MongoDocuments.string(doc, "Unknown floor", "floor");
         String name = MongoDocuments.string(doc, building.name() + ", " + floor, "name");
@@ -152,10 +156,11 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
     /**
      * Checks the conditions against the list of allowed attributes, throwing a
      * runtime exception if it's not a valid attribute.
+     *
      * @param conditions The conditions to check.
      */
     private static void checkAttribute(Iterable<Condition<?>> conditions) {
-        for (Condition<?> condition: conditions) {
+        for (Condition<?> condition : conditions) {
             checkAttribute(condition);
         }
     }
@@ -163,6 +168,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
     /**
      * Checks the condition against the list of allowed attributes, throwing a
      * runtime exception if it's not a valid attribute.
+     *
      * @param condition The condition to check.
      */
     private static void checkAttribute(Condition<?> condition) {
@@ -173,6 +179,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
     /**
      * Writes a single Washroom object to the database.
+     *
      * @param washroom The Washroom object to be written.
      */
     public static String write(Washroom washroom, String buildingID) {
@@ -199,6 +206,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
     /**
      * Deletes every entry in the database that matches the given conditions
+     *
      * @param conditions List of Condition objects. An object must satisfy
      *                   all conditions to be deleted
      */
@@ -210,6 +218,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
     /**
      * Deletes every entry in the database that matches the given condition
+     *
      * @param condition A Condition object that the object must satisfy.
      */
     public void delete(Condition<?> condition) {
@@ -219,7 +228,9 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
     }
 
-    /** Idempotently creates one selectable washroom per campus landmark. */
+    /**
+     * Idempotently creates one selectable washroom per campus landmark.
+     */
     public void ensureCampusWashrooms(List<entity.Building> campusBuildings) {
         for (entity.Building building : campusBuildings) {
             Document buildingDocument = buildings.find(Filters.eq("buildingCode", building.code())).first();
@@ -248,22 +259,26 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
         }
     }
 
-    @Override public Optional<entity.Washroom> getById(String id) {
+    @Override
+    public Optional<entity.Washroom> getById(String id) {
         Document document = MongoDocuments.findById(collection, id);
         return document == null ? Optional.empty() : Optional.of((entity.Washroom) createWashroom(document));
     }
 
-    @Override public List<entity.Washroom> getAll() {
+    @Override
+    public List<entity.Washroom> getAll() {
         return getMatching(List.<Condition<?>>of()).stream().map(washroom -> (entity.Washroom) washroom).toList();
     }
 
-    @Override public List<entity.Washroom> getNearby(double latitude, double longitude, double radiusMeters) {
+    @Override
+    public List<entity.Washroom> getNearby(double latitude, double longitude, double radiusMeters) {
         return getAll().stream().filter(washroom -> distance(latitude, longitude,
                 washroom.building().latitude(), washroom.building().longitude()) <= radiusMeters).toList();
     }
 
     private static entity.ReviewSummary summary(String washroomId) {
-        double rating = 0, cleanliness = 0; int count = 0;
+        double rating = 0, cleanliness = 0;
+        int count = 0;
         for (Document review : reviews.find()) {
             if (!MongoDocuments.referenceMatches(review.get("washroomID"), washroomId)
                     && !MongoDocuments.referenceMatches(review.get("washroomId"), washroomId)) continue;
@@ -289,11 +304,17 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
     private static entity.Washroom.Gender parseGender(String value) {
         String normalized = value.trim().toUpperCase(Locale.ROOT).replace('-', '_').replace(' ', '_');
-        try { return entity.Washroom.Gender.valueOf(normalized); }
-        catch (IllegalArgumentException ignored) { return entity.Washroom.Gender.ALL_GENDER; }
+        try {
+            return entity.Washroom.Gender.valueOf(normalized);
+        } catch (IllegalArgumentException ignored) {
+            return entity.Washroom.Gender.ALL_GENDER;
+        }
     }
 
-    private static double clampRating(double value) { return Math.max(1, Math.min(5, value)); }
+    private static double clampRating(double value) {
+        return Math.max(1, Math.min(5, value));
+    }
+
     private static double distance(double lat1, double lon1, double lat2, double lon2) {
         double x = Math.toRadians(lon2 - lon1) * Math.cos(Math.toRadians((lat1 + lat2) / 2));
         double y = Math.toRadians(lat2 - lat1);
@@ -316,9 +337,9 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
                 String name = obj.getString("name");
                 String genderStr = obj.getString("gender");
                 entity.Washroom.Gender gender = null;
-                if(genderStr.equals(entity.Washroom.Gender.MEN)) {
+                if (genderStr.equals(entity.Washroom.Gender.MEN)) {
                     gender = entity.Washroom.Gender.MEN;
-                } else if(genderStr.equals(entity.Washroom.Gender.WOMEN)) {
+                } else if (genderStr.equals(entity.Washroom.Gender.WOMEN)) {
                     gender = entity.Washroom.Gender.WOMEN;
                 } else {
                     gender = entity.Washroom.Gender.ALL_GENDER;
@@ -327,7 +348,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
                 boolean accessible = obj.getBoolean("accessible");
                 Condition condition = new Condition("buildingCode", Operator.EQ, id);
                 List<entity.Building> matchingBuildings = DBBuildingDataAccessObject.getMatching(condition);
-                if(!matchingBuildings.isEmpty()){
+                if (!matchingBuildings.isEmpty()) {
                     washroomList.add(new entity.Washroom(
                             id,
                             name,
@@ -338,7 +359,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
                             0,
                             0,
                             "Example description",
-                            new ReviewSummary(0,0,0)
+                            new ReviewSummary(0, 0, 0)
                     ));
                 }
             }
@@ -348,18 +369,18 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
     }
 
     public static void main(String[] args) {
-        try{
+        try {
             DBWashroomDataAccessObject dbwashroomDAO = new DBWashroomDataAccessObject();
             Condition condition = new Condition<>("floor", Operator.NE, "00");
             dbwashroomDAO.delete(condition);
             List<entity.Washroom> washroomList = dbwashroomDAO.loadWashrooms("src/main/resources/data/washrooms.json");
-            for(entity.Washroom washroom : washroomList) {
+            for (entity.Washroom washroom : washroomList) {
                 write(washroom, washroom.id());
                 System.out.println(washroom.toString());
 
             }
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e);
             System.out.println(e.getCause());
             System.out.println(e.getMessage());

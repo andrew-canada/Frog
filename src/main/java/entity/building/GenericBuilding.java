@@ -1,6 +1,7 @@
 package entity.building;
 
 import entity.washroom.Washroom;
+
 import java.util.List;
 
 public class GenericBuilding implements Building {

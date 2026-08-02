@@ -7,7 +7,7 @@ public final class DeleteAccountController {
     private final DeleteAccountInputBoundary interactor;
 
     public DeleteAccountController(DeleteAccountInputBoundary interactor) {
-        this.interactor=interactor;
+        this.interactor = interactor;
     }
 
     public void execute() {
