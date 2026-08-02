@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-# Frog🐸
-
-
-Frog is a high-fidelity washroom finder and aggregator built for the University of Toronto. 
-
-# Features
-
- - Look through 100s of washrooms all over campus effortlessly 
- - Read and leave reviews given to each washroom by users
- - Get directions to a washroom of your choice
-=======
 # FlushID
 
 FlushID is a Java Swing application for finding U of T washrooms, reading reviews, receiving a recommendation, submitting live status reports, viewing busyness data, and requesting walking directions.
@@ -70,4 +58,3 @@ At the time of integration, the live database contained `Buildings` and `Washroo
 - `app.AppBuilder`: the composition root and only place concrete adapters are selected.
 
 Unit tests use fake gateway interfaces, so application rules are tested without MongoDB or network access. The GraphHopper adapter test uses a local HTTP server to verify request parameters and response parsing without consuming API credits.
->>>>>>> demo
