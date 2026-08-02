@@ -154,7 +154,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements use_ca
     public Optional<entity.User> get(String username) {
         List<LoggedInUser> matches = getMatching(List.of(new Condition<>("username", data_access.Operator.EQ, username)));
         if (matches.isEmpty())
-            matches = getMatching(List.of(new Condition<>("name", data_access.Operator.EQ, username)));
+            matches = getMatching(List.of(new Condition<>("username", data_access.Operator.EQ, username)));
         if (matches.isEmpty() || matches.getFirst().getPassword().isBlank()) return Optional.empty();
         LoggedInUser user = matches.getFirst();
         return Optional.of(new entity.User(user.getName(), user.getPassword(), user.getPersonalPlan()));
