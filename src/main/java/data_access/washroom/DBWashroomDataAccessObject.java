@@ -3,9 +3,7 @@ package data_access.washroom;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
-import data_access.Condition;
-import data_access.MongoDocuments;
-import data_access.Operator;
+import data_access.*;
 import data_access.building.DBBuildingDataAccessObject;
 import entity.ReviewSummary;
 import org.bson.Document;
@@ -13,7 +11,6 @@ import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
 
 import entity.washroom.Washroom;
-import data_access.DBDataAccessObject;
 
 import javax.json.*;
 import java.io.FileReader;
@@ -49,7 +46,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
      * @param conditions a list of condition objects that the returned washrooms must satisfy
      * @return The washrooms that match all the conditions
      */
-    public static List<Washroom> getMatching(Iterable<Condition<?>> conditions) {
+    public static List<Washroom> getMatching(Iterable<AbstractCondition<?>> conditions) {
         return new ArrayList<>(getMatchingIDMap(conditions).values());
 
     }
@@ -60,9 +57,9 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the conditions
      */
-    public static List<Washroom> getMatching(Condition<?> condition) {
+    public static List<Washroom> getMatching(AbstractCondition<?> condition) {
 
-        List<Condition<?>> conditions = new ArrayList<>();
+        List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         return getMatching(conditions);
 
@@ -74,7 +71,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
      * @param conditions a list of condition objects that the returned washrooms must satisfy
      * @return The washrooms that match all the conditions mapped to their IDs in the database.
      */
-    public static Map<String, Washroom> getMatchingIDMap(Iterable<Condition<?>> conditions) {
+    public static Map<String, Washroom> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
 
         Bson filter = parseConditions(conditions);
@@ -94,21 +91,21 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the condition mapped to their IDs in the database.
      */
-    public static Map<String, Washroom> getMatchingIDMap(Condition<?> condition) {
+    public static Map<String, Washroom> getMatchingIDMap(AbstractCondition<?> condition) {
 
-        List<Condition<?>> conditions = new ArrayList<>();
+        List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         return getMatchingIDMap(conditions);
 
     }
 
     /**
-     * Parses a list of Condition objects into a single Bson filter
+     * Parses a list of AbstractCondition objects into a single Bson filter
      *
      * @param conditions list of condition objects to be connected by and statements
      * @return a Bson filter representing satisfying all conditions
      */
-    private static Bson parseConditions(Iterable<Condition<?>> conditions) {
+    private static Bson parseConditions(Iterable<AbstractCondition<?>> conditions) {
         List<Bson> filters = new ArrayList<>();
         conditions.forEach((condition) -> filters.add(condition.getFilter()));
         return filters.isEmpty() ? new Document() : Filters.and(filters);
@@ -159,8 +156,8 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
      *
      * @param conditions The conditions to check.
      */
-    private static void checkAttribute(Iterable<Condition<?>> conditions) {
-        for (Condition<?> condition : conditions) {
+    private static void checkAttribute(Iterable<AbstractCondition<?>> conditions) {
+        for (AbstractCondition<?> condition : conditions) {
             checkAttribute(condition);
         }
     }
@@ -171,7 +168,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
      *
      * @param condition The condition to check.
      */
-    private static void checkAttribute(Condition<?> condition) {
+    private static void checkAttribute(AbstractCondition<?> condition) {
         if (!allowedAttributes.contains(condition.getFieldName())) {
             throw new RuntimeException("Not a valid attribute");
         }
@@ -207,10 +204,10 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
     /**
      * Deletes every entry in the database that matches the given conditions
      *
-     * @param conditions List of Condition objects. An object must satisfy
+     * @param conditions List of AbstractCondition objects. An object must satisfy
      *                   all conditions to be deleted
      */
-    public static void delete(Iterable<Condition<?>> conditions) {
+    public static void delete(Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
         Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);
@@ -219,10 +216,10 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
     /**
      * Deletes every entry in the database that matches the given condition
      *
-     * @param condition A Condition object that the object must satisfy.
+     * @param condition A AbstractCondition object that the object must satisfy.
      */
-    public void delete(Condition<?> condition) {
-        List<Condition<?>> conditions = new ArrayList<>();
+    public void delete(AbstractCondition<?> condition) {
+        List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         delete(conditions);
 
@@ -267,7 +264,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
 
     @Override
     public List<entity.Washroom> getAll() {
-        return getMatching(List.<Condition<?>>of()).stream().map(washroom -> (entity.Washroom) washroom).toList();
+        return getMatching(List.<AbstractCondition<?>>of()).stream().map(washroom -> (entity.Washroom) washroom).toList();
     }
 
     @Override

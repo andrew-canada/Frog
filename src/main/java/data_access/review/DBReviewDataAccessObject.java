@@ -2,6 +2,7 @@ package data_access.review;
 
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import data_access.AbstractCondition;
 import data_access.Condition;
 import data_access.MongoDocuments;
 import entity.building.Building;
@@ -45,7 +46,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
      * @param conditions a list of condition objects that the returned reviews must satisfy
      * @return The reviews that match all the conditions
      */
-    public List<Review> getMatching(Iterable<Condition<?>> conditions) {
+    public List<Review> getMatching(Iterable<AbstractCondition<?>> conditions) {
 
         return new ArrayList<>(getMatchingIDMap(conditions).values());
 
@@ -57,9 +58,9 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
      * @param condition a condition object that the returned reviews must satisfy
      * @return The reviews that match the conditions
      */
-    public List<Review> getMatching(Condition<?> condition) {
+    public List<Review> getMatching(AbstractCondition<?> condition) {
 
-        List<Condition<?>> conditions = new ArrayList<>();
+        List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         return getMatching(conditions);
 
@@ -71,7 +72,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
      * @param conditions a list of condition objects that the returned reviews must satisfy
      * @return The reviews that match all the conditions mapped to their IDs in the database.
      */
-    public static Map<String, Review> getMatchingIDMap(Iterable<Condition<?>> conditions) {
+    public static Map<String, Review> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
 
         checkAttribute(conditions);
 
@@ -88,12 +89,12 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
     }
 
     /**
-     * Parses a list of Condition objects into a single Bson filter
+     * Parses a list of AbstractCondition objects into a single Bson filter
      *
      * @param conditions list of condition objects to be connected by and statements
      * @return a Bson filter representing satisfying all conditions
      */
-    private static Bson parseConditions(Iterable<Condition<?>> conditions) {
+    private static Bson parseConditions(Iterable<AbstractCondition<?>> conditions) {
         List<Bson> filters = new ArrayList<>();
         conditions.forEach((condition) -> filters.add(condition.getFilter()));
         return filters.isEmpty() ? new Document() : Filters.and(filters);
@@ -156,10 +157,10 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
     /**
      * Deletes every entry in the database that matches the given conditions
      *
-     * @param conditions List of Condition objects. An object must satisfy
+     * @param conditions List of AbstractCondition objects. An object must satisfy
      *                   all conditions to be deleted
      */
-    public void delete(Iterable<Condition<?>> conditions) {
+    public void delete(Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
         Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);
@@ -168,10 +169,10 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
     /**
      * Deletes every entry in the database that matches the given condition
      *
-     * @param condition A Condition object that the object must satisfy.
+     * @param condition A AbstractCondition object that the object must satisfy.
      */
-    public void delete(Condition<?> condition) {
-        List<Condition<?>> conditions = new ArrayList<>();
+    public void delete(AbstractCondition<?> condition) {
+        List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         delete(conditions);
     }
@@ -182,7 +183,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
      *
      * @param condition The condition to check.
      */
-    private static void checkAttribute(Condition<?> condition) {
+    private static void checkAttribute(AbstractCondition<?> condition) {
         if (!allowedAttributes.contains(condition.getFieldName())) {
             throw new RuntimeException("Not a valid attribute");
         }
@@ -194,8 +195,8 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
      *
      * @param conditions The conditions to check.
      */
-    private static void checkAttribute(Iterable<Condition<?>> conditions) {
-        for (Condition<?> condition : conditions) {
+    private static void checkAttribute(Iterable<AbstractCondition<?>> conditions) {
+        for (AbstractCondition<?> condition : conditions) {
             checkAttribute(condition);
         }
     }
@@ -203,7 +204,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
     @Override
     public List<entity.Review> getReviewsForWashroom(String washroomId) {
         List<entity.Review> result = new ArrayList<>();
-        for (Review review : getMatching(List.<Condition<?>>of())) {
+        for (Review review : getMatching(List.<AbstractCondition<?>>of())) {
             entity.Review applicationReview = (entity.Review) review;
             if (applicationReview.washroomId().equals(washroomId)) result.add(applicationReview);
         }
@@ -221,7 +222,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
     @Override
     public List<entity.Review> getReviewsByUser(String username) {
         List<entity.Review> result = new ArrayList<>();
-        for (Review legacyReview : getMatching(List.<Condition<?>>of())) {
+        for (Review legacyReview : getMatching(List.<AbstractCondition<?>>of())) {
             entity.Review review = (entity.Review) legacyReview;
             if (username.equals(review.authorUsername())) result.add(review);
         }
