@@ -1,6 +1,7 @@
+import data_access.enrollment.EnrollmentDataAccessInterface;
+import data_access.status.StatusReportDataAccessInterface;
 import entity.*;
 import use_case.busyness.*;
-import use_case.gateway.*;
 
 import java.time.*;
 import java.util.*;

@@ -17,7 +17,7 @@ import java.io.FileReader;
 import java.io.Reader;
 import java.util.*;
 
-public class DBWashroomDataAccessObject extends DBDataAccessObject implements use_case.gateway.WashroomDataAccessInterface {
+public class DBWashroomDataAccessObject extends DBDataAccessObject implements WashroomDataAccessInterface {
 
     static MongoCollection<Document> collection;
     private static MongoCollection<Document> buildings;

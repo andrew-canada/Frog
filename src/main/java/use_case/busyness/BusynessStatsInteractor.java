@@ -2,8 +2,8 @@ package use_case.busyness;
 
 import entity.EnrollmentMeeting;
 import entity.StatusReport;
-import use_case.gateway.EnrollmentDataAccessInterface;
-import use_case.gateway.StatusReportDataAccessInterface;
+import data_access.enrollment.EnrollmentDataAccessInterface;
+import data_access.status.StatusReportDataAccessInterface;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

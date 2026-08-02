@@ -2,7 +2,6 @@ package data_access.status;
 
 import entity.MaintenanceIssue;
 import entity.StatusReport;
-import use_case.gateway.StatusReportDataAccessInterface;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package use_case.gateway;
+package data_access.washroom;
 
 import entity.Washroom;
 
@@ -11,4 +11,5 @@ public interface WashroomDataAccessInterface {
     List<Washroom> getNearby(double latitude, double longitude, double radiusMeters);
 
     List<Washroom> getAll();
+
 }

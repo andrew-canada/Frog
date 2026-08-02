@@ -3,7 +3,6 @@ package data_access.washroom;
 import entity.Building;
 import entity.ReviewSummary;
 import entity.Washroom;
-import use_case.gateway.WashroomDataAccessInterface;
 
 import java.util.LinkedHashMap;
 import java.util.List;

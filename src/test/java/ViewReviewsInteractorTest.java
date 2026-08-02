@@ -1,5 +1,5 @@
+import data_access.washroom.WashroomDataAccessInterface;
 import entity.*;
-import use_case.gateway.*;
 import use_case.view_reviews.*;
 
 import java.time.LocalDate;

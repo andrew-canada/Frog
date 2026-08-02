@@ -1,5 +1,5 @@
 import entity.StatusReport;
-import use_case.gateway.StatusReportDataAccessInterface;
+import data_access.status.StatusReportDataAccessInterface;
 import use_case.status_report.*;
 import entity.MaintenanceIssue;
 

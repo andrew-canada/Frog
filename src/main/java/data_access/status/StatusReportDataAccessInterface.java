@@ -1,4 +1,4 @@
-package use_case.gateway;
+package data_access.status;
 
 import entity.StatusReport;
 

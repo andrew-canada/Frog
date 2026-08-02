@@ -6,7 +6,6 @@ import data_access.MongoDocuments;
 import entity.MaintenanceIssue;
 import entity.StatusReport;
 import org.bson.Document;
-import use_case.gateway.StatusReportDataAccessInterface;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;

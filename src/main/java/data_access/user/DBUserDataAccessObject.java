@@ -11,13 +11,11 @@ import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
 
-import entity.user.User;
-import entity.user.LoggedInUserFactory;
 import data_access.DBDataAccessObject;
 
 import java.util.*;
 
-public class DBUserDataAccessObject extends DBDataAccessObject implements use_case.gateway.UserDataAccessInterface {
+public class DBUserDataAccessObject extends DBDataAccessObject implements UserDataAccessInterface {
 
     static MongoCollection<Document> collection;
     private entity.User currentApplicationUser;

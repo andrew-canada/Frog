@@ -3,7 +3,7 @@ package use_case.view_reviews;
 import entity.Review;
 import entity.ReviewSummary;
 import entity.Washroom;
-import use_case.gateway.WashroomDataAccessInterface;
+import data_access.washroom.WashroomDataAccessInterface;
 
 import java.util.Comparator;
 import java.util.List;
