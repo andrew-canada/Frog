@@ -1,24 +1,30 @@
 package entity.user;
 
 import entity.review.Review;
+
+import java.util.ArrayList;
 import java.util.List;
 
-public class LoggedInUser implements User{
+public class LoggedInUser implements User {
 
     private final String name;
     private final String password;
+    private final String personalPlan;
     private List<Review> reviews;
 
     public LoggedInUser(String name, String password) {
-        this.name = name;
-        this.password = password;
-        this.reviews = null;
+        this(name, password, List.of(), "");
     }
 
     public LoggedInUser(String name, String password, List<Review> reviews) {
+        this(name, password, reviews, "");
+    }
+
+    public LoggedInUser(String name, String password, List<Review> reviews, String personalPlan) {
         this.name = name;
         this.password = password;
-        this.reviews = reviews;
+        this.reviews = new ArrayList<>(reviews);
+        this.personalPlan = personalPlan == null ? "" : personalPlan;
     }
 
     @Override
@@ -27,7 +33,11 @@ public class LoggedInUser implements User{
     }
 
     public String getPassword() {
-        return this.name;
+        return this.password;
+    }
+
+    public String getPersonalPlan() {
+        return personalPlan;
     }
 
     public void addReview(Review review) {

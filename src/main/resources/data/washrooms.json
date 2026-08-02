@@ -1,0 +1,1754 @@
+[
+  {
+    "ID": "RL",
+    "name": "RL | Women's & Men's Multi-Stall Accessible Washroom with Baby Change Station",
+    "latitude": "43.664463",
+    "longitude": "-79.399384",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "RL",
+    "name": "RL | Women's & Men's Multi-Stall Accessible Washroom with Baby Change Station",
+    "latitude": "43.664463",
+    "longitude": "-79.399384",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "RL",
+    "name": "RL | Women's & Men's Multi-Stall Accessible Washroom with Baby Change Station",
+    "latitude": "43.664463",
+    "longitude": "-79.399384",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "DN",
+    "name": "DN | Single-User Washroom with Baby-Change Station",
+    "latitude": "43.656059",
+    "longitude": "-79.387268",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "BL",
+    "name": "BL | Single-User Washroom",
+    "latitude": "43.66507",
+    "longitude": "-79.399239",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "BT",
+    "name": "BT | Women's & Men's Single-User Washroom",
+    "latitude": "43.667274",
+    "longitude": "-79.392365",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |CF Men's Single-User Washroom",
+    "latitude": "43.665195",
+    "longitude": "-79.388695",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |CF Single-User Washroom",
+    "latitude": "43.665165",
+    "longitude": "-79.388916",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "CS",
+    "name": "CS | Single-User Washroom",
+    "latitude": "43.666714",
+    "longitude": "-79.399834",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "DN",
+    "name": "DN | Single-User Washroom with Baby-Change Station",
+    "latitude": "43.656059",
+    "longitude": "-79.387268",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "ER",
+    "name": "ER | Single-User Washroom with Baby Change Station",
+    "latitude": "43.663898",
+    "longitude": "-79.401154",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "ER",
+    "name": "ER | Single-User Washroom with Baby Change Station",
+    "latitude": "43.663898",
+    "longitude": "-79.401154",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "VA",
+    "name": "VA | Men's and Women's Single-User Stall with Baby Change Station",
+    "latitude": "43.667164",
+    "longitude": "-79.396248",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "FH",
+    "name": "FH | Single-User Washroom",
+    "latitude": "43.66674",
+    "longitude": "-79.393982",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "FH",
+    "name": "FH | Women's Single-User Washroom",
+    "latitude": "43.666691",
+    "longitude": "-79.393959",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "GE",
+    "name": "GE | Men's Single-User Washroom",
+    "latitude": "43.666161",
+    "longitude": "-79.399918",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "GE",
+    "name": "GE | Single-User Accessible Washroom",
+    "latitude": "43.666153",
+    "longitude": "-79.399605",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "GE",
+    "name": "GE | Women's Single-User Washroom",
+    "latitude": "43.666157",
+    "longitude": "-79.399963",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "IN",
+    "name": "IN | Single-User Washroom",
+    "latitude": "43.665607",
+    "longitude": "-79.399452",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "JH",
+    "name": "JH | Single-User Washroom",
+    "latitude": "43.667625",
+    "longitude": "-79.400421",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "JH",
+    "name": "JH | Women's Single-User Washroom",
+    "latitude": "43.667664",
+    "longitude": "-79.400291",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "LA",
+    "name": "LA | Single-User Washroom",
+    "latitude": "43.665699",
+    "longitude": "-79.397011",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "LI",
+    "name": "LI |  Single-User Washroom",
+    "latitude": "43.668522",
+    "longitude": "-79.393639",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "NF",
+    "name": "NF | Women's Single-User Washroom",
+    "latitude": "43.666412",
+    "longitude": "-79.392136",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "OH",
+    "name": "OH | Women's & Men's Single-User Washroom",
+    "latitude": "43.666431",
+    "longitude": "-79.389038",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "OI",
+    "name": "OI | Single-User Washroom",
+    "latitude": "43.668156",
+    "longitude": "-79.398445",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "OI",
+    "name": "OI | Women's Single-User Washroom",
+    "latitude": "43.668617",
+    "longitude": "-79.398705",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "PI",
+    "name": "PI | Women's Single-User Washroom",
+    "latitude": "43.665691",
+    "longitude": "-79.391037",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "PR",
+    "name": "PR | Single-User Washroom",
+    "latitude": "43.666336",
+    "longitude": "-79.391365",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "SC",
+    "name": "SC | Single-User Washroom",
+    "latitude": "43.664864",
+    "longitude": "-79.400833",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "SK",
+    "name": "SK | Single-User Washroom",
+    "latitude": "43.668274",
+    "longitude": "-79.397736",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "VA",
+    "name": "VA | Men's and Women's Single-User Stall with Baby Change Station",
+    "latitude": "43.667164",
+    "longitude": "-79.396248",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "OA",
+    "name": "OA | Floor 1 single user all-gender accessible washroom with baby change station",
+    "latitude": "43.65881",
+    "longitude": "-79.392448",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "OA",
+    "name": "OA | Floor 1 single user all-gender accessible washroom with baby change station",
+    "latitude": "43.65881",
+    "longitude": "-79.392448",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "OA",
+    "name": "OA | Floor 1 single user all-gender accessible washroom with baby change station",
+    "latitude": "43.65881",
+    "longitude": "-79.392448",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "HH",
+    "name": "HH | Single-User Washroom with Baby-Change Station",
+    "latitude": "43.664028",
+    "longitude": "-79.39402",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "HH",
+    "name": "HH | Single-User Washroom with Baby-Change Station",
+    "latitude": "43.664028",
+    "longitude": "-79.39402",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "HH",
+    "name": "HH | Single-User Washroom with Baby-Change Station",
+    "latitude": "43.664028",
+    "longitude": "-79.39402",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "VA",
+    "name": "VA | Women's Single-User Accessible Washroom with Baby-Change Station",
+    "latitude": "43.66708",
+    "longitude": "-79.396111",
+    "gender": "SINGLE_USER",
+    "accessible": true
+  },
+  {
+    "ID": "VA",
+    "name": "VA | Women's Single-User Accessible Washroom with Baby-Change Station",
+    "latitude": "43.66708",
+    "longitude": "-79.396111",
+    "gender": "SINGLE_USER",
+    "accessible": true
+  },
+  {
+    "ID": "VA",
+    "name": "VA | Women's Single-User Accessible Washroom with Baby-Change Station",
+    "latitude": "43.66708",
+    "longitude": "-79.396111",
+    "gender": "SINGLE_USER",
+    "accessible": true
+  },
+  {
+    "ID": "HU",
+    "name": "HU | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.659252",
+    "longitude": "-79.398186",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "HU",
+    "name": "HU | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.659252",
+    "longitude": "-79.398186",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "PB",
+    "name": "PB | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.659931",
+    "longitude": "-79.391685",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "PB",
+    "name": "PB | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.659931",
+    "longitude": "-79.391685",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "FC",
+    "name": "FC | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.661205",
+    "longitude": "-79.40049",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "FC",
+    "name": "FC | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.661205",
+    "longitude": "-79.40049",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "SM",
+    "name": "SM | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.662304",
+    "longitude": "-79.393875",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "SM",
+    "name": "SM | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.662304",
+    "longitude": "-79.393875",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "RL",
+    "name": "RL | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.664627",
+    "longitude": "-79.399666",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "RL",
+    "name": "RL | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.664627",
+    "longitude": "-79.399666",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "RT",
+    "name": "RT | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.664913",
+    "longitude": "-79.398087",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "RT",
+    "name": "RT | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.664913",
+    "longitude": "-79.398087",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "EM",
+    "name": "EM | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.666698",
+    "longitude": "-79.392776",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "EM",
+    "name": "EM | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.666698",
+    "longitude": "-79.392776",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "MK",
+    "name": "MK | Floor 1 single-user accessible washroom with baby change station",
+    "latitude": "43.667477",
+    "longitude": "-79.398438",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "MK",
+    "name": "MK | Floor 1 single-user accessible washroom with baby change station",
+    "latitude": "43.667477",
+    "longitude": "-79.398438",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "JH",
+    "name": "JH | Single-User Accessible Washroom with Baby-Change Station",
+    "latitude": "43.667622",
+    "longitude": "-79.400368",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "JH",
+    "name": "JH | Single-User Accessible Washroom with Baby-Change Station",
+    "latitude": "43.667622",
+    "longitude": "-79.400368",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "OI",
+    "name": "OI | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.668709",
+    "longitude": "-79.398872",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "OI",
+    "name": "OI | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.668709",
+    "longitude": "-79.398872",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "WB",
+    "name": "WB | Men's Single-User Accessible Washroom",
+    "latitude": "43.659164",
+    "longitude": "-79.395256",
+    "gender": "SINGLE_USER",
+    "accessible": true
+  },
+  {
+    "ID": "WB",
+    "name": "WB | Men's Single-User Accessible Washroom",
+    "latitude": "43.659164",
+    "longitude": "-79.395256",
+    "gender": "SINGLE_USER",
+    "accessible": true
+  },
+  {
+    "ID": "MU",
+    "name": "MU | Women's & Men's Single-User Accessible Washroom",
+    "latitude": "43.664783",
+    "longitude": "-79.396446",
+    "gender": "SINGLE_USER",
+    "accessible": true
+  },
+  {
+    "ID": "MU",
+    "name": "MU | Women's & Men's Single-User Accessible Washroom",
+    "latitude": "43.664783",
+    "longitude": "-79.396446",
+    "gender": "SINGLE_USER",
+    "accessible": true
+  },
+  {
+    "ID": "MU",
+    "name": "MU | Women's & Men's Single-User Accessible Washroom",
+    "latitude": "43.664783",
+    "longitude": "-79.396446",
+    "gender": "SINGLE_USER",
+    "accessible": true
+  },
+  {
+    "ID": "EX",
+    "name": "EX | Women's & Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.65831",
+    "longitude": "-79.392799",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "EX",
+    "name": "EX | Women's & Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.65831",
+    "longitude": "-79.392799",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "KS",
+    "name": "KS | Women's & Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.659046",
+    "longitude": "-79.39679",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "KS",
+    "name": "KS | Women's & Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.659046",
+    "longitude": "-79.39679",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "EP",
+    "name": "EP | Women's & Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.659256",
+    "longitude": "-79.392075",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "EP",
+    "name": "EP | Women's & Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.659256",
+    "longitude": "-79.392075",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "RT",
+    "name": "RT | Women's & Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.665218",
+    "longitude": "-79.3983",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "RT",
+    "name": "RT | Women's & Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.665218",
+    "longitude": "-79.3983",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "MK",
+    "name": "MK | Basement Multi-Stall Women's & Men's Accessible Washrooms",
+    "latitude": "43.667065",
+    "longitude": "-79.39727",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "MK",
+    "name": "MK | Basement Multi-Stall Women's & Men's Accessible Washrooms",
+    "latitude": "43.667065",
+    "longitude": "-79.39727",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "DN",
+    "name": "DN | Single-User Accessible Washroom",
+    "latitude": "43.656246",
+    "longitude": "-79.387222",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "DN",
+    "name": "DN | Single-User Accessible Washroom",
+    "latitude": "43.656246",
+    "longitude": "-79.387222",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "AP",
+    "name": "AP | Single-user Accessible Washroom",
+    "latitude": "43.659904",
+    "longitude": "-79.398445",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "AP",
+    "name": "AP | Single-user Accessible Washroom",
+    "latitude": "43.659904",
+    "longitude": "-79.398445",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "CG",
+    "name": "CG | Single-User Accessible Washroom",
+    "latitude": "43.66177",
+    "longitude": "-79.392967",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "CG",
+    "name": "CG | Single-User Accessible Washroom",
+    "latitude": "43.66177",
+    "longitude": "-79.392967",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "GD",
+    "name": "GD | Single-User Accessible Washroom",
+    "latitude": "43.663433",
+    "longitude": "-79.401558",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "GD",
+    "name": "GD | Single-User Accessible Washroom",
+    "latitude": "43.663433",
+    "longitude": "-79.401558",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "CR",
+    "name": "CR | Single-User Accessible Washroom",
+    "latitude": "43.665203",
+    "longitude": "-79.390602",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "CR",
+    "name": "CR | Single-User Accessible Washroom",
+    "latitude": "43.665203",
+    "longitude": "-79.390602",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "LW",
+    "name": "LW | Single-User Accessible Washroom",
+    "latitude": "43.665806",
+    "longitude": "-79.394302",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "LW",
+    "name": "LW | Single-User Accessible Washroom",
+    "latitude": "43.665806",
+    "longitude": "-79.394302",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "AB",
+    "name": "AB | Women's and Men's Single-User Washroom",
+    "latitude": "43.660618",
+    "longitude": "-79.397346",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "AH",
+    "name": "AH | Men's Single-User Washroom",
+    "latitude": "43.664753",
+    "longitude": "-79.390121",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "AH",
+    "name": "AH | Single-User Washroom",
+    "latitude": "43.664642",
+    "longitude": "-79.390015",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "BF",
+    "name": "BF | Women's Single-User Washroom",
+    "latitude": "43.660957",
+    "longitude": "-79.399773",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |BI Women's Single-User Washroom",
+    "latitude": "43.660557",
+    "longitude": "-79.388832",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "CG",
+    "name": "CG | Men's Single-User Washroom",
+    "latitude": "43.6618",
+    "longitude": "-79.392868",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "CG",
+    "name": "CG | Single-User Washroom",
+    "latitude": "43.661777",
+    "longitude": "-79.393051",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "DR",
+    "name": "DR | Single-User Washroom",
+    "latitude": "43.66206",
+    "longitude": "-79.396683",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "EJ",
+    "name": "EJ | Single-User Accessible Washroom",
+    "latitude": "43.66663",
+    "longitude": "-79.39463",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "EJ",
+    "name": "EJ | Single-User Accessible Washroom",
+    "latitude": "43.66663",
+    "longitude": "-79.39463",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "ES",
+    "name": "ES | Single-User Washroom",
+    "latitude": "43.660595",
+    "longitude": "-79.399376",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "FC",
+    "name": "FC | Single-User Washroom",
+    "latitude": "43.661137",
+    "longitude": "-79.400475",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "GD",
+    "name": "GD | Single-User Washroom",
+    "latitude": "43.663822",
+    "longitude": "-79.401855",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "GS",
+    "name": "GS | Single-User Washroom",
+    "latitude": "43.661987",
+    "longitude": "-79.397141",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "GU",
+    "name": "GU | Single-User Washroom",
+    "latitude": "43.660812",
+    "longitude": "-79.400238",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "JP",
+    "name": "JP | Single-User Washroom",
+    "latitude": "43.664036",
+    "longitude": "-79.389702",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "JP",
+    "name": "JP | Women's & Men's Single-User Washroom",
+    "latitude": "43.664051",
+    "longitude": "-79.389786",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "LM",
+    "name": "LM | Single-User Washroom",
+    "latitude": "43.661777",
+    "longitude": "-79.398056",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "MP",
+    "name": "MP | Multi-User All-Gender Washrooms",
+    "latitude": "43.66048",
+    "longitude": "-79.398399",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "MP",
+    "name": "MP | Single-User Washrooms",
+    "latitude": "43.660511",
+    "longitude": "-79.398476",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "MR",
+    "name": "MR | Women's Single-User Washroom",
+    "latitude": "43.661289",
+    "longitude": "-79.392998",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "MS",
+    "name": "MS | Single-User Washroom",
+    "latitude": "43.660816",
+    "longitude": "-79.39357",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "NB",
+    "name": "NB | Single-User Washroom",
+    "latitude": "43.660416",
+    "longitude": "-79.400131",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "NR",
+    "name": "NR | Single-User Washroom",
+    "latitude": "43.661129",
+    "longitude": "-79.400902",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "RT",
+    "name": "RT | Single-User Washroom",
+    "latitude": "43.664845",
+    "longitude": "-79.398125",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "RW",
+    "name": "RW | Single-User Washroom",
+    "latitude": "43.663074",
+    "longitude": "-79.39917",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "RW",
+    "name": "RW | Women's & Men's Single-User Washroom",
+    "latitude": "43.663158",
+    "longitude": "-79.398933",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "SC",
+    "name": "SC | Women's Single-User Washroom",
+    "latitude": "43.664814",
+    "longitude": "-79.400932",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "SM",
+    "name": "SM | Single-User Washroom",
+    "latitude": "43.662037",
+    "longitude": "-79.393723",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "SO",
+    "name": "SO | Single-User Washroom",
+    "latitude": "43.663158",
+    "longitude": "-79.394684",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "SS",
+    "name": "SS | Single-User Washroom",
+    "latitude": "43.662399",
+    "longitude": "-79.398636",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |Simcoe Hall Single-User Washrom",
+    "latitude": "43.660751",
+    "longitude": "-79.395844",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "UC",
+    "name": "UC | Single-User Washroom",
+    "latitude": "43.662651",
+    "longitude": "-79.396042",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "UP",
+    "name": "UP | Single-User Washroom",
+    "latitude": "43.66341",
+    "longitude": "-79.397354",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "VC",
+    "name": "VC | Single-User Washroom",
+    "latitude": "43.666927",
+    "longitude": "-79.392029",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "WO",
+    "name": "WO | Single-User Accessible Washroom",
+    "latitude": "43.667328",
+    "longitude": "-79.399315",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "WO",
+    "name": "WO | Single-User Accessible Washroom",
+    "latitude": "43.667328",
+    "longitude": "-79.399315",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "BA",
+    "name": "BA | Single-User Accessible Washroom",
+    "latitude": "43.659901",
+    "longitude": "-79.397041",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "BA",
+    "name": "BA | Single-User Accessible Washroom",
+    "latitude": "43.659901",
+    "longitude": "-79.397041",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "MR",
+    "name": "MR | Women's Single-User Accessible Washroom",
+    "latitude": "43.661362",
+    "longitude": "-79.392929",
+    "gender": "SINGLE_USER",
+    "accessible": true
+  },
+  {
+    "ID": "MR",
+    "name": "MR | Women's Single-User Accessible Washroom",
+    "latitude": "43.661362",
+    "longitude": "-79.392929",
+    "gender": "SINGLE_USER",
+    "accessible": true
+  },
+  {
+    "ID": "BA",
+    "name": "BA | Women's & Men's Multi-Stall Washroom with Baby-Change Station",
+    "latitude": "43.659847",
+    "longitude": "-79.397095",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "CH",
+    "name": "CH | Women's & Men's Multi-Stall Washroom with Baby-Change Station",
+    "latitude": "43.660778",
+    "longitude": "-79.395515",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "HH",
+    "name": "HH | Women's & Men's Multi-Stall Washroom with Baby-Change Station",
+    "latitude": "43.66396",
+    "longitude": "-79.394005",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "HS",
+    "name": "HS | Men's & Women's Multi-Stall Washroom with Baby Change Station",
+    "latitude": "43.659004",
+    "longitude": "-79.392944",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "MS",
+    "name": "MS | Women's Multi-Stall Washroom with Baby Change Station",
+    "latitude": "43.660816",
+    "longitude": "-79.394188",
+    "gender": "WOMEN",
+    "accessible": false
+  },
+  {
+    "ID": "SC",
+    "name": "SC | Single-User Washroom with Baby-Change Station",
+    "latitude": "43.664852",
+    "longitude": "-79.400764",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "WA",
+    "name": "WA | Women's Washroom with Baby-Change Station",
+    "latitude": "43.666901",
+    "longitude": "-79.399223",
+    "gender": "WOMEN",
+    "accessible": false
+  },
+  {
+    "ID": "WS",
+    "name": "WS | Women's & Men's Multi-Stall Washroom with Baby-Change Station",
+    "latitude": "43.662998",
+    "longitude": "-79.400162",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "EJ",
+    "name": "EJ | Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.666428",
+    "longitude": "-79.394585",
+    "gender": "MEN",
+    "accessible": true
+  },
+  {
+    "ID": "MR",
+    "name": "MR | Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.661106",
+    "longitude": "-79.392876",
+    "gender": "MEN",
+    "accessible": true
+  },
+  {
+    "ID": "MU",
+    "name": "MU | Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.664726",
+    "longitude": "-79.396637",
+    "gender": "MEN",
+    "accessible": true
+  },
+  {
+    "ID": "DN",
+    "name": "DN | Single-User Washroom",
+    "latitude": "43.656136",
+    "longitude": "-79.386986",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "HA",
+    "name": "HA | Single-User Washroom",
+    "latitude": "43.659977",
+    "longitude": "-79.393639",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "HS",
+    "name": "HS | Single-User Washroom",
+    "latitude": "43.659031",
+    "longitude": "-79.392738",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "KS",
+    "name": "KS | Single-User Washroom",
+    "latitude": "43.659203",
+    "longitude": "-79.396835",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "MB",
+    "name": "MB | Single-User Washroom",
+    "latitude": "43.659504",
+    "longitude": "-79.393509",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "OA",
+    "name": "OA | Floor 1 single user all-gender washrooms",
+    "latitude": "43.658791",
+    "longitude": "-79.392517",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "PT",
+    "name": "PT | Single-User Washroom",
+    "latitude": "43.659615",
+    "longitude": "-79.394737",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "PT",
+    "name": "PT | Women's Single-User Washroom",
+    "latitude": "43.659626",
+    "longitude": "-79.394615",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "SB",
+    "name": "SB | Women's Single-User Washroom",
+    "latitude": "43.660084",
+    "longitude": "-79.399689",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |TZ Single-User Washroom",
+    "latitude": "43.660393",
+    "longitude": "-79.391724",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "WB",
+    "name": "WB | Men's Single-User Washroom",
+    "latitude": "43.659134",
+    "longitude": "-79.395447",
+    "gender": "SINGLE_USER",
+    "accessible": false
+  },
+  {
+    "ID": "WB",
+    "name": "WB | Single-User Washroom",
+    "latitude": "43.659164",
+    "longitude": "-79.394943",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "WW",
+    "name": "WW | Single-User Washroom",
+    "latitude": "43.666405",
+    "longitude": "-79.398865",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "BT",
+    "name": "BT | Single-User Accessible Washroom",
+    "latitude": "43.667362",
+    "longitude": "-79.392403",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "",
+    "name": " |Brennan Hall",
+    "latitude": "43.666405",
+    "longitude": "-79.389793",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "CS",
+    "name": "CS | Single-User Accessible Washroom",
+    "latitude": "43.666706",
+    "longitude": "-79.399918",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "DR",
+    "name": "DR | Single-User Accessible Washroom",
+    "latitude": "43.662083",
+    "longitude": "-79.396744",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "EX",
+    "name": "EX | Single-User Accessible Washroom",
+    "latitude": "43.658421",
+    "longitude": "-79.392838",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "GE",
+    "name": "GE | Single-User Accessible Washroom",
+    "latitude": "43.666088",
+    "longitude": "-79.399582",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "HS",
+    "name": "HS | Single-User Accessible Washroom",
+    "latitude": "43.659122",
+    "longitude": "-79.392456",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "HU",
+    "name": "HU | Single-User Accessible Washroom",
+    "latitude": "43.659367",
+    "longitude": "-79.398209",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "",
+    "name": " |J. M. Kelly Library",
+    "latitude": "43.664822",
+    "longitude": "-79.389534",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "KP",
+    "name": "KP | Single-User Accessible Washroom",
+    "latitude": "43.660629",
+    "longitude": "-79.40065",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "LA",
+    "name": "LA | Single-User Accessible Washroom",
+    "latitude": "43.665695",
+    "longitude": "-79.396881",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "MK",
+    "name": "MK | Floor 1 & 2 single-user accessible washroom",
+    "latitude": "43.667454",
+    "longitude": "-79.398537",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "MU",
+    "name": "MU | Single-User Accessible Washroom",
+    "latitude": "43.6651",
+    "longitude": "-79.39637",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "",
+    "name": " |Macdonald-Mowat House",
+    "latitude": "43.661785",
+    "longitude": "-79.397057",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |Mechanical Engineering Building",
+    "latitude": "43.659935",
+    "longitude": "-79.39402",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "NB",
+    "name": "NB | Single-User Accessible Washroom",
+    "latitude": "43.660374",
+    "longitude": "-79.399895",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "NF",
+    "name": "NF | Single-User Accessible Washroom",
+    "latitude": "43.666382",
+    "longitude": "-79.39225",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "",
+    "name": " |Nona MacDonald Visitors Centre",
+    "latitude": "43.661366",
+    "longitude": "-79.396385",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "RU",
+    "name": "RU | Single-User Accessible Washroom",
+    "latitude": "43.655422",
+    "longitude": "-79.389175",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "",
+    "name": " |Regis College",
+    "latitude": "43.663929",
+    "longitude": "-79.390244",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "SK",
+    "name": "SK | Single-User Accessible Washroom",
+    "latitude": "43.668213",
+    "longitude": "-79.39772",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "UC",
+    "name": "UC | Single-User Accessible Washroom",
+    "latitude": "43.662712",
+    "longitude": "-79.395149",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "VC",
+    "name": "VC | Single-User Accessible Washroom",
+    "latitude": "43.666939",
+    "longitude": "-79.391891",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "VP",
+    "name": "VP | Single-User Accessible Washroom with Baby Change Station",
+    "latitude": "43.666409",
+    "longitude": "-79.39637",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "WI",
+    "name": "WI | Single-User Accessible Washroom",
+    "latitude": "43.661808",
+    "longitude": "-79.401031",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "",
+    "name": " |Cumberland House",
+    "latitude": "43.659481",
+    "longitude": "-79.395912",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |Fasken Building",
+    "latitude": "43.664051",
+    "longitude": "-79.402046",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |Goldring Student Centre",
+    "latitude": "43.667637",
+    "longitude": "-79.392662",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |Margaret Addison Residence",
+    "latitude": "43.668171",
+    "longitude": "-79.392395",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |Sir Daniel Wilson Residence",
+    "latitude": "43.662617",
+    "longitude": "-79.397522",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |Wetmore Hall",
+    "latitude": "43.662098",
+    "longitude": "-79.399712",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |Whitney Hall",
+    "latitude": "43.663906",
+    "longitude": "-79.39801",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |Wycliffe College",
+    "latitude": "43.664547",
+    "longitude": "-79.395027",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "JH",
+    "name": "JH | Women's Multi-Stall Accessible Washroom",
+    "latitude": "43.667652",
+    "longitude": "-79.400276",
+    "gender": "WOMEN",
+    "accessible": true
+  },
+  {
+    "ID": "MR",
+    "name": "MR | Women's Multi-Stall Accessible Washroom",
+    "latitude": "43.661308",
+    "longitude": "-79.392929",
+    "gender": "WOMEN",
+    "accessible": true
+  },
+  {
+    "ID": "MU",
+    "name": "MU | Women's Multi-Stall Accessible Washroom",
+    "latitude": "43.665321",
+    "longitude": "-79.396751",
+    "gender": "WOMEN",
+    "accessible": true
+  },
+  {
+    "ID": "RS",
+    "name": "RS | Women's Accessible Washroom",
+    "latitude": "43.659973",
+    "longitude": "-79.393265",
+    "gender": "WOMEN",
+    "accessible": true
+  },
+  {
+    "ID": "WO",
+    "name": "WO | Women's Accessible Washroom",
+    "latitude": "43.667297",
+    "longitude": "-79.399391",
+    "gender": "WOMEN",
+    "accessible": true
+  },
+  {
+    "ID": "GB",
+    "name": "GB | Women's & Men's Multi-Stall Washroom",
+    "latitude": "43.659885",
+    "longitude": "-79.396355",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "GB",
+    "name": "GB | Women's & Men's Multi-Stall Washroom",
+    "latitude": "43.659885",
+    "longitude": "-79.396355",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "GB",
+    "name": "GB | Women's & Men's Multi-Stall Washroom",
+    "latitude": "43.659885",
+    "longitude": "-79.396355",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "GB",
+    "name": "GB | Women & Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.659885",
+    "longitude": "-79.396355",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "GB",
+    "name": "GB | Women & Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.659885",
+    "longitude": "-79.396355",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "GB",
+    "name": "GB | Women & Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.659885",
+    "longitude": "-79.396355",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "GB",
+    "name": "GB | Women & Men's Multi-Stall Accessible Washroom",
+    "latitude": "43.659885",
+    "longitude": "-79.396355",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "SF",
+    "name": "SF | Women's & Men's Multi-Stall Washroom",
+    "latitude": "43.660011",
+    "longitude": "-79.394836",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "SF",
+    "name": "SF | Women's & Men's Multi-Stall Washroom",
+    "latitude": "43.660011",
+    "longitude": "-79.394836",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "SF",
+    "name": "SF | Women & Men\u2019s Multi-Stall Accessible Washroom",
+    "latitude": "43.660011",
+    "longitude": "-79.394836",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "SF",
+    "name": "SF | Women & Men\u2019s Multi-Stall Accessible Washroom",
+    "latitude": "43.660011",
+    "longitude": "-79.394836",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "SF",
+    "name": "SF | Women & Men\u2019s Multi-Stall Accessible Washroom",
+    "latitude": "43.660011",
+    "longitude": "-79.394836",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "SF",
+    "name": "SF | Women & Men\u2019s Multi-Stall Accessible Washroom",
+    "latitude": "43.660011",
+    "longitude": "-79.394836",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "SF",
+    "name": "SF | Women & Men\u2019s Multi-Stall Accessible Washroom",
+    "latitude": "43.660011",
+    "longitude": "-79.394836",
+    "gender": "ALL_GENDER",
+    "accessible": true
+  },
+  {
+    "ID": "",
+    "name": " |Earth Sciences Centre (room 2060)",
+    "latitude": "43.660965",
+    "longitude": "-79.399788",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |Earth Sciences Centre (room 3023)",
+    "latitude": "43.660965",
+    "longitude": "-79.399788",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |Earth Sciences Centre (room 5012)",
+    "latitude": "43.660965",
+    "longitude": "-79.399788",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "WS",
+    "name": "WS |Athletic CentreWarren Stevens Building",
+    "latitude": "43.662861",
+    "longitude": "-79.401039",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "NB",
+    "name": "NB |Borden Building North",
+    "latitude": "43.660477",
+    "longitude": "-79.400253",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "BN",
+    "name": "BN |Clara Benson Building",
+    "latitude": "43.662971",
+    "longitude": "-79.400246",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "EX",
+    "name": "EX |Exam Centre",
+    "latitude": "43.658546",
+    "longitude": "-79.392921",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "GO",
+    "name": "GO |Goldring Centre for High Performance Sport",
+    "latitude": "43.666817",
+    "longitude": "-79.398293",
+    "gender": "MEN",
+    "accessible": false
+  },
+  {
+    "ID": "KX",
+    "name": "KX |Knox College",
+    "latitude": "43.661446",
+    "longitude": "-79.396721",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "MS",
+    "name": "MS |Medical Sciences Building",
+    "latitude": "43.660748",
+    "longitude": "-79.393517",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "RL",
+    "name": "RL |Robarts Library",
+    "latitude": "43.664902",
+    "longitude": "-79.399551",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "SS",
+    "name": "SS |Sidney Smith Hall",
+    "latitude": "43.662418",
+    "longitude": "-79.398651",
+    "gender": "ALL_GENDER",
+    "accessible": false
+  },
+  {
+    "ID": "SU",
+    "name": "SU |Student Commons",
+    "latitude": "43.658752",
+    "longitude": "-79.397919",
+    "gender": "NO INFO",
+    "accessible": false
+  },
+  {
+    "ID": "",
+    "name": " |777 Bay Street Accessible Washroom",
+    "latitude": "43.660686",
+    "longitude": "-79.384605",
+    "gender": "NO INFO",
+    "accessible": true
+  }
+]

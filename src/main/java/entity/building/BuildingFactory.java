@@ -11,16 +11,7 @@ public interface BuildingFactory {
             String buildingNameLong,
             double latitude,
             double longitude,
-            String controlInfo,
-            List<Washroom> washroomList
-    );
-
-    Building create(
-            String buildingCode,
-            String buildingNameShort,
-            String buildingNameLong,
-            double latitude,
-            double longitude,
             String controlInfo
     );
+
 }

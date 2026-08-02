@@ -14,5 +14,8 @@ public interface Building {
 
     public String getControlInfo();
 
-    public List<Washroom> getWashroomList() ;
+    public double getLatitude();
+
+    public double getLongitude();
+
 }
