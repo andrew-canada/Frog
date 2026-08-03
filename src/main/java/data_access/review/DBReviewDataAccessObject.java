@@ -14,15 +14,25 @@ import org.bson.conversions.Bson;
 import entity.review.Review;
 import entity.review.WashroomReviewFactory;
 import entity.washroom.Washroom;
+import entity.Report;
 import data_access.DBDataAccessObject;
+import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
+import use_case.moderate_reviews.ReviewAdminDataAccessInterface;
+import use_case.moderate_reviews.ReportedReviewsDataAccessInterface;
+import use_case.report_review.ReviewReportDataAccessInterface;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
-public class DBReviewDataAccessObject extends DBDataAccessObject implements use_case.view_reviews.ReviewDataAccessInterface {
+public class DBReviewDataAccessObject extends DBDataAccessObject
+        implements use_case.view_reviews.ReviewDataAccessInterface,
+        HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface, ReviewAdminDataAccessInterface, ReportedReviewsDataAccessInterface {
 
     static MongoCollection<Document> collection;
     private static MongoCollection<Document> users;
+    private final MongoCollection<Document> reviewVotes;
+    private final MongoCollection<Document> reviewReports;
     static final List<String> allowedAttributes = List.of(new String[]{
             "washroomID", "authorUsername", "rating", "cleanliness", "comment", "helpfulCount",
             "createdAt", "seedKey"});
@@ -32,12 +42,16 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
         // the set URI
         collection = database.getCollection("Reviews");
         users = database.getCollection("Users");
+        reviewVotes = database.getCollection("ReviewVotes");
+        reviewReports = database.getCollection("ReviewReports");
     }
 
     public DBReviewDataAccessObject(MongoDatabase database) {
         super(database);
         collection = database.getCollection("Reviews");
         users = database.getCollection("Users");
+        reviewVotes = database.getCollection("ReviewVotes");
+        reviewReports = database.getCollection("ReviewReports");
     }
 
     /**
@@ -243,5 +257,88 @@ public class DBReviewDataAccessObject extends DBDataAccessObject implements use_
 
     private static double clamp(double rating) {
         return Math.max(1, Math.min(5, rating));
+    }
+
+    // --- Helpful votes ---------------------------------------------------------
+    @Override
+    public boolean hasVoted(String reviewId, String username) {
+        return reviewVotes.find(Filters.and(Filters.eq("reviewId", reviewId),
+                Filters.eq("username", username))).first() != null;
+    }
+
+    @Override
+    public void addVote(String reviewId, String username) {
+        if (!hasVoted(reviewId, username)) {
+            reviewVotes.insertOne(new Document("reviewId", reviewId).append("username", username));
+            adjustHelpful(reviewId, 1);
+        }
+    }
+
+    @Override
+    public void removeVote(String reviewId, String username) {
+        if (hasVoted(reviewId, username)) {
+            reviewVotes.deleteOne(Filters.and(Filters.eq("reviewId", reviewId),
+                    Filters.eq("username", username)));
+            adjustHelpful(reviewId, -1);
+        }
+    }
+
+    private void adjustHelpful(String reviewId, int delta) {
+        Document document = MongoDocuments.findById(collection, reviewId);
+        if (document != null) {
+            collection.updateOne(Filters.eq("_id", document.get("_id")),
+                    new Document("$inc", new Document("helpfulCount", delta)));
+        }
+    }
+
+    // --- Reports ---------------------------------------------------------------
+    @Override
+    public void save(Report report) {
+        reviewReports.insertOne(new Document("reviewId", report.reviewId())
+                .append("reporterUsername", report.reporterUsername())
+                .append("reasons", report.reasons())
+                .append("details", report.details())
+                .append("createdAt", report.createdAt().toString()));
+    }
+
+    @Override
+    public boolean hasReported(String reviewId, String username) {
+        return reviewReports.find(Filters.and(Filters.eq("reviewId", reviewId),
+                Filters.eq("reporterUsername", username))).first() != null;
+    }
+
+    @Override
+    public List<Report> getAllReports() {
+        List<Report> result = new ArrayList<>();
+        for (Document document : reviewReports.find()) {
+            List<String> reasons = document.getList("reasons", String.class);
+            result.add(new Report(MongoDocuments.id(document),
+                    MongoDocuments.string(document, "", "reviewId"),
+                    MongoDocuments.string(document, "Anonymous", "reporterUsername", "username"),
+                    reasons == null ? List.of() : reasons,
+                    MongoDocuments.string(document, "", "details"),
+                    MongoDocuments.dateTime(document, LocalDateTime.now(), "createdAt")));
+        }
+        return List.copyOf(result);
+    }
+
+    @Override
+    public void deleteReportsForReview(String reviewId) {
+        reviewReports.deleteMany(Filters.eq("reviewId", reviewId));
+    }
+
+    // --- Review admin ----------------------------------------------------------
+    @Override
+    public Optional<entity.Review> getById(String reviewId) {
+        Document document = MongoDocuments.findById(collection, reviewId);
+        return document == null ? Optional.empty() : Optional.of((entity.Review) createReview(document));
+    }
+
+    @Override
+    public void deleteReview(String reviewId) {
+        Document document = MongoDocuments.findById(collection, reviewId);
+        if (document != null) {
+            collection.deleteOne(Filters.eq("_id", document.get("_id")));
+        }
     }
 }
