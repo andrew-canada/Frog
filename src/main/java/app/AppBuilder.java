@@ -85,7 +85,7 @@ public final class AppBuilder {
         var busynessModel = new BusynessViewModel();
         var mapModel = new MapViewModel();
 
-        var reviewController = new ViewReviewsController(new ViewReviewsInteractor(reviews, washrooms, new ViewReviewsPresenter(reviewsModel)));
+        var reviewController = new ViewReviewsController(new ViewReviewsInteractor(reviews, washrooms, reviews, reviews, new ViewReviewsPresenter(reviewsModel)));
         var loginController = new LoginController(new LoginInteractor(users, new LoginPresenter(loginModel, loggedInModel)));
         var signupController = new SignupController(new SignupInteractor(users, new SignupPresenter(loginModel, loggedInModel)));
         var recommendationController = new RecommendationController(new RecommendWashroomInteractor(washrooms, reports, new RecommendationPresenter(recommendationModel)));
@@ -136,7 +136,7 @@ public final class AppBuilder {
 
         Runnable showMain = () -> layout.show(cards, MAIN);
         main.setOnReviews(id -> {
-            reviewController.execute(id);
+            reviewController.execute(id, loggedInModel.getState().username());
             layout.show(cards, REVIEWS);
         });
         main.setOnDirections(id -> requestDirections(main, directionsController, id));
@@ -180,7 +180,7 @@ public final class AppBuilder {
         });
         recommendation.setOnReviews(() -> {
             if (!recommendation.selectedId().isBlank()) {
-                reviewController.execute(recommendation.selectedId());
+                reviewController.execute(id, loggedInModel.getState().username());
                 layout.show(cards, REVIEWS);
             }
         });
