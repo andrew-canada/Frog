@@ -35,6 +35,7 @@ public final class MainView extends JPanel {
     private final JPanel list = new JPanel();
     private final JLabel routeLabel = Theme.label("Select a washroom to explore", 13, Theme.MUTED);
     private final CampusMapPanel map = new CampusMapPanel();
+    private JButton moderatorNav;
     private String selectedId = "";
     private List<WashroomListViewModel.Item> renderedItems = List.of();
 
@@ -52,6 +53,8 @@ public final class MainView extends JPanel {
             onBusyness = () -> {
             },
             onAccount = () -> {
+            },
+            onModerator = () -> {
             };
 
     private Function<String, GeoPoint> addressLookup = address -> {
@@ -88,7 +91,8 @@ public final class MainView extends JPanel {
         p.add(brand, BorderLayout.WEST);
         JPanel nav = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         nav.setOpaque(false);
-        for (JButton b : new JButton[]{nav("Recommend", () -> onRecommend.run()), nav("Account", () -> onAccount.run()), nav("Report status", () -> onReport.run()), nav("Busyness", () -> onBusyness.run()), nav("Login", () -> onLogin.run())})
+        moderatorNav = nav("Moderator", () -> onModerator.run());
+        for (JButton b : new JButton[]{nav("Recommend", () -> onRecommend.run()), nav("Account", () -> onAccount.run()), nav("Report status", () -> onReport.run()), nav("Busyness", () -> onBusyness.run()), moderatorNav, nav("Login", () -> onLogin.run())})
             nav.add(b);
         p.add(nav, BorderLayout.EAST);
         return p;
@@ -240,6 +244,23 @@ public final class MainView extends JPanel {
 
     public void setOnBusyness(Runnable r) {
         onBusyness = r;
+    }
+
+    public void setOnModerator(Runnable r) {
+        onModerator = r;
+    }
+
+    /**
+     * Reflects the number of reported reviews awaiting moderation on the Moderator nav button:
+     * appends the count and accents the label (berry, bold) when there is a queue, plain otherwise.
+     */
+    public void setModeratorReportCount(int n) {
+        if (moderatorNav == null) {
+            return;
+        }
+        moderatorNav.setText(n > 0 ? "Moderator (" + n + ")" : "Moderator");
+        moderatorNav.setForeground(n > 0 ? Theme.BERRY : Color.BLACK);
+        moderatorNav.setFont(moderatorNav.getFont().deriveFont(n > 0 ? Font.BOLD : Font.PLAIN));
     }
 
     public void showRouting() {
