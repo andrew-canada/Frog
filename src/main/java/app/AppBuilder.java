@@ -25,6 +25,9 @@ import interface_adapter.login.*;
 import interface_adapter.recommend.*;
 import interface_adapter.status_report.*;
 import interface_adapter.view_reviews.*;
+import interface_adapter.report_review.*;
+import interface_adapter.moderate_reviews.*;
+import interface_adapter.vote_helpful.*;
 import use_case.account.change_password.ChangePasswordInteractor;
 import use_case.account.change_username.ChangeUsernameInteractor;
 import use_case.account.delete_account.DeleteAccountInteractor;
@@ -36,6 +39,10 @@ import use_case.recommend.RecommendWashroomInteractor;
 import use_case.signup.SignupInteractor;
 import use_case.status_report.SubmitStatusReportInteractor;
 import use_case.view_reviews.ViewReviewsInteractor;
+import use_case.report_review.ReportReviewInteractor;
+import use_case.moderate_reviews.ModerateReviewsInteractor;
+import use_case.vote_helpful.VoteHelpfulInteractor;
+import java.util.function.Supplier;
 import view.*;
 
 import javax.swing.*;
@@ -51,7 +58,7 @@ import java.util.concurrent.CompletableFuture;
  * Composition root: the only class that selects concrete database and external-service adapters.
  */
 public final class AppBuilder {
-    private static final String MAIN = "main", REVIEWS = "reviews", LOGIN = "login", RECOMMEND = "recommend", STATUS = "status", BUSYNESS = "busyness", ACCOUNT = "account";
+    private static final String MAIN = "main", REVIEWS = "reviews", LOGIN = "login", RECOMMEND = "recommend", STATUS = "status", BUSYNESS = "busyness", ACCOUNT = "account", MODERATE = "moderate";
 
     public JFrame build() {
         String graphhopperKey = requiredEnvironment(GraphhopperRouteDataAccessObject.API_KEY_ENV);
@@ -84,8 +91,14 @@ public final class AppBuilder {
         var statusModel = new StatusReportViewModel();
         var busynessModel = new BusynessViewModel();
         var mapModel = new MapViewModel();
+        var reportReviewModel = new ReportReviewViewModel();
+        var moderateModel = new ModerateReviewsViewModel();
 
         var reviewController = new ViewReviewsController(new ViewReviewsInteractor(reviews, washrooms, reviews, reviews, new ViewReviewsPresenter(reviewsModel)));
+        var voteController = new VoteHelpfulController(new VoteHelpfulInteractor(reviews));
+        var reportController = new ReportReviewController(new ReportReviewInteractor(reviews, new ReportReviewPresenter(reportReviewModel)));
+        var moderateController = new ModerateReviewsController(new ModerateReviewsInteractor(reviews, reviews, washrooms, new ModerateReviewsPresenter(moderateModel)));
+        Supplier<String> currentUser = () -> loggedInModel.getState().username();
         var loginController = new LoginController(new LoginInteractor(users, new LoginPresenter(loginModel, loggedInModel)));
         var signupController = new SignupController(new SignupInteractor(users, new SignupPresenter(loginModel, loggedInModel)));
         var recommendationController = new RecommendationController(new RecommendWashroomInteractor(washrooms, reports, new RecommendationPresenter(recommendationModel)));
@@ -125,6 +138,7 @@ public final class AppBuilder {
         );
         StatusReportView status = new StatusReportView(statusModel);
         BusynessChartView busyness = new BusynessChartView(busynessModel);
+        ReportedReviewsView moderate = new ReportedReviewsView(moderateModel);
         cards.add(main, MAIN);
         cards.add(readReviews, REVIEWS);
         cards.add(login, LOGIN);
@@ -132,12 +146,18 @@ public final class AppBuilder {
         cards.add(account, ACCOUNT);
         cards.add(status, STATUS);
         cards.add(busyness, BUSYNESS);
+        cards.add(moderate, MODERATE);
         frame.setContentPane(cards);
 
         Runnable showMain = () -> layout.show(cards, MAIN);
         main.setOnReviews(id -> {
-            reviewController.execute(id, loggedInModel.getState().username());
+            reviewController.execute(id, currentUser.get());
             layout.show(cards, REVIEWS);
+        });
+        main.setOnModerator(() -> {
+            moderate.setModeratorUsername(currentUser.get());
+            moderateController.load();
+            layout.show(cards, MODERATE);
         });
         main.setOnDirections(id -> requestDirections(main, directionsController, id));
         main.setOnLogin(() -> layout.show(cards, LOGIN));
@@ -168,6 +188,26 @@ public final class AppBuilder {
                     layout.show(cards, STATUS);
                 }
         ));
+        readReviews.setOnHelpful(id -> {
+            voteController.toggle(id, currentUser.get());
+            reviewController.execute(reviewsModel.getState().washroomId(), currentUser.get());
+        });
+        readReviews.setOnReport(id -> {
+            // Modal dialog: setVisible blocks until it closes, then refresh the review list (so the
+            // button flips to "Reported") and the moderator queue count if a report was filed.
+            new ReportReviewDialog(frame, reportController, reportReviewModel, id, currentUser.get()).setVisible(true);
+            reviewController.execute(reviewsModel.getState().washroomId(), currentUser.get());
+            moderateController.load();
+        });
+        moderate.setOnBack(showMain);
+        moderate.setController(moderateController);
+
+        // Keep the Moderator nav button's reported-review count in sync with the queue: the model is
+        // updated on load and after every remove/dismiss, so this listener covers those; load once now
+        // for the initial badge.
+        moderateModel.addPropertyChangeListener(e ->
+                main.setModeratorReportCount(moderateModel.getState().reportedReviews().size()));
+        moderateController.load();
         login.setOnBack(showMain);
         login.setOnSignup(() -> new SignupDialog(frame, signupController).setVisible(true));
         recommendation.setOnBack(showMain);
@@ -180,7 +220,7 @@ public final class AppBuilder {
         });
         recommendation.setOnReviews(() -> {
             if (!recommendation.selectedId().isBlank()) {
-                reviewController.execute(id, loggedInModel.getState().username());
+                reviewController.execute(recommendation.selectedId(), currentUser.get());
                 layout.show(cards, REVIEWS);
             }
         });
