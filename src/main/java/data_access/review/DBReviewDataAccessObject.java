@@ -5,7 +5,6 @@ import com.mongodb.client.model.Filters;
 import data_access.AbstractCondition;
 import data_access.Condition;
 import data_access.MongoDocuments;
-import entity.building.Building;
 import entity.review.WashroomReview;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
