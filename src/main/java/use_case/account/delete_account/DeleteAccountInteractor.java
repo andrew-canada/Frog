@@ -1,7 +1,7 @@
 package use_case.account.delete_account;
 
 import entity.User;
-import use_case.gateway.UserDataAccessInterface;
+import data_access.user.UserDataAccessInterface;
 
 public final class DeleteAccountInteractor implements DeleteAccountInputBoundary {
 
@@ -13,7 +13,8 @@ public final class DeleteAccountInteractor implements DeleteAccountInputBoundary
         this.presenter = presenter;
     }
 
-    @Override public void execute() {
+    @Override
+    public void execute() {
 
         User user = users.getCurrentUser().orElse(null);
 

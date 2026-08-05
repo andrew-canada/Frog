@@ -1,7 +1,7 @@
 package use_case.account.change_username;
 
 import entity.User;
-import use_case.gateway.UserDataAccessInterface;
+import data_access.user.UserDataAccessInterface;
 
 public final class ChangeUsernameInteractor implements ChangeUsernameInputBoundary {
 
@@ -13,7 +13,8 @@ public final class ChangeUsernameInteractor implements ChangeUsernameInputBounda
         this.presenter = presenter;
     }
 
-    @Override public void execute(ChangeUsernameInputData input) {
+    @Override
+    public void execute(ChangeUsernameInputData input) {
 
         User user = users.getCurrentUser().orElse(null);
 

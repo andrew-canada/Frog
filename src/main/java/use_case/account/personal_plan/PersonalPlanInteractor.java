@@ -1,7 +1,7 @@
 package use_case.account.personal_plan;
 
 import entity.User;
-import use_case.gateway.UserDataAccessInterface;
+import data_access.user.UserDataAccessInterface;
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
 
@@ -19,7 +19,8 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
         this.presenter = presenter;
     }
 
-    @Override public void execute(PersonalPlanInputData inputData) {
+    @Override
+    public void execute(PersonalPlanInputData inputData) {
 
         User user = users.getCurrentUser().orElse(null);
         String calendar = getFile(inputData.calendarPath());

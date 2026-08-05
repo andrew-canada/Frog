@@ -25,6 +25,9 @@ import interface_adapter.login.*;
 import interface_adapter.recommend.*;
 import interface_adapter.status_report.*;
 import interface_adapter.view_reviews.*;
+import interface_adapter.report_review.*;
+import interface_adapter.moderate_reviews.*;
+import interface_adapter.vote_helpful.*;
 import interface_adapter.write_review.*;
 import use_case.account.change_password.ChangePasswordInteractor;
 import use_case.account.change_username.ChangeUsernameInteractor;
@@ -38,7 +41,12 @@ import use_case.signup.SignupInteractor;
 import use_case.status_report.SubmitStatusReportInteractor;
 import use_case.view_reviews.ViewReviewsInteractor;
 import use_case.write_review.WriteReviewInteractor;
+import use_case.report_review.ReportReviewInteractor;
+import use_case.moderate_reviews.ModerateReviewsInteractor;
+import use_case.vote_helpful.VoteHelpfulInteractor;
+import java.util.function.Supplier;
 import view.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -48,15 +56,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-/** Composition root: the only class that selects concrete database and external-service adapters. */
+/**
+ * Composition root: the only class that selects concrete database and external-service adapters.
+ */
 public final class AppBuilder {
-    private static final String MAIN="main",REVIEWS="reviews",LOGIN="login",RECOMMEND="recommend",STATUS="status",BUSYNESS="busyness", ACCOUNT="account";
+    private static final String MAIN = "main", REVIEWS = "reviews", LOGIN = "login", RECOMMEND = "recommend", STATUS = "status", BUSYNESS = "busyness", ACCOUNT = "account", MODERATE = "moderate";
 
     public JFrame build() {
         String graphhopperKey = requiredEnvironment(GraphhopperRouteDataAccessObject.API_KEY_ENV);
         DBDataAccessObject connection = DBDataAccessObject.fromEnvironment();
-        try { connection.verifyConnection(); }
-        catch (RuntimeException failure) { connection.close(); throw new IllegalStateException("Could not connect to the configured MongoDB database.", failure); }
+        try {
+            connection.verifyConnection();
+        } catch (RuntimeException failure) {
+            connection.close();
+            throw new IllegalStateException("Could not connect to the configured MongoDB database.", failure);
+        }
 
         var database = connection.database();
         var buildings = new DBBuildingDataAccessObject(database);
@@ -71,34 +85,48 @@ public final class AppBuilder {
         var geocoding = new GraphhopperGeocodingDataAccessObject(graphhopperKey);
         var enrollment = new DBEnrollmentDataAccessObject(database);
 
-        var reviewsModel=new ReviewsViewModel();
+        var reviewsModel = new ReviewsViewModel();
         var writeReviewModel=new WriteReviewViewModel();
-        var listModel=new WashroomListViewModel();
-        var loginModel=new LoginViewModel();
-        var loggedInModel=new LoggedInViewModel();
-        var recommendationModel=new RecommendationViewModel();
-        var accountModel=new AccountViewModel();
-        var statusModel=new StatusReportViewModel();
-        var busynessModel=new BusynessViewModel();
-        var mapModel=new MapViewModel();
+        var listModel = new WashroomListViewModel();
+        var loginModel = new LoginViewModel();
+        var loggedInModel = new LoggedInViewModel();
+        var recommendationModel = new RecommendationViewModel();
+        var accountModel = new AccountViewModel();
+        var statusModel = new StatusReportViewModel();
+        var busynessModel = new BusynessViewModel();
+        var mapModel = new MapViewModel();
+        var reportReviewModel = new ReportReviewViewModel();
+        var moderateModel = new ModerateReviewsViewModel();
 
-        var reviewController=new ViewReviewsController(new ViewReviewsInteractor(reviews,washrooms,new ViewReviewsPresenter(reviewsModel)));
+        var reviewController = new ViewReviewsController(new ViewReviewsInteractor(reviews, washrooms, reviews, reviews, new ViewReviewsPresenter(reviewsModel)));
         var writeReviewController=new WriteReviewController(new WriteReviewInteractor(reviews,new WriteReviewPresenter(writeReviewModel)));
-        var loginController=new LoginController(new LoginInteractor(users,new LoginPresenter(loginModel,loggedInModel)));
-        var signupController=new SignupController(new SignupInteractor(users,new SignupPresenter(loginModel,loggedInModel)));
-        var recommendationController=new RecommendationController(new RecommendWashroomInteractor(washrooms,reports,new RecommendationPresenter(recommendationModel)));
-        var statusController=new StatusReportController(new SubmitStatusReportInteractor(reports,new StatusReportPresenter(statusModel)));
-        var busynessController=new BusynessController(new BusynessStatsInteractor(reports,enrollment,new BusynessPresenter(busynessModel)));
-        var directionsController=new DirectionsController(new GetDirectionsInteractor(washrooms,routes,new DirectionsPresenter(mapModel)));
-        var changeUsernameController=new ChangeUsernameController(new ChangeUsernameInteractor(users, new ChangeUsernamePresenter(accountModel)));
-        var changePasswordController=new ChangePasswordController(new ChangePasswordInteractor(users, new ChangePasswordPresenter(accountModel)));
-        var deleteAccountController=new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel)));
-        var personalPlanController=new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
+        var voteController = new VoteHelpfulController(new VoteHelpfulInteractor(reviews));
+        var reportController = new ReportReviewController(new ReportReviewInteractor(reviews, new ReportReviewPresenter(reportReviewModel)));
+        var moderateController = new ModerateReviewsController(new ModerateReviewsInteractor(reviews, reviews, washrooms, new ModerateReviewsPresenter(moderateModel)));
+        Supplier<String> currentUser = () -> loggedInModel.getState().username();
+        var loginController = new LoginController(new LoginInteractor(users, new LoginPresenter(loginModel, loggedInModel)));
+        var signupController = new SignupController(new SignupInteractor(users, new SignupPresenter(loginModel, loggedInModel)));
+        var recommendationController = new RecommendationController(new RecommendWashroomInteractor(washrooms, reports, new RecommendationPresenter(recommendationModel)));
+        var statusController = new StatusReportController(new SubmitStatusReportInteractor(reports, new StatusReportPresenter(statusModel)));
+        var busynessController = new BusynessController(new BusynessStatsInteractor(reports, enrollment, new BusynessPresenter(busynessModel)));
+        var directionsController = new DirectionsController(new GetDirectionsInteractor(washrooms, routes, new DirectionsPresenter(mapModel)));
+        var changeUsernameController = new ChangeUsernameController(new ChangeUsernameInteractor(users, new ChangeUsernamePresenter(accountModel)));
+        var changePasswordController = new ChangePasswordController(new ChangePasswordInteractor(users, new ChangePasswordPresenter(accountModel)));
+        var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel)));
+        var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
 
-        JFrame frame=new JFrame("FlushID — U of T washroom finder");
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);frame.setMinimumSize(new Dimension(900,600));frame.setSize(1060,700);
-        frame.addWindowListener(new WindowAdapter(){@Override public void windowClosing(WindowEvent event){connection.close();}});
-        CardLayout layout=new CardLayout();JPanel cards=new JPanel(layout);
+        JFrame frame = new JFrame("FlushID — U of T washroom finder");
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.setMinimumSize(new Dimension(900, 600));
+        frame.setSize(1060, 700);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent event) {
+                connection.close();
+            }
+        });
+        CardLayout layout = new CardLayout();
+        JPanel cards = new JPanel(layout);
         MainView main = new MainView(listModel, mapModel);
         main.setAddressLookup(geocoding::lookup);
         double originLat=43.6629,originLng=-79.3957;
@@ -108,36 +136,54 @@ public final class AppBuilder {
         RecommendationView recommendation = new RecommendationView(recommendationModel);
 
         AccountView account = new AccountView(
-            accountModel, 
-            changeUsernameController, 
-            changePasswordController, 
-            deleteAccountController, 
-            personalPlanController
+                accountModel,
+                changeUsernameController,
+                changePasswordController,
+                deleteAccountController,
+                personalPlanController
         );
-        StatusReportView status=new StatusReportView(statusModel);BusynessChartView busyness=new BusynessChartView(busynessModel);
-        cards.add(main,MAIN);cards.add(readReviews,REVIEWS);cards.add(login,LOGIN);cards.add(recommendation,RECOMMEND);cards.add(account,ACCOUNT);cards.add(status,STATUS);cards.add(busyness,BUSYNESS);frame.setContentPane(cards);
+        StatusReportView status = new StatusReportView(statusModel);
+        BusynessChartView busyness = new BusynessChartView(busynessModel);
+        ReportedReviewsView moderate = new ReportedReviewsView(moderateModel);
+        cards.add(main, MAIN);
+        cards.add(readReviews, REVIEWS);
+        cards.add(login, LOGIN);
+        cards.add(recommendation, RECOMMEND);
+        cards.add(account, ACCOUNT);
+        cards.add(status, STATUS);
+        cards.add(busyness, BUSYNESS);
+        cards.add(moderate, MODERATE);
+        frame.setContentPane(cards);
 
-        Runnable showMain=()->layout.show(cards,MAIN);
-        main.setOnReviews(id->{reviewController.execute(id);layout.show(cards,REVIEWS);});
-        main.setOnDirections(id->requestDirections(main,directionsController,id));
-        main.setOnLogin(()->layout.show(cards,LOGIN));
-        main.setOnRecommend(()->layout.show(cards,RECOMMEND));
+        Runnable showMain = () -> layout.show(cards, MAIN);
+        main.setOnReviews(id -> {
+            reviewController.execute(id, currentUser.get());
+            layout.show(cards, REVIEWS);
+        });
+        main.setOnModerator(() -> {
+            moderate.setModeratorUsername(currentUser.get());
+            moderateController.load();
+            layout.show(cards, MODERATE);
+        });
+        main.setOnDirections(id -> requestDirections(main, directionsController, id));
+        main.setOnLogin(() -> layout.show(cards, LOGIN));
+        main.setOnRecommend(() -> layout.show(cards, RECOMMEND));
         main.setOnAccount(() -> layout.show(cards, ACCOUNT));
 
         main.setOnReport(() -> selected(washrooms, main).ifPresentOrElse(
-            w -> {
-                status.setWashroomName(w.name());
-                layout.show(cards, STATUS);
-            },
-            () -> noWashroom(frame)
+                w -> {
+                    status.setWashroomName(w.name());
+                    layout.show(cards, STATUS);
+                },
+                () -> noWashroom(frame)
         ));
 
         main.setOnBusyness(() -> selected(washrooms, main).ifPresentOrElse(
-            w -> {
-                busynessController.execute(w.id(), w.building().code(), DayOfWeek.from(java.time.LocalDate.now()));
-                layout.show(cards, BUSYNESS);
-            },
-            () -> noWashroom(frame)
+                w -> {
+                    busynessController.execute(w.id(), w.building().code(), DayOfWeek.from(java.time.LocalDate.now()));
+                    layout.show(cards, BUSYNESS);
+                },
+                () -> noWashroom(frame)
         ));
 
         readReviews.setOnBack(showMain);
@@ -151,11 +197,47 @@ public final class AppBuilder {
                     }).setVisible(true),
             () -> noWashroom(frame)
         ));
-        login.setOnBack(showMain);login.setOnSignup(()->new SignupDialog(frame,signupController).setVisible(true));
-        recommendation.setOnBack(showMain);recommendation.setOnFind(()->recommendationController.execute(main.latitude(),main.longitude(),false,null,recommendation.inAHurry(),loggedInModel.getState().username()));
-        recommendation.setOnDirections(()->{if(!recommendation.selectedId().isBlank()){requestDirections(main,directionsController,recommendation.selectedId());showMain.run();}});
-        recommendation.setOnReviews(()->{if(!recommendation.selectedId().isBlank()){reviewController.execute(recommendation.selectedId());layout.show(cards,REVIEWS);}});
-        status.setOnCancel(showMain);status.setOnSubmit(()->{if(!main.selectedId().isBlank())statusController.execute(main.selectedId(),status.busyness(),status.cleanliness(),status.issue(),loggedInModel.getState().loggedIn()?loggedInModel.getState().username():null);});
+        readReviews.setOnHelpful(id -> {
+            voteController.toggle(id, currentUser.get());
+            reviewController.execute(reviewsModel.getState().washroomId(), currentUser.get());
+        });
+        readReviews.setOnReport(id -> {
+            // Modal dialog: setVisible blocks until it closes, then refresh the review list (so the
+            // button flips to "Reported") and the moderator queue count if a report was filed.
+            new ReportReviewDialog(frame, reportController, reportReviewModel, id, currentUser.get()).setVisible(true);
+            reviewController.execute(reviewsModel.getState().washroomId(), currentUser.get());
+            moderateController.load();
+        });
+        moderate.setOnBack(showMain);
+        moderate.setController(moderateController);
+
+        // Keep the Moderator nav button's reported-review count in sync with the queue: the model is
+        // updated on load and after every remove/dismiss, so this listener covers those; load once now
+        // for the initial badge.
+        moderateModel.addPropertyChangeListener(e ->
+                main.setModeratorReportCount(moderateModel.getState().reportedReviews().size()));
+        moderateController.load();
+        login.setOnBack(showMain);
+        login.setOnSignup(() -> new SignupDialog(frame, signupController).setVisible(true));
+        recommendation.setOnBack(showMain);
+        recommendation.setOnFind(() -> recommendationController.execute(main.latitude(), main.longitude(), false, null, recommendation.inAHurry(), loggedInModel.getState().username()));
+        recommendation.setOnDirections(() -> {
+            if (!recommendation.selectedId().isBlank()) {
+                requestDirections(main, directionsController, recommendation.selectedId());
+                showMain.run();
+            }
+        });
+        recommendation.setOnReviews(() -> {
+            if (!recommendation.selectedId().isBlank()) {
+                reviewController.execute(recommendation.selectedId(), currentUser.get());
+                layout.show(cards, REVIEWS);
+            }
+        });
+        status.setOnCancel(showMain);
+        status.setOnSubmit(() -> {
+            if (!main.selectedId().isBlank())
+                statusController.execute(main.selectedId(), status.busyness(), status.cleanliness(), status.issue(), loggedInModel.getState().loggedIn() ? loggedInModel.getState().username() : null);
+        });
         busyness.setOnBack(showMain);
         account.setOnBack(showMain);
 
@@ -165,7 +247,7 @@ public final class AppBuilder {
 
     private static void requestDirections(MainView main, DirectionsController controller, String washroomId) {
         main.showRouting();
-        CompletableFuture.runAsync(()->controller.execute(main.latitude(),main.longitude(),washroomId));
+        CompletableFuture.runAsync(() -> controller.execute(main.latitude(), main.longitude(), washroomId));
     }
     private static void refreshMainWashrooms(DBWashroomDataAccessObject washrooms, MainView main,
                                              WashroomListViewModel listModel, double originLat, double originLng) {
@@ -178,15 +260,35 @@ public final class AppBuilder {
         String selectedId = main.selectedId().isBlank() && !items.isEmpty() ? items.getFirst().id() : main.selectedId();
         listModel.setState(new WashroomListViewModel.State(items, selectedId, "Sort by: Nearest", false));
     }
-    private static Optional<Washroom> selected(DBWashroomDataAccessObject washrooms,MainView main){return main.selectedId().isBlank()?Optional.empty():washrooms.getById(main.selectedId());}
-    private static void noWashroom(Component parent){JOptionPane.showMessageDialog(parent,"The database does not contain a selectable washroom.","No washrooms",JOptionPane.WARNING_MESSAGE);}
-    private static String listName(Washroom washroom){return switch(washroom.building().code()){
-        case "BA" -> "Bahen Centre";
-        case "MY" -> "Myhal Centre";
-        case "TC" -> "Trinity College";
-        case "HH" -> "Hart House";
-        default -> washroom.name();
-    };}
-    private static String requiredEnvironment(String name){String value=System.getenv(name);if(value==null||value.isBlank())throw new IllegalStateException("Set the "+name+" environment variable before starting FlushID.");return value;}
-    private static double distance(double a,double b,double c,double d){double x=Math.toRadians(d-b)*Math.cos(Math.toRadians((a+c)/2));double y=Math.toRadians(c-a);return Math.sqrt(x*x+y*y)*6_371_000;}
+
+    private static Optional<Washroom> selected(DBWashroomDataAccessObject washrooms, MainView main) {
+        return main.selectedId().isBlank() ? Optional.empty() : washrooms.getById(main.selectedId());
+    }
+
+    private static void noWashroom(Component parent) {
+        JOptionPane.showMessageDialog(parent, "The database does not contain a selectable washroom.", "No washrooms", JOptionPane.WARNING_MESSAGE);
+    }
+
+    private static String listName(Washroom washroom) {
+        return switch (washroom.building().code()) {
+            case "BA" -> "Bahen Centre";
+            case "MY" -> "Myhal Centre";
+            case "TC" -> "Trinity College";
+            case "HH" -> "Hart House";
+            default -> washroom.name();
+        };
+    }
+
+    private static String requiredEnvironment(String name) {
+        String value = System.getenv(name);
+        if (value == null || value.isBlank())
+            throw new IllegalStateException("Set the " + name + " environment variable before starting FlushID.");
+        return value;
+    }
+
+    private static double distance(double a, double b, double c, double d) {
+        double x = Math.toRadians(d - b) * Math.cos(Math.toRadians((a + c) / 2));
+        double y = Math.toRadians(c - a);
+        return Math.sqrt(x * x + y * y) * 6_371_000;
+    }
 }

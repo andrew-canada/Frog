@@ -5,7 +5,7 @@ import java.beans.PropertyChangeSupport;
 
 public class AccountState {
 
-    private final PropertyChangeSupport changes=new PropertyChangeSupport(this);
+    private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
 
     private String username;
     private String personalPlan;
@@ -35,7 +35,9 @@ public class AccountState {
 
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) { changes.addPropertyChangeListener(l); }
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        changes.addPropertyChangeListener(l);
+    }
 
     public String getUsername() {
         return username;
@@ -52,7 +54,7 @@ public class AccountState {
     }
 
     public void setPersonalPlan(String personalPlan) {
-        String prev =  this.personalPlan;
+        String prev = this.personalPlan;
         this.personalPlan = personalPlan;
         changes.firePropertyChange("state", prev, personalPlan);
     }

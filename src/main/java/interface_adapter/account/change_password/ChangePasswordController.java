@@ -8,7 +8,7 @@ public final class ChangePasswordController {
     private final ChangePasswordInputBoundary interactor;
 
     public ChangePasswordController(ChangePasswordInputBoundary interactor) {
-        this.interactor=interactor;
+        this.interactor = interactor;
     }
 
     public void execute(String newPassword, String confirmNewPassword) {

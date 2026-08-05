@@ -1,3 +1,4 @@
 package use_case.account.change_password;
 
-public record ChangePasswordInputData(String newPassword, String confirmNewPassword) { }
+public record ChangePasswordInputData(String newPassword, String confirmNewPassword) {
+}

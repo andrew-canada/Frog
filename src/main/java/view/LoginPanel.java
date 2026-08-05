@@ -2,6 +2,7 @@ package view;
 
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginViewModel;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -9,8 +10,10 @@ public final class LoginPanel extends JPanel {
     private final JTextField username = new JTextField(18);
     private final JPasswordField password = new JPasswordField(18);
     private final JLabel message = Theme.label("Sign in with an account stored in MongoDB.", 12, Theme.MUTED);
-    private Runnable onBack = () -> { };
-    private Runnable onSignup = () -> { };
+    private Runnable onBack = () -> {
+    };
+    private Runnable onSignup = () -> {
+    };
 
     public LoginPanel(LoginViewModel model, LoginController controller) {
         setLayout(new GridBagLayout());
@@ -29,9 +32,11 @@ public final class LoginPanel extends JPanel {
         card.add(Theme.title("Welcome to FlushID"));
         card.add(Theme.label("Sign in to save preferences and submit reports.", 13, Theme.MUTED));
         card.add(Box.createVerticalStrut(20));
-        card.add(new JLabel("Username")); card.add(username);
+        card.add(new JLabel("Username"));
+        card.add(username);
         card.add(Box.createVerticalStrut(12));
-        card.add(new JLabel("Password")); card.add(password);
+        card.add(new JLabel("Password"));
+        card.add(password);
         card.add(Box.createVerticalStrut(16));
 
         JButton login = Theme.primary("Log in");
@@ -41,8 +46,13 @@ public final class LoginPanel extends JPanel {
         login.addActionListener(event -> controller.execute(username.getText(), new String(password.getPassword())));
         signup.addActionListener(event -> onSignup.run());
         back.addActionListener(event -> onBack.run());
-        card.add(login); card.add(Box.createVerticalStrut(8)); card.add(signup);
-        card.add(Box.createVerticalStrut(8)); card.add(back); card.add(Box.createVerticalStrut(16)); card.add(message);
+        card.add(login);
+        card.add(Box.createVerticalStrut(8));
+        card.add(signup);
+        card.add(Box.createVerticalStrut(8));
+        card.add(back);
+        card.add(Box.createVerticalStrut(16));
+        card.add(message);
         add(card);
 
         model.addPropertyChangeListener(event -> {
@@ -53,6 +63,11 @@ public final class LoginPanel extends JPanel {
         });
     }
 
-    public void setOnBack(Runnable action) { onBack = action; }
-    public void setOnSignup(Runnable action) { onSignup = action; }
+    public void setOnBack(Runnable action) {
+        onBack = action;
+    }
+
+    public void setOnSignup(Runnable action) {
+        onSignup = action;
+    }
 }

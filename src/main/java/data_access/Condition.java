@@ -5,15 +5,17 @@ import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * Class representing a condition to be fed into the DatabaseAccessObject methods
  * such as Condition("buildingCode", Operator.EQ, "BA") for the condition that the buildingCode
  * field must equal "BA"
+ *
  * @param <T> the type of the value
  */
-public class Condition<T extends Comparable<? super T>> {
+public class Condition<T extends Comparable<? super T>> extends AbstractCondition<T> {
 
     private final Bson filter;
 
@@ -34,10 +36,6 @@ public class Condition<T extends Comparable<? super T>> {
             filter = Filters.lte(fieldName, value);
         } else if (operator == Operator.GTE) {
             filter = Filters.gte(fieldName, value);
-        } else if (operator == Operator.IN) {
-            filter = Filters.in(fieldName, value);
-        } else if (operator == Operator.NIN) {
-            filter = Filters.nin(fieldName, value);
         } else {
             throw new IllegalArgumentException();
         }
@@ -64,3 +62,4 @@ public class Condition<T extends Comparable<? super T>> {
     }
 
 }
+

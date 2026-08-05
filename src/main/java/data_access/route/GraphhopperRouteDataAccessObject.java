@@ -3,7 +3,7 @@ package data_access.route;
 import entity.GeoPoint;
 import entity.Route;
 import org.bson.Document;
-import use_case.gateway.RouteDataAccessInterface;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -16,7 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/** Live GraphHopper Routing API adapter. The API key is supplied at the composition root. */
+/**
+ * Live GraphHopper Routing API adapter. The API key is supplied at the composition root.
+ */
 public final class GraphhopperRouteDataAccessObject implements RouteDataAccessInterface {
     public static final String API_KEY_ENV = "GRAPHHOPPER_API_KEY";
     private static final URI DEFAULT_ENDPOINT = URI.create("https://graphhopper.com/api/1/route");
@@ -38,7 +40,8 @@ public final class GraphhopperRouteDataAccessObject implements RouteDataAccessIn
         this.apiKey = apiKey;
     }
 
-    @Override public Route getRoute(GeoPoint from, GeoPoint to) {
+    @Override
+    public Route getRoute(GeoPoint from, GeoPoint to) {
         URI requestUri = URI.create(endpoint + "?point=" + point(from) + "&point=" + point(to)
                 + "&profile=foot&locale=en&instructions=false&calc_points=true&points_encoded=false&key="
                 + URLEncoder.encode(apiKey, StandardCharsets.UTF_8));
@@ -60,8 +63,11 @@ public final class GraphhopperRouteDataAccessObject implements RouteDataAccessIn
 
     private static Route parseRoute(String json) {
         Document root;
-        try { root = Document.parse(json); }
-        catch (RuntimeException malformed) { throw new IllegalStateException("GraphHopper returned invalid JSON.", malformed); }
+        try {
+            root = Document.parse(json);
+        } catch (RuntimeException malformed) {
+            throw new IllegalStateException("GraphHopper returned invalid JSON.", malformed);
+        }
         List<Document> paths = root.getList("paths", Document.class);
         if (paths == null || paths.isEmpty()) {
             throw new IllegalStateException("GraphHopper returned no walking route.");

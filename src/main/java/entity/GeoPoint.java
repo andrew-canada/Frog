@@ -1,3 +1,4 @@
 package entity;
 
-public record GeoPoint(double latitude, double longitude) { }
+public record GeoPoint(double latitude, double longitude) {
+}

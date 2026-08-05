@@ -1,8 +1,7 @@
 package use_case.account.change_password;
 
 import entity.User;
-import use_case.account.change_password.*;
-import use_case.gateway.UserDataAccessInterface;
+import data_access.user.UserDataAccessInterface;
 import org.mindrot.jbcrypt.BCrypt;
 
 public final class ChangePasswordInteractor implements ChangePasswordInputBoundary {
@@ -15,7 +14,8 @@ public final class ChangePasswordInteractor implements ChangePasswordInputBounda
         this.presenter = presenter;
     }
 
-    @Override public void execute(ChangePasswordInputData input) {
+    @Override
+    public void execute(ChangePasswordInputData input) {
 
         User user = users.getCurrentUser().orElse(null);
 

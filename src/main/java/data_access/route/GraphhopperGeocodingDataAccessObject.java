@@ -2,7 +2,6 @@ package data_access.route;
 
 import entity.GeoPoint;
 import org.bson.Document;
-import use_case.gateway.AddressLookupDataAccessInterface;
 
 import java.io.IOException;
 import java.net.URI;
@@ -14,7 +13,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 
-/** Live GraphHopper forward-geocoding adapter used for address-based map origins. */
+/**
+ * Live GraphHopper forward-geocoding adapter used for address-based map origins.
+ */
 public final class GraphhopperGeocodingDataAccessObject implements AddressLookupDataAccessInterface {
     private static final URI DEFAULT_ENDPOINT = URI.create("https://graphhopper.com/api/1/geocode");
     private final HttpClient httpClient;
@@ -34,7 +35,8 @@ public final class GraphhopperGeocodingDataAccessObject implements AddressLookup
         this.apiKey = apiKey;
     }
 
-    @Override public GeoPoint lookup(String address) {
+    @Override
+    public GeoPoint lookup(String address) {
         if (address == null || address.isBlank()) throw new IllegalArgumentException("Enter an address to search.");
         URI requestUri = URI.create(endpoint + "?q=" + URLEncoder.encode(address.trim(), StandardCharsets.UTF_8)
                 + "&limit=1&locale=en&key=" + URLEncoder.encode(apiKey, StandardCharsets.UTF_8));
@@ -56,14 +58,18 @@ public final class GraphhopperGeocodingDataAccessObject implements AddressLookup
 
     private static GeoPoint parsePoint(String json) {
         Document root;
-        try { root = Document.parse(json); }
-        catch (RuntimeException malformed) { throw new IllegalStateException("GraphHopper returned invalid address data.", malformed); }
+        try {
+            root = Document.parse(json);
+        } catch (RuntimeException malformed) {
+            throw new IllegalStateException("GraphHopper returned invalid address data.", malformed);
+        }
         List<Document> hits = root.getList("hits", Document.class);
         if (hits == null || hits.isEmpty()) throw new IllegalArgumentException("No location matched that address.");
         Document point = hits.getFirst().get("point", Document.class);
         Number latitude = point == null ? null : point.get("lat", Number.class);
         Number longitude = point == null ? null : point.get("lng", Number.class);
-        if (latitude == null || longitude == null) throw new IllegalStateException("GraphHopper returned incomplete address data.");
+        if (latitude == null || longitude == null)
+            throw new IllegalStateException("GraphHopper returned incomplete address data.");
         return new GeoPoint(latitude.doubleValue(), longitude.doubleValue());
     }
 }

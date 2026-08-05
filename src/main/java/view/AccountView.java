@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.BiConsumer;
+
 import entity.User;
 import interface_adapter.account.AccountState;
 import interface_adapter.account.AccountViewModel;
@@ -24,7 +25,8 @@ import interface_adapter.recommend.RecommendationViewModel;
 public final class AccountView extends JPanel {
 
     private final AccountViewModel viewModel;
-    private Runnable onBack=()->{};
+    private Runnable onBack = () -> {
+    };
     private ChangeUsernameController changeUsernameController;
     private ChangePasswordController changePasswordController;
     private DeleteAccountController deleteAccountController;
@@ -70,7 +72,7 @@ public final class AccountView extends JPanel {
     public AccountView(AccountViewModel viewModel, ChangeUsernameController changeUsernameController, ChangePasswordController changePasswordController, DeleteAccountController deleteAccountController, PersonalPlanController personalPlanController) {
 
         this.viewModel = viewModel;
-        viewModel.getState().addPropertyChangeListener(e->render(viewModel.getState()));
+        viewModel.getState().addPropertyChangeListener(e -> render(viewModel.getState()));
 
         this.changeUsernameController = changeUsernameController;
         this.changePasswordController = changePasswordController;
@@ -88,7 +90,7 @@ public final class AccountView extends JPanel {
         titleWords.add(accountLabel, BorderLayout.SOUTH);
 
         title.add(titleWords, BorderLayout.WEST);
-        back.addActionListener(e->onBack.run());
+        back.addActionListener(e -> onBack.run());
         title.add(back, BorderLayout.EAST);
         add(title, BorderLayout.NORTH);
 

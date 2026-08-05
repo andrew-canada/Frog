@@ -4,11 +4,15 @@ import javax.swing.*;
 import java.awt.Color;
 
 public final class Main {
-    private Main() { }
+    private Main() {
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); }
-            catch (Exception ignored) { }
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception ignored) {
+            }
             UIManager.put("Button.background", Color.WHITE);
             UIManager.put("Button.foreground", Color.BLACK);
             try {

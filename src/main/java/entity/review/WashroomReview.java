@@ -3,7 +3,7 @@ package entity.review;
 import java.util.Comparator;
 
 
-public class WashroomReview implements Review{
+public class WashroomReview implements Review {
 
     private int stars;
     private String text;
@@ -27,15 +27,23 @@ public class WashroomReview implements Review{
     }
 
     @Override
-    public int getStars() {return this.stars;}
+    public int getStars() {
+        return this.stars;
+    }
 
     @Override
-    public String getText(){return this.text;}
+    public String getText() {
+        return this.text;
+    }
 
     @Override
-    public int getHelpfuls(){return this.helpfuls;}
+    public int getHelpfuls() {
+        return this.helpfuls;
+    }
 
     @Override
-    public int getUnhelpfuls() {return this.unhelpfuls;}
+    public int getUnhelpfuls() {
+        return this.unhelpfuls;
+    }
 
 }
