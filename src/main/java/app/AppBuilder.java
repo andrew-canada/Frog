@@ -192,7 +192,7 @@ public final class AppBuilder {
             w -> new WriteReviewDialog(frame, writeReviewModel, writeReviewController, w.id(), w.name(),
                     loggedInModel.getState().loggedIn() ? loggedInModel.getState().username() : "Anonymous",
                     () -> {
-                        reviewController.execute(w.id());
+                        reviewController.execute(w.id(), currentUser.get());
                         refreshMainWashrooms(washrooms, main, listModel, originLat, originLng);
                     }).setVisible(true),
             () -> noWashroom(frame)

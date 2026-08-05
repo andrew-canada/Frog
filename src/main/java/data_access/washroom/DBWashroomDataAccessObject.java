@@ -259,6 +259,12 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
         }
     }
 
+    private static FixtureCounts fixtureCounts(String buildingCode) {
+        return new FixtureCounts(0, 0);
+    }
+
+    private record FixtureCounts(int toilets, int sinks) { }
+
     @Override
     public Optional<entity.Washroom> getById(String id) {
         Document document = MongoDocuments.findById(collection, id);
