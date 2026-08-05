@@ -1,4 +1,8 @@
 package use_case.filter;
 
-public class FilterOutputData {
+import entity.Washroom;
+
+import java.util.List;
+
+public record FilterOutputData (boolean success, List<Washroom> washrooms) {
 }
