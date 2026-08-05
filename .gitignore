@@ -4,6 +4,7 @@
 /target/
 .env
 .env.*
+environment_variables.env
 
 # Log file
 *.log

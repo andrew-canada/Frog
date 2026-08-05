@@ -5,7 +5,6 @@ import com.mongodb.client.model.Filters;
 import data_access.AbstractCondition;
 import data_access.Condition;
 import data_access.MongoDocuments;
-import entity.building.Building;
 import entity.review.WashroomReview;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
@@ -22,6 +21,7 @@ import use_case.moderate_reviews.ReportedReviewsDataAccessInterface;
 import use_case.report_review.ReviewReportDataAccessInterface;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -149,12 +149,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
      */
     public void write(Review review, String userID, String washroomID) {
         if (review instanceof entity.Review applicationReview) {
-            Document doc = new Document("washroomId", applicationReview.washroomId())
-                    .append("authorUsername", applicationReview.authorUsername())
-                    .append("rating", applicationReview.rating()).append("cleanliness", applicationReview.cleanliness())
-                    .append("comment", applicationReview.comment()).append("helpfulCount", applicationReview.helpfulCount())
-                    .append("createdAt", applicationReview.createdAt().toString());
-            collection.insertOne(doc);
+            collection.insertOne(documentFor(applicationReview));
             return;
         }
         Document doc = new Document();
@@ -243,8 +238,23 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
         return List.copyOf(result);
     }
 
-    public void save(entity.Review review) {
+    @Override public void save(entity.Review review) {
         write(review, review.authorUsername(), review.washroomId());
+    }
+
+    /** Adds the first-run demonstration reviews without duplicating them on later launches. */
+    public void ensureCampusReviews(List<entity.Washroom> washrooms) {
+        for (entity.Washroom washroom : washrooms) {
+            List<SeedReview> seeds = seedReviewsFor(washroom);
+            for (int index = 0; index < seeds.size(); index++) {
+                String seedKey = "campus-review-" + washroom.building().code().toLowerCase(Locale.ROOT) + "-" + index;
+                if (collection.find(Filters.eq("seedKey", seedKey)).first() != null) continue;
+                SeedReview seed = seeds.get(index);
+                entity.Review review = new entity.Review(seedKey, washroom.id(), seed.author(), seed.rating(),
+                        seed.cleanliness(), seed.comment(), seed.helpfulCount(), seed.createdAt());
+                collection.insertOne(documentFor(review).append("seedKey", seedKey));
+            }
+        }
     }
 
     private static String author(Document review) {
@@ -253,6 +263,33 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
         String userId = MongoDocuments.string(review, "", "userId", "userID");
         Document user = MongoDocuments.findById(users, userId);
         return user == null ? "Anonymous" : MongoDocuments.string(user, "Anonymous", "username", "name");
+    }
+
+    private static Document documentFor(entity.Review review) {
+        return new Document("washroomId", review.washroomId())
+                .append("authorUsername", review.authorUsername())
+                .append("rating", review.rating()).append("cleanliness", review.cleanliness())
+                .append("comment", review.comment()).append("helpfulCount", review.helpfulCount())
+                .append("createdAt", Date.from(review.createdAt().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+    }
+
+    private static List<SeedReview> seedReviewsFor(entity.Washroom washroom) {
+        return switch (washroom.building().code()) {
+            case "BA" -> List.of(
+                    new SeedReview("Maya", 5, 5, "Bright, spacious, and consistently well stocked between classes.", 12, LocalDate.of(2026, 5, 8)),
+                    new SeedReview("Noah", 4, 4, "Easy to find on the main floor. It gets busy just after lectures.", 7, LocalDate.of(2026, 6, 14)));
+            case "MY" -> List.of(
+                    new SeedReview("Priya", 5, 4, "Very clean and the accessible stall is genuinely roomy.", 9, LocalDate.of(2026, 5, 22)),
+                    new SeedReview("Liam", 4, 4, "A dependable option when studying in the engineering buildings.", 5, LocalDate.of(2026, 6, 3)));
+            case "TC" -> List.of(
+                    new SeedReview("Sofia", 4, 5, "Quiet, clean, and tucked away from the busiest campus routes.", 11, LocalDate.of(2026, 4, 29)),
+                    new SeedReview("Ethan", 4, 4, "Good lighting and usually no wait in the morning.", 6, LocalDate.of(2026, 6, 10)));
+            case "HH" -> List.of(
+                    new SeedReview("Avery", 5, 5, "Well maintained and convenient when using Hart House amenities.", 10, LocalDate.of(2026, 5, 17)),
+                    new SeedReview("Jordan", 4, 4, "Clean and calm, although the hallway can be crowded at lunch.", 4, LocalDate.of(2026, 6, 21)));
+            default -> List.of(
+                    new SeedReview("Campus visitor", 4, 4, "A clean and reliable washroom option.", 3, LocalDate.of(2026, 6, 1)));
+        };
     }
 
     private static double clamp(double rating) {
@@ -341,4 +378,6 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
             collection.deleteOne(Filters.eq("_id", document.get("_id")));
         }
     }
+    private record SeedReview(String author, double rating, double cleanliness, String comment, int helpfulCount,
+                              LocalDate createdAt) { }
 }

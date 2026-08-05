@@ -13,8 +13,7 @@ import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
 
-import entity.building.Building;
-import entity.building.GenericBuildingFactory;
+import entity.Building;
 import data_access.DBDataAccessObject;
 
 import java.io.*;

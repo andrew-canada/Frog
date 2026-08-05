@@ -15,8 +15,12 @@ public interface WashroomDataAccessInterface {
 
     List<Washroom> getAll();
 
-    List<Washroom> getMatching(Iterable<AbstractCondition<?>> conditions);
+    default List<Washroom> getMatching(Iterable<AbstractCondition<?>> conditions) {
+        throw new UnsupportedOperationException("Matching washrooms is not supported by this data source");
+    }
 
-    Map<String, Washroom> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions);
+    default Map<String, Washroom> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
+        throw new UnsupportedOperationException("Matching washrooms by ID is not supported by this data source");
+    }
 
 }

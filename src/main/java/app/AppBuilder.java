@@ -28,6 +28,7 @@ import interface_adapter.view_reviews.*;
 import interface_adapter.report_review.*;
 import interface_adapter.moderate_reviews.*;
 import interface_adapter.vote_helpful.*;
+import interface_adapter.write_review.*;
 import use_case.account.change_password.ChangePasswordInteractor;
 import use_case.account.change_username.ChangeUsernameInteractor;
 import use_case.account.delete_account.DeleteAccountInteractor;
@@ -39,6 +40,7 @@ import use_case.recommend.RecommendWashroomInteractor;
 import use_case.signup.SignupInteractor;
 import use_case.status_report.SubmitStatusReportInteractor;
 import use_case.view_reviews.ViewReviewsInteractor;
+import use_case.write_review.WriteReviewInteractor;
 import use_case.report_review.ReportReviewInteractor;
 import use_case.moderate_reviews.ModerateReviewsInteractor;
 import use_case.vote_helpful.VoteHelpfulInteractor;
@@ -76,6 +78,7 @@ public final class AppBuilder {
         var washrooms = new DBWashroomDataAccessObject(database);
         washrooms.ensureCampusWashrooms(campusLocations);
         var reviews = new DBReviewDataAccessObject(database);
+        reviews.ensureCampusReviews(washrooms.getAll());
         var users = new DBUserDataAccessObject(database);
         var reports = new DBStatusReportDataAccessObject(database);
         var routes = new GraphhopperRouteDataAccessObject(graphhopperKey);
@@ -83,6 +86,7 @@ public final class AppBuilder {
         var enrollment = new DBEnrollmentDataAccessObject(database);
 
         var reviewsModel = new ReviewsViewModel();
+        var writeReviewModel=new WriteReviewViewModel();
         var listModel = new WashroomListViewModel();
         var loginModel = new LoginViewModel();
         var loggedInModel = new LoggedInViewModel();
@@ -95,6 +99,7 @@ public final class AppBuilder {
         var moderateModel = new ModerateReviewsViewModel();
 
         var reviewController = new ViewReviewsController(new ViewReviewsInteractor(reviews, washrooms, reviews, reviews, new ViewReviewsPresenter(reviewsModel)));
+        var writeReviewController=new WriteReviewController(new WriteReviewInteractor(reviews,new WriteReviewPresenter(writeReviewModel)));
         var voteController = new VoteHelpfulController(new VoteHelpfulInteractor(reviews));
         var reportController = new ReportReviewController(new ReportReviewInteractor(reviews, new ReportReviewPresenter(reportReviewModel)));
         var moderateController = new ModerateReviewsController(new ModerateReviewsInteractor(reviews, reviews, washrooms, new ModerateReviewsPresenter(moderateModel)));
@@ -124,6 +129,7 @@ public final class AppBuilder {
         JPanel cards = new JPanel(layout);
         MainView main = new MainView(listModel, mapModel);
         main.setAddressLookup(geocoding::lookup);
+        double originLat=43.6629,originLng=-79.3957;
 
         ReadReviewsView readReviews = new ReadReviewsView(reviewsModel);
         LoginPanel login = new LoginPanel(loginModel, loginController);
@@ -182,11 +188,14 @@ public final class AppBuilder {
 
         readReviews.setOnBack(showMain);
 
-        readReviews.setOnWrite(() -> selected(washrooms, main).ifPresent(
-                w -> {
-                    status.setWashroomName(w.name());
-                    layout.show(cards, STATUS);
-                }
+        readReviews.setOnWrite(() -> selected(washrooms, main).ifPresentOrElse(
+            w -> new WriteReviewDialog(frame, writeReviewModel, writeReviewController, w.id(), w.name(),
+                    loggedInModel.getState().loggedIn() ? loggedInModel.getState().username() : "Anonymous",
+                    () -> {
+                        reviewController.execute(w.id(), currentUser.get());
+                        refreshMainWashrooms(washrooms, main, listModel, originLat, originLng);
+                    }).setVisible(true),
+            () -> noWashroom(frame)
         ));
         readReviews.setOnHelpful(id -> {
             voteController.toggle(id, currentUser.get());
@@ -232,19 +241,24 @@ public final class AppBuilder {
         busyness.setOnBack(showMain);
         account.setOnBack(showMain);
 
-        double originLat = 43.6629, originLng = -79.3957;
-        List<Washroom> availableWashrooms = washrooms.getAll();
-        main.setWashrooms(availableWashrooms);
-        List<WashroomListViewModel.Item> items = availableWashrooms.stream().map(w -> new WashroomListViewModel.Item(w.id(), listName(w), w.reviewSummary().averageRating(),
-                (int) Math.round(distance(originLat, originLng, w.building().latitude(), w.building().longitude())), w.accessible())).toList();
-        String selectedId = items.isEmpty() ? null : items.getFirst().id();
-        listModel.setState(new WashroomListViewModel.State(items, selectedId, "Sort by: Nearest", false));
+        refreshMainWashrooms(washrooms, main, listModel, originLat, originLng);
         return frame;
     }
 
     private static void requestDirections(MainView main, DirectionsController controller, String washroomId) {
         main.showRouting();
         CompletableFuture.runAsync(() -> controller.execute(main.latitude(), main.longitude(), washroomId));
+    }
+    private static void refreshMainWashrooms(DBWashroomDataAccessObject washrooms, MainView main,
+                                             WashroomListViewModel listModel, double originLat, double originLng) {
+        List<Washroom> availableWashrooms = washrooms.getAll();
+        main.setWashrooms(availableWashrooms);
+        List<WashroomListViewModel.Item> items = availableWashrooms.stream().map(w ->
+                new WashroomListViewModel.Item(w.id(), listName(w), w.reviewSummary().averageRating(),
+                        (int) Math.round(distance(originLat, originLng, w.building().latitude(), w.building().longitude())),
+                        w.accessible())).toList();
+        String selectedId = main.selectedId().isBlank() && !items.isEmpty() ? items.getFirst().id() : main.selectedId();
+        listModel.setState(new WashroomListViewModel.State(items, selectedId, "Sort by: Nearest", false));
     }
 
     private static Optional<Washroom> selected(DBWashroomDataAccessObject washrooms, MainView main) {

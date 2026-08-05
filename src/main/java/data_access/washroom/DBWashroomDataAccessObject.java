@@ -237,8 +237,9 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
             Object buildingId = buildingDocument.get("_id");
             String seedKey = "campus-" + building.code().toLowerCase(Locale.ROOT) + "-washroom";
             Document existing = collection.find(Filters.eq("seedKey", seedKey)).first();
+            FixtureCounts fixtures = fixtureCounts(building.code());
             entity.Washroom campusWashroom = new entity.Washroom(seedKey, building.name(), building, "Main floor", false,
-                    entity.Washroom.Gender.ALL_GENDER, 0, 0, "Main-floor washroom location at " + building.name(),
+                    entity.Washroom.Gender.ALL_GENDER, fixtures.toilets(), fixtures.sinks(), "Main-floor washroom location at " + building.name(),
                     entity.ReviewSummary.empty());
             if (existing == null) write(campusWashroom, buildingId.toString());
             else collection.updateOne(Filters.eq("seedKey", seedKey),
@@ -251,12 +252,18 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
                             Updates.set("gender", "ALL_GENDER"),
                             Updates.set("accessible", false),
                             Updates.set("accessibility", false),
-                            Updates.set("numToilets", 0),
-                            Updates.set("numSinks", 0),
+                            Updates.set("numToilets", fixtures.toilets()),
+                            Updates.set("numSinks", fixtures.sinks()),
                             Updates.set("locationDescription", "Main-floor washroom location at " + building.name())
                     ));
         }
     }
+
+    private static FixtureCounts fixtureCounts(String buildingCode) {
+        return new FixtureCounts(0, 0);
+    }
+
+    private record FixtureCounts(int toilets, int sinks) { }
 
     @Override
     public Optional<entity.Washroom> getById(String id) {
