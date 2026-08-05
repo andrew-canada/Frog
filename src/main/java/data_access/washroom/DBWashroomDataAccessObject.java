@@ -8,8 +8,6 @@ import data_access.Condition;
 import data_access.MongoDocuments;
 import data_access.Operator;
 import data_access.building.DBBuildingDataAccessObject;
-import entity.building.Building;
-import entity.building.GenericBuildingFactory;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
@@ -221,8 +219,9 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
             Object buildingId = buildingDocument.get("_id");
             String seedKey = "campus-" + building.code().toLowerCase(Locale.ROOT) + "-washroom";
             Document existing = collection.find(Filters.eq("seedKey", seedKey)).first();
+            FixtureCounts fixtures = fixtureCounts(building.code());
             entity.Washroom campusWashroom = new entity.Washroom(seedKey, building.name(), building, "Main floor", false,
-                    entity.Washroom.Gender.ALL_GENDER, 0, 0, "Main-floor washroom location at " + building.name(),
+                    entity.Washroom.Gender.ALL_GENDER, fixtures.toilets(), fixtures.sinks(), "Main-floor washroom location at " + building.name(),
                     entity.ReviewSummary.empty());
             if (existing == null) write(campusWashroom, buildingId.toString());
             else collection.updateOne(Filters.eq("seedKey", seedKey),
@@ -235,8 +234,8 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
                             Updates.set("gender", "ALL_GENDER"),
                             Updates.set("accessible", false),
                             Updates.set("accessibility", false),
-                            Updates.set("numToilets", 0),
-                            Updates.set("numSinks", 0),
+                            Updates.set("numToilets", fixtures.toilets()),
+                            Updates.set("numSinks", fixtures.sinks()),
                             Updates.set("locationDescription", "Main-floor washroom location at " + building.name())
                     ));
         }
@@ -288,11 +287,21 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements us
     }
 
     private static double clampRating(double value) { return Math.max(1, Math.min(5, value)); }
+    private static FixtureCounts fixtureCounts(String buildingCode) {
+        return switch (buildingCode) {
+            case "BA" -> new FixtureCounts(6, 4);
+            case "MY" -> new FixtureCounts(5, 4);
+            case "TC" -> new FixtureCounts(3, 2);
+            case "HH" -> new FixtureCounts(4, 3);
+            default -> new FixtureCounts(2, 2);
+        };
+    }
     private static double distance(double lat1, double lon1, double lat2, double lon2) {
         double x = Math.toRadians(lon2 - lon1) * Math.cos(Math.toRadians((lat1 + lat2) / 2));
         double y = Math.toRadians(lat2 - lat1);
         return Math.sqrt(x * x + y * y) * 6_371_000;
     }
+    private record FixtureCounts(int toilets, int sinks) { }
 
     public static void main(String[] args) {
         Washroom washroom = GenericWashroomFactory.create("1");

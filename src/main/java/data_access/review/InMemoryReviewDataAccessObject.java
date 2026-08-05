@@ -34,4 +34,5 @@ public final class InMemoryReviewDataAccessObject implements ReviewDataAccessInt
     @Override public List<Review> getReviewsByUser(String username) {
         return reviews.stream().filter(r -> username.equals(r.authorUsername())).toList();
     }
+    @Override public void save(Review review) { reviews.add(review); }
 }

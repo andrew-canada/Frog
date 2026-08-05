@@ -11,8 +11,7 @@ import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
 
-import entity.building.Building;
-import entity.building.GenericBuildingFactory;
+import entity.Building;
 import data_access.DBDataAccessObject;
 
 import java.util.*;
@@ -118,7 +117,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 * @return the Building object constructed using that data
 	 */
 	private static Building createBuilding(Document doc) {
-		return new entity.Building(
+		return new Building(
 				MongoDocuments.string(doc, MongoDocuments.id(doc), "buildingCode", "code"),
 				MongoDocuments.string(doc, "Unknown building", "longName", "shortName", "name"),
 				getLatitude(doc), getLongitude(doc));
@@ -132,11 +131,11 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	 */
 	public String write(Building building) {
 		Document doc = new Document();
-		doc.append("buildingCode", building.getBuildingCode());
-		doc.append("shortName", building.getBuildingNameShort());
-		doc.append("longName", building.getBuildingNameLong());
+		doc.append("buildingCode", building.code());
+		doc.append("shortName", building.name());
+		doc.append("longName", building.name());
 		doc.append("location", createLocation(building));
-		doc.append("controlInfo", building.getControlInfo());
+		doc.append("controlInfo", "");
 
 		return collection.insertOne(doc).getInsertedId().toString();
 	}
@@ -149,8 +148,8 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	private static Document createLocation(Building building) {
 		Document location = new Document("type", "Point");
 		List<Double> coords = new ArrayList<>();
-		coords.add(0, building.getLongitude());
-		coords.add(1, building.getLatitude());
+		coords.add(0, building.longitude());
+		coords.add(1, building.latitude());
 		location.append("coordinates", coords);
 		return location;
 	}
@@ -230,9 +229,9 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 	}
 
 	/** Production campus-location seed used by the current Swing application. */
-	public List<entity.Building> ensureLocations(List<entity.Building> locations) {
-		List<entity.Building> persisted = new ArrayList<>();
-		for (entity.Building location : locations) {
+	public List<Building> ensureLocations(List<Building> locations) {
+		List<Building> persisted = new ArrayList<>();
+		for (Building location : locations) {
 			List<Building> existing = getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
 			if (existing.isEmpty()) write(location);
 			Document geoPoint = new Document("type", "Point")
@@ -245,7 +244,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 							Updates.setOnInsert("controlInfo", "U of T St. George campus reference location")
 					), new UpdateOptions().upsert(true));
 			List<Building> refreshed = getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
-			if (!refreshed.isEmpty()) persisted.add((entity.Building) refreshed.getFirst());
+			if (!refreshed.isEmpty()) persisted.add(refreshed.getFirst());
 		}
 		return List.copyOf(persisted);
 	}
