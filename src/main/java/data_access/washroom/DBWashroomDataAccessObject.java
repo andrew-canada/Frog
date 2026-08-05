@@ -10,7 +10,7 @@ import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
 
-import entity.washroom.Washroom;
+import entity.Washroom;
 
 import javax.json.*;
 import java.io.FileReader;
@@ -46,7 +46,8 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @param conditions a list of condition objects that the returned washrooms must satisfy
      * @return The washrooms that match all the conditions
      */
-    public static List<Washroom> getMatching(Iterable<AbstractCondition<?>> conditions) {
+    @Override
+    public List<entity.Washroom> getMatching(Iterable<AbstractCondition<?>> conditions) {
         return new ArrayList<>(getMatchingIDMap(conditions).values());
 
     }
@@ -57,7 +58,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the conditions
      */
-    public static List<Washroom> getMatching(AbstractCondition<?> condition) {
+    public List<Washroom> getMatching(AbstractCondition<?> condition) {
 
         List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
@@ -71,7 +72,8 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @param conditions a list of condition objects that the returned washrooms must satisfy
      * @return The washrooms that match all the conditions mapped to their IDs in the database.
      */
-    public static Map<String, Washroom> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
+    @Override
+    public Map<String, Washroom> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
 
         Bson filter = parseConditions(conditions);
@@ -91,7 +93,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the condition mapped to their IDs in the database.
      */
-    public static Map<String, Washroom> getMatchingIDMap(AbstractCondition<?> condition) {
+    public Map<String, Washroom> getMatchingIDMap(AbstractCondition<?> condition) {
 
         List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
@@ -142,7 +144,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
         String floor = MongoDocuments.string(doc, "Unknown floor", "floor");
         String name = MongoDocuments.string(doc, building.name() + ", " + floor, "name");
         entity.Washroom.Gender gender = parseGender(MongoDocuments.string(doc, "ALL_GENDER", "gender"));
-        return new entity.Washroom(id, name, building, floor,
+        return new Washroom(id, name, building, floor,
                 MongoDocuments.bool(doc, false, "accessible"), gender,
                 Math.max(0, MongoDocuments.integer(doc, 0, "numToilets", "toilets")),
                 Math.max(0, MongoDocuments.integer(doc, 0, "numSinks", "sinks")),

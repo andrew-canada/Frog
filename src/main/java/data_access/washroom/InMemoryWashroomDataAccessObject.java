@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public final class InMemoryWashroomDataAccessObject implements WashroomDataAccessInterface {
+public final class InMemoryWashroomDataAccessObject {
     private final Map<String, Washroom> washrooms = new LinkedHashMap<>();
 
     public InMemoryWashroomDataAccessObject() {
@@ -31,17 +31,14 @@ public final class InMemoryWashroomDataAccessObject implements WashroomDataAcces
         washrooms.put(washroom.id(), washroom);
     }
 
-    @Override
     public Optional<Washroom> getById(String id) {
         return Optional.ofNullable(washrooms.get(id));
     }
 
-    @Override
     public List<Washroom> getAll() {
         return List.copyOf(washrooms.values());
     }
 
-    @Override
     public List<Washroom> getNearby(double lat, double lng, double radiusMeters) {
         return washrooms.values().stream().filter(w -> distance(lat, lng,
                 w.building().latitude(), w.building().longitude()) <= radiusMeters).toList();
