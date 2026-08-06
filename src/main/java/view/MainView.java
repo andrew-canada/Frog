@@ -100,7 +100,7 @@ public final class MainView extends JPanel {
             if(!s.success()) {
                 JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(this), s.message());
             } else {
-                map.setWashrooms(filter.getState().washrooms());
+                map.setWashrooms(s.washrooms());
             }
         });
     }
@@ -132,11 +132,14 @@ public final class MainView extends JPanel {
         p.setPreferredSize(new Dimension(290, 0));
         p.setBackground(Theme.PAPER);
         p.setBorder(Theme.pad(14, 18, 14, 12));
-        JPanel controls = new JPanel(new GridLayout(2, 2, 8, 8));
+        JPanel controls = new JPanel(new GridLayout(3, 2, 8, 8));
         controls.setOpaque(false);
         JButton location = Theme.button("Location"), filters = Theme.button("Filters");
+        JButton clear = Theme.button("Clear Filters");
         controls.add(location);
         controls.add(filters);
+        controls.add(new JLabel());
+        controls.add(clear);
         controls.add(new JLabel("Sort by:"));
         SortDropdownControl sortDropdownControl = new SortDropdownControl();
         sortDropdownControl.addActionListener(e -> {
@@ -169,6 +172,7 @@ public final class MainView extends JPanel {
             routeLabel.setText("Location updated — choose directions");
         }).setVisible(true));
         filters.addActionListener(e -> new FilterView(SwingUtilities.getWindowAncestor(this), "Filter", selectedId(), filterController, latitude, longitude).setVisible(true));
+        clear.addActionListener(e -> filterController.execute(5, 1, false, false, false, selectedId(), null, latitude, longitude));
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
         list.setBackground(Theme.PAPER);
         JScrollPane scroll = new JScrollPane(list);
