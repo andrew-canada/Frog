@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -107,7 +109,7 @@ public final class MainView extends JPanel {
         return b;
     }
 
-    private JComponent sidebar(WashroomListViewModel washrooms) {
+    private JComponent sidebar() {
         JPanel p = new JPanel(new BorderLayout(0, 10));
         p.setPreferredSize(new Dimension(290, 0));
         p.setBackground(Theme.PAPER);
@@ -118,29 +120,7 @@ public final class MainView extends JPanel {
         controls.add(location);
         controls.add(filters);
         controls.add(new JLabel("Sort by:"));
-        SortDropdownControl sortDropdownControl = new SortDropdownControl();
-        sortDropdownControl.addActionListener(e -> {
-            JComboBox<String> cb = (JComboBox<String>) e.getSource();
-            String selected = (String) cb.getSelectedItem();
-            System.out.println(selected);
-            WashroomListViewModel.State currState = washrooms.getState();
-            washrooms.setState(new WashroomListViewModel.State(
-                    currState.items(),
-                    currState.selectedId(),
-                    sortDropdownControl.getSelectedItem().toString(),
-                    currState.routeVisible()));
-            Comparator<WashroomListViewModel.Item> comparator;
-            if (sortDropdownControl.getSelectedItem().toString().equals("Highest rated")) {
-                comparator = WashroomListViewModel.Item.BY_RATING;
-            } else {
-                comparator = WashroomListViewModel.Item.BY_DISTANCE;
-
-            }
-            ArrayList<WashroomListViewModel.Item> sortedWashroom = new ArrayList<>(washrooms.getState().items());
-            sortedWashroom.sort(comparator);
-            renderList(sortedWashroom);
-        });
-        controls.add(sortDropdownControl);
+        controls.add(new SortDropdownControl());
         p.add(controls, BorderLayout.NORTH);
         location.addActionListener(e -> new LocationInputDialog(SwingUtilities.getWindowAncestor(this), addressLookup, (lat, lng) -> {
             latitude = lat;
@@ -148,7 +128,6 @@ public final class MainView extends JPanel {
             map.setOrigin(new GeoPoint(lat, lng));
             routeLabel.setText("Location updated — choose directions");
         }).setVisible(true));
-
         filters.addActionListener(e -> JOptionPane.showMessageDialog(this, new FilterPanel(), "Filters", JOptionPane.PLAIN_MESSAGE));
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
         list.setBackground(Theme.PAPER);
