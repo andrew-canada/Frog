@@ -275,7 +275,7 @@ public final class AppBuilder {
                         (int) Math.round(distance(originLat, originLng, w.building().latitude(), w.building().longitude())),
                         w.accessible())).toList();
         String selectedId = main.selectedId().isBlank() && !items.isEmpty() ? items.getFirst().id() : main.selectedId();
-        listModel.setState(new WashroomListViewModel.State(items, selectedId, "Alphabetical", false));
+        listModel.setState(new WashroomListViewModel.State(items, selectedId, "Sort by: Nearest", false));
     }
 
     /**
