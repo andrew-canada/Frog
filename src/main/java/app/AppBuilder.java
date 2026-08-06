@@ -177,6 +177,7 @@ public final class AppBuilder {
         cards.add(busyness, BUSYNESS);
         cards.add(moderate, MODERATE);
         frame.setContentPane(cards);
+        layout.show(cards, LOGIN);
 
         Runnable showMain = () -> layout.show(cards, MAIN);
         main.setOnReviews(id -> {
