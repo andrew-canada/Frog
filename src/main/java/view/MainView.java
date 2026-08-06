@@ -34,6 +34,9 @@ import java.util.function.Function;
 import java.util.logging.Filter;
 
 public final class MainView extends JPanel {
+    /** Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies. */
+    private static final Color MAP_LOW = Theme.COLORBLIND_BLUE;
+    private static final Color MAP_HIGH = Theme.COLORBLIND_ORANGE;
     private final JPanel list = new JPanel();
     private final JLabel routeLabel = Theme.label("Select a washroom to explore", 13, Theme.MUTED);
     private final JLabel heatmapLegend = Theme.label("", 11, Theme.MUTED);
@@ -228,11 +231,11 @@ public final class MainView extends JPanel {
         busynessHeatmap.setText("Busyness heatmap" + (busynessHeatmapVisible ? " (On)" : ""));
         cleanlinessHeatmap.setText("Cleanliness heatmap" + (cleanlinessHeatmapVisible ? " (On)" : ""));
         if (busynessHeatmapVisible && cleanlinessHeatmapVisible) {
-            heatmapLegend.setText("Heatmap: busyness outer glow · cleanliness inner glow · blue = lower · berry = higher · gray = no data");
+            heatmapLegend.setText("Heatmap: busyness outer glow · cleanliness inner glow · blue = lower · orange = higher · gray = no data");
         } else if (busynessHeatmapVisible) {
-            heatmapLegend.setText("Busyness heatmap: blue = less busy · berry = more busy · gray = no data");
+            heatmapLegend.setText("Busyness heatmap: blue = less busy · orange = more busy · gray = no data");
         } else if (cleanlinessHeatmapVisible) {
-            heatmapLegend.setText("Cleanliness heatmap: blue = lower · berry = higher · gray = no data");
+            heatmapLegend.setText("Cleanliness heatmap: blue = lower · orange = higher · gray = no data");
         }
         heatmapLegend.setVisible(busynessHeatmapVisible || cleanlinessHeatmapVisible);
         map.setHeatmapVisibility(busynessHeatmapVisible, cleanlinessHeatmapVisible);
@@ -524,14 +527,14 @@ public final class MainView extends JPanel {
             Map<GeoPoint, List<Washroom>> washroomsByLocation = washroomsByLocation();
             drawHeatmaps(canvas, map, washroomsByLocation);
             drawRoute(canvas, map);
-            drawPoint(canvas, map, viewport, origin, "You", Theme.BLUE, "", "", false);
+            drawPoint(canvas, map, viewport, origin, "You", MAP_LOW, "", "", false);
             for (List<Washroom> washroomsAtLocation : washroomsByLocation.values()) {
                 Washroom representative = washroomsAtLocation.getFirst();
                 boolean selected = washroomsAtLocation.stream()
                         .anyMatch(washroom -> washroom.id().equals(selectedWashroomId));
                 drawPoint(canvas, map, viewport,
                         new GeoPoint(representative.building().latitude(), representative.building().longitude()),
-                        representative.building().name(), selected ? Theme.BLUE : Theme.BERRY,
+                        representative.building().name(), selected ? MAP_LOW : MAP_HIGH,
                         representative.building().code(), representative.id(), selected);
             }
             canvas.dispose();
@@ -587,12 +590,12 @@ public final class MainView extends JPanel {
         }
 
         private static Color heatColor(double value) {
-            if (Double.isNaN(value)) return new Color(130, 130, 130);
+            if (Double.isNaN(value)) return Theme.NO_DATA;
             double progress = Math.max(0, Math.min(1, (value - 1) / 4));
             return new Color(
-                    (int) Math.round(Theme.BLUE.getRed() + (Theme.BERRY.getRed() - Theme.BLUE.getRed()) * progress),
-                    (int) Math.round(Theme.BLUE.getGreen() + (Theme.BERRY.getGreen() - Theme.BLUE.getGreen()) * progress),
-                    (int) Math.round(Theme.BLUE.getBlue() + (Theme.BERRY.getBlue() - Theme.BLUE.getBlue()) * progress));
+                    (int) Math.round(MAP_LOW.getRed() + (MAP_HIGH.getRed() - MAP_LOW.getRed()) * progress),
+                    (int) Math.round(MAP_LOW.getGreen() + (MAP_HIGH.getGreen() - MAP_LOW.getGreen()) * progress),
+                    (int) Math.round(MAP_LOW.getBlue() + (MAP_HIGH.getBlue() - MAP_LOW.getBlue()) * progress));
         }
 
         private static Color withAlpha(Color color, int alpha) {
@@ -610,7 +613,7 @@ public final class MainView extends JPanel {
             canvas.setColor(new Color(255, 255, 255, 210));
             canvas.setStroke(new BasicStroke(9, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             canvas.draw(path);
-            canvas.setColor(new Color(42, 119, 205));
+            canvas.setColor(MAP_LOW);
             canvas.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             canvas.draw(path);
         }
