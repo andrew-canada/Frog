@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.logging.Filter;
 
 public final class MainView extends JPanel {
     /** Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies. */
@@ -144,29 +143,27 @@ public final class MainView extends JPanel {
         controls.add(new JLabel());
         controls.add(clear);
         controls.add(new JLabel("Sort by:"));
-        SortDropdownControl sortDropdownControl = new SortDropdownControl();
-        sortDropdownControl.addActionListener(e -> {
-            JComboBox<String> cb = (JComboBox<String>) e.getSource();
-            String selected = (String) cb.getSelectedItem();
-            System.out.println(selected);
+        WashroomSortDropdownControl washroomSortDropdownControl = new WashroomSortDropdownControl();
+        washroomSortDropdownControl.addActionListener(e -> {
             WashroomListViewModel.State currState = washrooms.getState();
             washrooms.setState(new WashroomListViewModel.State(
                     currState.items(),
                     currState.selectedId(),
-                    sortDropdownControl.getSelectedItem().toString(),
+                    washroomSortDropdownControl.getSelectedItem().toString(),
                     currState.routeVisible()));
             Comparator<WashroomListViewModel.Item> comparator;
-            if (sortDropdownControl.getSelectedItem().toString().equals("Highest rated")) {
+            if (washroomSortDropdownControl.getSelectedItem().toString().equals("Highest Rated")) {
                 comparator = WashroomListViewModel.Item.BY_RATING;
-            } else {
+            } else if (washroomSortDropdownControl.getSelectedItem().toString().equals("Nearest")){
                 comparator = WashroomListViewModel.Item.BY_DISTANCE;
-
+            } else {
+                comparator = WashroomListViewModel.Item.BY_ALPHABETICAL;
             }
             ArrayList<WashroomListViewModel.Item> sortedWashroom = new ArrayList<>(washrooms.getState().items());
             sortedWashroom.sort(comparator);
             renderList(sortedWashroom);
         });
-        controls.add(sortDropdownControl);
+        controls.add(washroomSortDropdownControl);
         p.add(controls, BorderLayout.NORTH);
         location.addActionListener(e -> new LocationInputDialog(SwingUtilities.getWindowAncestor(this), addressLookup, (lat, lng) -> {
             latitude = lat;
