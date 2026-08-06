@@ -253,12 +253,14 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
                 String name = obj.getString("name");
                 String genderStr = obj.getString("gender");
                 entity.Washroom.Gender gender = null;
-                if (genderStr.equals(entity.Washroom.Gender.MEN)) {
+                if (genderStr.equals(entity.Washroom.Gender.MEN.toString())) {
                     gender = entity.Washroom.Gender.MEN;
-                } else if (genderStr.equals(entity.Washroom.Gender.WOMEN)) {
+                } else if (genderStr.equals(entity.Washroom.Gender.WOMEN.toString())) {
                     gender = entity.Washroom.Gender.WOMEN;
-                } else {
+                } else if (genderStr.equals("ALL_GENDER")){
                     gender = entity.Washroom.Gender.ALL_GENDER;
+                } else {
+                    gender = entity.Washroom.Gender.ALL_GENDER;;
                 }
 
                 boolean accessible = obj.getBoolean("accessible");
