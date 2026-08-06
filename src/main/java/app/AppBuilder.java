@@ -59,6 +59,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.InputStream;
 import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -262,10 +264,16 @@ public final class AppBuilder {
             if (!main.selectedId().isBlank())
                 statusController.execute(main.selectedId(), status.busyness(), status.cleanliness(), status.issue(), loggedInModel.getState().loggedIn() ? loggedInModel.getState().username() : null);
         });
+        statusModel.addPropertyChangeListener(e -> {
+            if (statusModel.getState().success()) {
+                refreshHeatmap(washrooms, reports, main);
+            }
+        });
         busyness.setOnBack(showMain);
         account.setOnBack(showMain);
 
         refreshMainWashrooms(washrooms, main, listModel, originLat, originLng);
+        refreshHeatmap(washrooms, reports, main);
         return frame;
     }
 
@@ -283,6 +291,22 @@ public final class AppBuilder {
                         w.accessible())).toList();
         String selectedId = main.selectedId().isBlank() && !items.isEmpty() ? items.getFirst().id() : main.selectedId();
         listModel.setState(new WashroomListViewModel.State(items, selectedId, "Alphabetical", false));
+    }
+
+    /** Updates the map layers from the newest report in the current clock hour. */
+    private static void refreshHeatmap(DBWashroomDataAccessObject washrooms,
+                                       DBStatusReportDataAccessObject reports, MainView main) {
+        LocalDateTime now = LocalDateTime.now();
+        // Include historical daily data for the current hour, while allowing a just-submitted
+        // report to replace it with the live value.
+        LocalDateTime since = LocalDateTime.of(2000, 1, 1, 0, 0);
+        main.setHeatmapData(jsonWashrooms(washrooms).stream().map(washroom ->
+                reports.getRecentForWashroom(washroom.id(), since).stream()
+                        .filter(report -> report.timestamp().getHour() == now.getHour())
+                        .max(Comparator.comparing(entity.StatusReport::timestamp))
+                        .map(report -> new MainView.HeatmapData(washroom.id(), report.busyness(), report.cleanliness()))
+                        .orElseGet(() -> new MainView.HeatmapData(washroom.id(), Double.NaN, Double.NaN)))
+                .toList());
     }
 
     /**
