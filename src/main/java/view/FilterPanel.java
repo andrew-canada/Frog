@@ -8,7 +8,7 @@ import java.awt.event.WindowEvent;
 
 public final class FilterPanel extends JPanel {
     private final JFrame frame;
-    private final JSlider rating = new JSlider(1, 5, 1);
+    private final JSlider busyness = new JSlider(1, 5, 5);
     private final JSlider cleanliness = new JSlider(1, 5, 1);
     private final JCheckBox accessible = new JCheckBox("Accessible only");
     private final JCheckBox ownReviews = new JCheckBox("Only washrooms that you've reviewed");
@@ -25,12 +25,12 @@ public final class FilterPanel extends JPanel {
         add(heading);
         add(Box.createVerticalStrut(10));
 
-        add(Theme.label("Minimum rating", 12, Theme.MUTED));
-        rating.setBackground(Theme.PAPER);
-        rating.setMajorTickSpacing(1);
-        rating.setPaintTicks(true);
-        add(rating);
-        add(Theme.label("Minimum cleanliness", 12, Theme.MUTED));
+        add(Theme.label("Maximum busyness · 1 quiet — 5 packed", 12, Theme.MUTED));
+        busyness.setBackground(Theme.PAPER);
+        busyness.setMajorTickSpacing(1);
+        busyness.setPaintTicks(true);
+        add(busyness);
+        add(Theme.label("Minimum current cleanliness · 1 poor — 5 spotless", 12, Theme.MUTED));
         cleanliness.setBackground(Theme.PAPER);
         cleanliness.setMajorTickSpacing(1);
         cleanliness.setPaintTicks(true);
@@ -61,8 +61,8 @@ public final class FilterPanel extends JPanel {
         add(buttonPanel);
     }
 
-    public int rating(){
-        return rating.getValue();
+    public int busyness(){
+        return busyness.getValue();
     }
 
     public int cleanliness(){

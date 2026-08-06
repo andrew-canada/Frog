@@ -4,6 +4,7 @@ import entity.Washroom;
 import use_case.filter.FilterInputBoundary;
 import use_case.filter.FilterInputData;
 
+import java.util.concurrent.CompletableFuture;
 
 public class FilterController {
     private final FilterInputBoundary interactor;
@@ -13,7 +14,7 @@ public class FilterController {
     }
 
     public void execute(
-            int minRating,
+            int maxBusyness,
             int minCleanliness,
             boolean accessible,
             boolean ownReviews,
@@ -36,10 +37,8 @@ public class FilterController {
         };
 
         FilterInputData inputData = new FilterInputData(
-                (float) minRating,
-                5.0F,
+                (float) maxBusyness,
                 (float) minCleanliness,
-                5.0F,
                 accessible,
                 inputGender,
                 inputID,
@@ -47,6 +46,6 @@ public class FilterController {
                 latitude,
                 longitude);
 
-        interactor.execute(inputData);
+        CompletableFuture.runAsync(() -> interactor.execute(inputData));
     }
 }

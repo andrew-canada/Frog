@@ -60,11 +60,13 @@ import java.awt.event.WindowEvent;
 import java.io.InputStream;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * Composition root: the only class that selects concrete database and external-service adapters.
@@ -75,15 +77,20 @@ public final class AppBuilder {
 
     /** Builds the application from the data already stored in MongoDB. */
     public JFrame build() {
-        return build(false);
+        return build(false, frame -> { });
     }
 
-    /** Builds the application after verifying the connection and seeding its baseline data. */
+    /** Builds the application and asynchronously verifies/seeds its baseline data. */
     public JFrame buildAndSeed() {
-        return build(true);
+        return build(true, frame -> { });
     }
 
-    private JFrame build(boolean seedData) {
+    /** Invokes {@code onLoaded} on Swing's event thread once the initial screen is ready to show. */
+    public JFrame buildAndSeed(Consumer<JFrame> onLoaded) {
+        return build(true, onLoaded == null ? frame -> { } : onLoaded);
+    }
+
+    private JFrame build(boolean seedData, Consumer<JFrame> onLoaded) {
         String graphhopperKey = requiredEnvironment(GraphhopperRouteDataAccessObject.API_KEY_ENV);
         DBDataAccessObject connection = DBDataAccessObject.fromEnvironment();
 
@@ -92,17 +99,6 @@ public final class AppBuilder {
         var reviews = new DBReviewDataAccessObject(database);
         var users = new DBUserDataAccessObject(database);
         var reports = new DBStatusReportDataAccessObject(database);
-        if (seedData) {
-            try {
-                connection.verifyConnection();
-                List<entity.Washroom> jsonWashrooms = jsonWashrooms(washrooms);
-                reviews.ensureJsonReviews(jsonWashrooms);
-                reports.ensureJsonHourlyReports(jsonWashrooms);
-            } catch (RuntimeException failure) {
-                connection.close();
-                throw new IllegalStateException("Could not connect to or seed the MongoDB database.", failure);
-            }
-        }
         var routes = new GraphhopperRouteDataAccessObject(graphhopperKey);
         var geocoding = new GraphhopperGeocodingDataAccessObject(graphhopperKey);
         var enrollment = new DBEnrollmentDataAccessObject(database);
@@ -137,7 +133,8 @@ public final class AppBuilder {
         var changePasswordController = new ChangePasswordController(new ChangePasswordInteractor(users, new ChangePasswordPresenter(accountModel)));
         var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel)));
         var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
-        var filterController = new FilterController(new FilterInteractor(washrooms, reviews, users, new FilterPresenter(filterModel, listModel, mapModel)));
+        var filterController = new FilterController(new FilterInteractor(washrooms, reviews, reports, users,
+                new FilterPresenter(filterModel, listModel, mapModel), JSON_WASHROOM_NAMES));
 
         JFrame frame = new JFrame("FlushID — U of T washroom finder");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -152,6 +149,7 @@ public final class AppBuilder {
         CardLayout layout = new CardLayout();
         JPanel cards = new JPanel(layout);
         MainView main = new MainView(listModel, mapModel, filterModel);
+        AtomicReference<List<Washroom>> displayedWashrooms = new AtomicReference<>(List.of());
         main.setAddressLookup(geocoding::lookup);
         double originLat=43.6629,originLng=-79.3957;
 
@@ -240,9 +238,11 @@ public final class AppBuilder {
         // Keep the Moderator nav button's reported-review count in sync with the queue: the model is
         // updated on load and after every remove/dismiss, so this listener covers those; load once now
         // for the initial badge.
-        moderateModel.addPropertyChangeListener(e ->
-                main.setModeratorReportCount(moderateModel.getState().reportedReviews().size()));
-        moderateController.load();
+        moderateModel.addPropertyChangeListener(e -> {
+            Runnable update = () -> main.setModeratorReportCount(moderateModel.getState().reportedReviews().size());
+            if (SwingUtilities.isEventDispatchThread()) update.run();
+            else SwingUtilities.invokeLater(update);
+        });
         login.setOnBack(showMain);
         login.setOnSignup(() -> new SignupDialog(frame, signupController).setVisible(true));
         recommendation.setOnBack(showMain);
@@ -266,14 +266,14 @@ public final class AppBuilder {
         });
         statusModel.addPropertyChangeListener(e -> {
             if (statusModel.getState().success()) {
-                refreshHeatmap(washrooms, reports, main);
+                refreshHeatmapAsync(displayedWashrooms.get(), reports, main);
             }
         });
         busyness.setOnBack(showMain);
         account.setOnBack(showMain);
 
-        refreshMainWashrooms(washrooms, main, listModel, originLat, originLng);
-        refreshHeatmap(washrooms, reports, main);
+        loadMainDataAsync(washrooms, reviews, reports, seedData, moderateController::load,
+                main, listModel, displayedWashrooms, originLat, originLng, () -> onLoaded.accept(frame));
         return frame;
     }
 
@@ -281,9 +281,64 @@ public final class AppBuilder {
         main.showRouting();
         CompletableFuture.runAsync(() -> controller.execute(main.latitude(), main.longitude(), washroomId));
     }
-    private static void refreshMainWashrooms(DBWashroomDataAccessObject washrooms, MainView main,
+    private static void loadMainDataAsync(DBWashroomDataAccessObject washrooms, DBReviewDataAccessObject reviews,
+                                          DBStatusReportDataAccessObject reports, boolean seedData, Runnable loadModerator,
+                                          MainView main, WashroomListViewModel listModel,
+                                          AtomicReference<List<Washroom>> displayedWashrooms,
+                                          double originLat, double originLng, Runnable onLoaded) {
+        Thread loader = new Thread(() -> {
+            MainData data = null;
+            Throwable failure = null;
+            try {
+                if (seedData) seedInitialData(washrooms, reviews, reports);
+                List<Washroom> availableWashrooms = jsonWashrooms(washrooms);
+                List<MainView.HeatmapData> heatmapData = heatmapData(availableWashrooms, reports);
+                try {
+                    loadModerator.run();
+                } catch (RuntimeException moderatorFailure) {
+                    // A malformed moderation record must not prevent the main map from opening.
+                    System.err.println("Moderator queue did not load: " + moderatorFailure.getMessage());
+                }
+                data = new MainData(availableWashrooms, heatmapData);
+            } catch (Throwable exception) {
+                failure = exception;
+            }
+            MainData completedData = data;
+            Throwable completedFailure = failure;
+            SwingUtilities.invokeLater(() -> {
+                MainData loaded = completedData;
+                Throwable loadFailure = completedFailure;
+            if (loadFailure != null) {
+                listModel.setState(new WashroomListViewModel.State(List.of(), "", "Alphabetical", false));
+                onLoaded.run();
+                JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(main),
+                        "Could not load the washroom map. Check the database connection and try again.",
+                        "FlushID", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            displayedWashrooms.set(loaded.washrooms());
+            refreshMainWashrooms(loaded.washrooms(), main, listModel, originLat, originLng);
+            main.setHeatmapData(loaded.heatmapData());
+            onLoaded.run();
+            });
+        }, "FlushID initial data loader");
+        loader.setDaemon(false);
+        loader.start();
+    }
+
+    /** Runs the optional baseline-data maintenance away from Swing's event thread. */
+    private static void seedInitialData(DBWashroomDataAccessObject washrooms, DBReviewDataAccessObject reviews,
+                                        DBStatusReportDataAccessObject reports) {
+        washrooms.ensurePerformanceIndexes();
+        reviews.ensurePerformanceIndexes();
+        reports.ensurePerformanceIndexes();
+        List<Washroom> jsonWashrooms = jsonWashrooms(washrooms);
+        reviews.ensureJsonReviews(jsonWashrooms);
+        reports.ensureJsonHourlyReports(jsonWashrooms);
+    }
+
+    private static void refreshMainWashrooms(List<Washroom> availableWashrooms, MainView main,
                                              WashroomListViewModel listModel, double originLat, double originLng) {
-        List<Washroom> availableWashrooms = jsonWashrooms(washrooms);
         main.setWashrooms(availableWashrooms);
         List<WashroomListViewModel.Item> items = availableWashrooms.stream().map(w ->
                 new WashroomListViewModel.Item(w.id(), w.building().name(), listDescription(w), w.reviewSummary().averageRating(),
@@ -293,21 +348,27 @@ public final class AppBuilder {
         listModel.setState(new WashroomListViewModel.State(items, selectedId, "Sort by: Nearest", false));
     }
 
-    /** Updates the map layers from the newest report in the current clock hour. */
-    private static void refreshHeatmap(DBWashroomDataAccessObject washrooms,
-                                       DBStatusReportDataAccessObject reports, MainView main) {
+    /** Refreshes heatmap data off the UI thread after a live status submission. */
+    private static void refreshHeatmapAsync(List<Washroom> washrooms,
+                                            DBStatusReportDataAccessObject reports, MainView main) {
+        CompletableFuture.supplyAsync(() -> heatmapData(washrooms, reports))
+                .thenAccept(data -> SwingUtilities.invokeLater(() -> main.setHeatmapData(data)));
+    }
+
+    /** Builds the current-hour heatmap in one status-report aggregation. */
+    private static List<MainView.HeatmapData> heatmapData(List<Washroom> washrooms,
+                                                           DBStatusReportDataAccessObject reports) {
         LocalDateTime now = LocalDateTime.now();
-        // Include historical daily data for the current hour, while allowing a just-submitted
-        // report to replace it with the live value.
-        LocalDateTime since = LocalDateTime.of(2000, 1, 1, 0, 0);
-        main.setHeatmapData(jsonWashrooms(washrooms).stream().map(washroom ->
-                reports.getRecentForWashroom(washroom.id(), since).stream()
-                        .filter(report -> report.timestamp().getHour() == now.getHour())
-                        .max(Comparator.comparing(entity.StatusReport::timestamp))
+        Map<String, entity.StatusReport> currentHour = reports.getCurrentHourForWashrooms(
+                washrooms.stream().map(Washroom::id).toList(), now.getHour());
+        return washrooms.stream().map(washroom ->
+                Optional.ofNullable(currentHour.get(washroom.id()))
                         .map(report -> new MainView.HeatmapData(washroom.id(), report.busyness(), report.cleanliness()))
                         .orElseGet(() -> new MainView.HeatmapData(washroom.id(), Double.NaN, Double.NaN)))
-                .toList());
+                .toList();
     }
+
+    private record MainData(List<Washroom> washrooms, List<MainView.HeatmapData> heatmapData) { }
 
     /**
      * A new review changes the aggregate rating for only its washroom.  Keep the
@@ -358,9 +419,7 @@ public final class AppBuilder {
     }
 
     private static List<Washroom> jsonWashrooms(DBWashroomDataAccessObject washrooms) {
-        return washrooms.getAll().stream()
-                .filter(washroom -> JSON_WASHROOM_NAMES.contains(washroom.name()))
-                .toList();
+        return washrooms.getByNames(JSON_WASHROOM_NAMES);
     }
 
     private static String requiredEnvironment(String name) {

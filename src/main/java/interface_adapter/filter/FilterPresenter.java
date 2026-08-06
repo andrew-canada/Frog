@@ -35,8 +35,12 @@ public class FilterPresenter implements FilterOutputBoundary {
                                 washroom.building().latitude(),
                                 washroom.building().longitude())),
                         washroom.accessible())).toList();
-        listModel.setState(new WashroomListViewModel.State(items, null, "Sort by: Nearest", false));
-        filterModel.setState(new FilterViewModel.State(true, ""));
+        Runnable update = () -> {
+            listModel.setState(new WashroomListViewModel.State(items, null, "Sort by: Nearest", false));
+            filterModel.setState(new FilterViewModel.State(true, ""));
+        };
+        if (SwingUtilities.isEventDispatchThread()) update.run();
+        else SwingUtilities.invokeLater(update);
 
         /**
         List<GeoPoint> points = outputData.washrooms().stream().map(
@@ -50,8 +54,10 @@ public class FilterPresenter implements FilterOutputBoundary {
     }
 
     @Override
-    public void presentError(String Message) {
-
+    public void presentError(String message) {
+        Runnable update = () -> filterModel.setState(new FilterViewModel.State(false, message));
+        if (SwingUtilities.isEventDispatchThread()) update.run();
+        else SwingUtilities.invokeLater(update);
     }
 
     private static double distance(double a, double b, double c, double d) {

@@ -16,7 +16,7 @@ public class FilterView extends JFrame {
 
         FilterPanel p = new FilterPanel(this, selected, () ->
         {controller.execute(
-                        filterPanel.rating(),
+                        filterPanel.busyness(),
                         filterPanel.cleanliness(),
                         filterPanel.accessibleOnly(),
                         filterPanel.ownReviews(),
@@ -34,8 +34,8 @@ public class FilterView extends JFrame {
 
     }
 
-    public int rating(){
-        return filterPanel.rating();
+    public int busyness(){
+        return filterPanel.busyness();
     }
 
     public int cleanliness(){

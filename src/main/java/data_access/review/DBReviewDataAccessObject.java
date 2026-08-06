@@ -2,6 +2,7 @@ package data_access.review;
 
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Indexes;
 import data_access.AbstractCondition;
 import data_access.Condition;
 import data_access.MongoDocuments;
@@ -213,9 +214,9 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     @Override
     public List<entity.Review> getReviewsForWashroom(String washroomId) {
         List<entity.Review> result = new ArrayList<>();
-        for (Review review : getMatching(List.<AbstractCondition<?>>of())) {
-            entity.Review applicationReview = (entity.Review) review;
-            if (applicationReview.washroomId().equals(washroomId)) result.add(applicationReview);
+        for (Document document : collection.find(Filters.or(Filters.eq("washroomId", washroomId),
+                Filters.eq("washroomID", washroomId)))) {
+            result.add((entity.Review) createReview(document));
         }
         return List.copyOf(result);
     }
@@ -231,9 +232,9 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     @Override
     public List<entity.Review> getReviewsByUser(String username) {
         List<entity.Review> result = new ArrayList<>();
-        for (Review legacyReview : getMatching(List.<AbstractCondition<?>>of())) {
-            entity.Review review = (entity.Review) legacyReview;
-            if (username.equals(review.authorUsername())) result.add(review);
+        for (Document document : collection.find(Filters.or(Filters.eq("authorUsername", username),
+                Filters.eq("username", username)))) {
+            result.add((entity.Review) createReview(document));
         }
         return List.copyOf(result);
     }
@@ -244,17 +245,30 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
 
     /** Adds two persistent written reviews to every JSON-sourced washroom without duplicating them. */
     public void ensureJsonReviews(List<entity.Washroom> washrooms) {
+        Set<String> existingSeedKeys = new HashSet<>();
+        for (Document review : collection.find(Filters.regex("seedKey", "^json-review-"))) {
+            existingSeedKeys.add(MongoDocuments.string(review, "", "seedKey"));
+        }
+        List<Document> newReviews = new ArrayList<>();
         for (int washroomIndex = 0; washroomIndex < washrooms.size(); washroomIndex++) {
             entity.Washroom washroom = washrooms.get(washroomIndex);
             for (int index = 0; index < 2; index++) {
                 String seedKey = "json-review-" + washroom.id() + "-" + index;
-                if (collection.find(Filters.eq("seedKey", seedKey)).first() != null) continue;
+                if (existingSeedKeys.contains(seedKey)) continue;
                 SeedReview seed = seedReviewFor(washroomIndex, index);
                 entity.Review review = new entity.Review(seedKey, washroom.id(), seed.author(), seed.rating(),
                         seed.cleanliness(), seed.comment(), seed.helpfulCount(), seed.createdAt());
-                collection.insertOne(documentFor(review).append("seedKey", seedKey));
+                newReviews.add(documentFor(review).append("seedKey", seedKey));
             }
         }
+        if (!newReviews.isEmpty()) collection.insertMany(newReviews);
+    }
+
+    /** Creates indexes used by grouped summaries and the "my reviews" filter. */
+    public void ensurePerformanceIndexes() {
+        collection.createIndex(Indexes.ascending("washroomId"));
+        collection.createIndex(Indexes.ascending("washroomID"));
+        collection.createIndex(Indexes.ascending("authorUsername"));
     }
 
     private static String author(Document review) {

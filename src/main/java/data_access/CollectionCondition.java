@@ -15,9 +15,9 @@ public class CollectionCondition<T extends Collection<?>> extends AbstractCondit
 
     public CollectionCondition(String fieldName, Operator operator, T value) {
         if (operator == Operator.IN) {
-            filter = Filters.in(fieldName, value);
+            filter = Filters.in(fieldName, (Iterable<?>) value);
         } else if (operator == Operator.NIN) {
-            filter = Filters.nin(fieldName, value);
+            filter = Filters.nin(fieldName, (Iterable<?>) value);
         } else {
             throw new IllegalArgumentException();
         }
