@@ -7,6 +7,7 @@ import use_case.filter.FilterOutputBoundary;
 import use_case.filter.FilterOutputData;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FilterPresenter implements FilterOutputBoundary {
@@ -37,7 +38,7 @@ public class FilterPresenter implements FilterOutputBoundary {
                         washroom.accessible())).toList();
         Runnable update = () -> {
             listModel.setState(new WashroomListViewModel.State(items, null, "Sort by: Nearest", false));
-            filterModel.setState(new FilterViewModel.State(true, ""));
+            filterModel.setState(new FilterViewModel.State(true, outputData.washrooms(), ""));
         };
         if (SwingUtilities.isEventDispatchThread()) update.run();
         else SwingUtilities.invokeLater(update);
@@ -55,7 +56,7 @@ public class FilterPresenter implements FilterOutputBoundary {
 
     @Override
     public void presentError(String message) {
-        Runnable update = () -> filterModel.setState(new FilterViewModel.State(false, message));
+        Runnable update = () -> filterModel.setState(new FilterViewModel.State(false,new ArrayList<>(), message));
         if (SwingUtilities.isEventDispatchThread()) update.run();
         else SwingUtilities.invokeLater(update);
     }

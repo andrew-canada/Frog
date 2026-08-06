@@ -99,6 +99,8 @@ public final class MainView extends JPanel {
             FilterViewModel.State s = filter.getState();
             if(!s.success()) {
                 JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(this), s.message());
+            } else {
+                map.setWashrooms(filter.getState().washrooms());
             }
         });
     }
