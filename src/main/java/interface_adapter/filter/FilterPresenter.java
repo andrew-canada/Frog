@@ -26,8 +26,8 @@ public class FilterPresenter implements FilterOutputBoundary {
         List<WashroomListViewModel.Item> items = outputData.washrooms().stream().map(
                 washroom -> new WashroomListViewModel.Item(
                         washroom.id(),
-                        washroom.name(),
-                        washroom.locationDescription(),
+                        washroom.building().name(),
+                        listDescription(washroom.name()),
                         washroom.reviewSummary().averageRating(),
                         (int) Math.round(distance(
                                 outputData.latitude(),
@@ -64,5 +64,14 @@ public class FilterPresenter implements FilterOutputBoundary {
         double x = Math.toRadians(d - b) * Math.cos(Math.toRadians((a + c) / 2));
         double y = Math.toRadians(c - a);
         return Math.sqrt(x * x + y * y) * 6_371_000;
+    }
+
+    /** Keeps filtered cards consistent with the initial washroom-list display. */
+    private static String listDescription(String washroomName) {
+        int separator = washroomName.indexOf('|');
+        String description = separator >= 0 ? washroomName.substring(separator + 1) : washroomName;
+        return description.replaceAll("(?i)\\bwashrooms?\\b", "")
+                .replaceAll("\\s{2,}", " ")
+                .trim();
     }
 }

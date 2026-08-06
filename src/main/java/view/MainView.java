@@ -53,8 +53,6 @@ public final class MainView extends JPanel {
 
     private Runnable onLogin = () -> {
     },
-            onRecommend = () -> {
-            },
             onReport = () -> {
             },
             onBusyness = () -> {
@@ -115,7 +113,7 @@ public final class MainView extends JPanel {
         JPanel nav = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         nav.setOpaque(false);
         moderatorNav = nav("Moderator", () -> onModerator.run());
-        for (JButton b : new JButton[]{nav("Recommend", () -> onRecommend.run()), nav("Account", () -> onAccount.run()), nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), moderatorNav, nav("Login", () -> onLogin.run())})
+        for (JButton b : new JButton[]{nav("Account", () -> onAccount.run()), nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), moderatorNav, nav("Login", () -> onLogin.run())})
             nav.add(b);
         p.add(nav, BorderLayout.EAST);
         return p;
@@ -349,10 +347,6 @@ public final class MainView extends JPanel {
 
     public void setOnLogin(Runnable r) {
         onLogin = r;
-    }
-
-    public void setOnRecommend(Runnable r) {
-        onRecommend = r;
     }
 
     public void setOnAccount(Runnable r) {

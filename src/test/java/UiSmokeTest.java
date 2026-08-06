@@ -2,7 +2,6 @@ import interface_adapter.busyness.BusynessViewModel;
 import interface_adapter.directions.MapViewModel;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginViewModel;
-import interface_adapter.recommend.RecommendationViewModel;
 import interface_adapter.status_report.StatusReportViewModel;
 import interface_adapter.view_reviews.ReviewsViewModel;
 import interface_adapter.view_reviews.WashroomListViewModel;
@@ -42,7 +41,7 @@ final class UiSmokeTest {
                 List<JPanel> views = List.of(main, new ReadReviewsView(reviews),
                         new LoginPanel(new LoginViewModel(), new LoginController(input -> {
                         })),
-                        new RecommendationView(new RecommendationViewModel()), new StatusReportView(new StatusReportViewModel()),
+                        new StatusReportView(new StatusReportViewModel()),
                         new BusynessChartView(busyness), new FilterPanel(null, "", () -> {
                         }));
                 list.setState(new WashroomListViewModel.State(List.of(new WashroomListViewModel.Item("w1", "Test building", "Single-user", 4.5, 200, true)), "w1", "Nearest", false));

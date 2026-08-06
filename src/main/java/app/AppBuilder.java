@@ -24,7 +24,6 @@ import interface_adapter.filter.FilterController;
 import interface_adapter.filter.FilterPresenter;
 import interface_adapter.filter.FilterViewModel;
 import interface_adapter.login.*;
-import interface_adapter.recommend.*;
 import interface_adapter.status_report.*;
 import interface_adapter.view_reviews.*;
 import interface_adapter.report_review.*;
@@ -39,7 +38,6 @@ import use_case.busyness.BusynessStatsInteractor;
 import use_case.directions.GetDirectionsInteractor;
 import use_case.filter.FilterInteractor;
 import use_case.login.LoginInteractor;
-import use_case.recommend.RecommendWashroomInteractor;
 import use_case.signup.SignupInteractor;
 import use_case.status_report.SubmitStatusReportInteractor;
 import use_case.view_reviews.ViewReviewsInteractor;
@@ -72,22 +70,27 @@ import java.util.function.Consumer;
  * Composition root: the only class that selects concrete database and external-service adapters.
  */
 public final class AppBuilder {
-    private static final String MAIN = "main", REVIEWS = "reviews", LOGIN = "login", RECOMMEND = "recommend", STATUS = "status", BUSYNESS = "busyness", ACCOUNT = "account", MODERATE = "moderate";
+    private static final String MAIN = "main", REVIEWS = "reviews", LOGIN = "login", STATUS = "status", BUSYNESS = "busyness", ACCOUNT = "account", MODERATE = "moderate";
     private static final Set<String> JSON_WASHROOM_NAMES = loadJsonWashroomNames();
 
     /** Builds the application from the data already stored in MongoDB. */
     public JFrame build() {
-        return build(false, frame -> { });
+        return build(false, AppBuilder::showLoadedFrame);
     }
 
     /** Builds the application and asynchronously verifies/seeds its baseline data. */
     public JFrame buildAndSeed() {
-        return build(true, frame -> { });
+        return build(true, AppBuilder::showLoadedFrame);
     }
 
     /** Invokes {@code onLoaded} on Swing's event thread once the initial screen is ready to show. */
     public JFrame buildAndSeed(Consumer<JFrame> onLoaded) {
-        return build(true, onLoaded == null ? frame -> { } : onLoaded);
+        return build(true, onLoaded == null ? AppBuilder::showLoadedFrame : onLoaded);
+    }
+
+    private static void showLoadedFrame(JFrame frame) {
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 
     private JFrame build(boolean seedData, Consumer<JFrame> onLoaded) {
@@ -108,7 +111,6 @@ public final class AppBuilder {
         var listModel = new WashroomListViewModel();
         var loginModel = new LoginViewModel();
         var loggedInModel = new LoggedInViewModel();
-        var recommendationModel = new RecommendationViewModel();
         var accountModel = new AccountViewModel();
         var statusModel = new StatusReportViewModel();
         var busynessModel = new BusynessViewModel();
@@ -125,7 +127,6 @@ public final class AppBuilder {
         Supplier<String> currentUser = () -> loggedInModel.getState().username();
         var loginController = new LoginController(new LoginInteractor(users, new LoginPresenter(loginModel, loggedInModel)));
         var signupController = new SignupController(new SignupInteractor(users, new SignupPresenter(loginModel, loggedInModel)));
-        var recommendationController = new RecommendationController(new RecommendWashroomInteractor(washrooms, reports, new RecommendationPresenter(recommendationModel)));
         var statusController = new StatusReportController(new SubmitStatusReportInteractor(reports, new StatusReportPresenter(statusModel)));
         var busynessController = new BusynessController(new BusynessStatsInteractor(reports, enrollment, new BusynessPresenter(busynessModel)));
         var directionsController = new DirectionsController(new GetDirectionsInteractor(washrooms, routes, new DirectionsPresenter(mapModel)));
@@ -155,7 +156,6 @@ public final class AppBuilder {
 
         ReadReviewsView readReviews = new ReadReviewsView(reviewsModel);
         LoginPanel login = new LoginPanel(loginModel, loginController);
-        RecommendationView recommendation = new RecommendationView(recommendationModel);
 
         AccountView account = new AccountView(
                 accountModel,
@@ -170,7 +170,6 @@ public final class AppBuilder {
         cards.add(main, MAIN);
         cards.add(readReviews, REVIEWS);
         cards.add(login, LOGIN);
-        cards.add(recommendation, RECOMMEND);
         cards.add(account, ACCOUNT);
         cards.add(status, STATUS);
         cards.add(busyness, BUSYNESS);
@@ -189,7 +188,6 @@ public final class AppBuilder {
         });
         main.setOnDirections(id -> requestDirections(main, directionsController, id));
         main.setOnLogin(() -> layout.show(cards, LOGIN));
-        main.setOnRecommend(() -> layout.show(cards, RECOMMEND));
         main.setOnAccount(() -> layout.show(cards, ACCOUNT));
 
         main.setOnReport(() -> selected(washrooms, main).ifPresentOrElse(
@@ -245,20 +243,6 @@ public final class AppBuilder {
         });
         login.setOnBack(showMain);
         login.setOnSignup(() -> new SignupDialog(frame, signupController).setVisible(true));
-        recommendation.setOnBack(showMain);
-        recommendation.setOnFind(() -> recommendationController.execute(main.latitude(), main.longitude(), false, null, recommendation.inAHurry(), loggedInModel.getState().username()));
-        recommendation.setOnDirections(() -> {
-            if (!recommendation.selectedId().isBlank()) {
-                requestDirections(main, directionsController, recommendation.selectedId());
-                showMain.run();
-            }
-        });
-        recommendation.setOnReviews(() -> {
-            if (!recommendation.selectedId().isBlank()) {
-                reviewController.execute(recommendation.selectedId(), currentUser.get());
-                layout.show(cards, REVIEWS);
-            }
-        });
         status.setOnCancel(showMain);
         status.setOnSubmit(() -> {
             if (!main.selectedId().isBlank())

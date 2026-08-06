@@ -3,7 +3,6 @@ public final class TestRunner {
         run("ViewReviewsInteractorTest", ViewReviewsInteractorTest::run);
         run("LoginInteractorTest", LoginInteractorTest::run);
         run("SignupInteractorTest", SignupInteractorTest::run);
-        run("RecommendWashroomInteractorTest", RecommendWashroomInteractorTest::run);
         run("SubmitStatusReportInteractorTest", SubmitStatusReportInteractorTest::run);
         run("BusynessStatsInteractorTest", BusynessStatsInteractorTest::run);
         run("GetDirectionsInteractorTest", GetDirectionsInteractorTest::run);
