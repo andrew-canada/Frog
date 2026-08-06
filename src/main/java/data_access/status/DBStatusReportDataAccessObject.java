@@ -2,6 +2,7 @@ package data_access.status;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Indexes;
 import data_access.MongoDocuments;
 import entity.MaintenanceIssue;
 import entity.StatusReport;
@@ -14,6 +15,8 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +33,7 @@ public final class DBStatusReportDataAccessObject implements StatusReportDataAcc
         reports.insertOne(new Document("washroomId", report.washroomId())
                 .append("username", report.username()).append("busyness", report.busyness())
                 .append("cleanliness", report.cleanliness()).append("issue", report.issue().name())
+                .append("hourOfDay", report.timestamp().getHour())
                 .append("timestamp", Date.from(report.timestamp().atZone(ZoneId.systemDefault()).toInstant())));
     }
 
@@ -54,6 +58,7 @@ public final class DBStatusReportDataAccessObject implements StatusReportDataAcc
                         .append("busyness", busyness)
                         .append("cleanliness", cleanliness)
                         .append("issue", MaintenanceIssue.NONE.name())
+                        .append("hourOfDay", hour)
                         .append("timestamp", Date.from(timestamp.atZone(ZoneId.systemDefault()).toInstant()))
                         .append("seedKey", seedKey));
             }
@@ -76,6 +81,36 @@ public final class DBStatusReportDataAccessObject implements StatusReportDataAcc
             if (!report.timestamp().isBefore(from) && !report.timestamp().isAfter(to)) result.add(report);
         }
         return List.copyOf(result);
+    }
+
+    /** Returns each requested washroom's newest report in one current-hour aggregation. */
+    @Override
+    public Map<String, StatusReport> getCurrentHourForWashrooms(List<String> washroomIds, int hour) {
+        if (washroomIds.isEmpty()) return Map.of();
+        Document currentHour = new Document("$or", List.of(
+                new Document("hourOfDay", hour),
+                new Document("$expr", new Document("$eq", List.of(new Document("$hour", "$timestamp"), hour)))));
+        List<Document> pipeline = List.of(
+                new Document("$match", new Document("washroomId", new Document("$in", washroomIds))
+                        .append("$or", currentHour.get("$or"))),
+                new Document("$sort", new Document("timestamp", -1)),
+                new Document("$group", new Document("_id", "$washroomId")
+                        .append("latest", new Document("$first", "$$ROOT"))),
+                new Document("$replaceRoot", new Document("newRoot", "$latest")));
+        Map<String, StatusReport> result = new HashMap<>();
+        for (Document document : reports.aggregate(pipeline)) {
+            StatusReport report = toEntity(document);
+            result.put(report.washroomId(), report);
+        }
+        return Map.copyOf(result);
+    }
+
+    /** Backfills the hour bucket once, then indexes the current-hour heatmap query. */
+    public void ensurePerformanceIndexes() {
+        reports.updateMany(Filters.exists("hourOfDay", false), List.of(
+                new Document("$set", new Document("hourOfDay", new Document("$hour", "$timestamp")))));
+        reports.createIndex(Indexes.compoundIndex(Indexes.ascending("hourOfDay"),
+                Indexes.ascending("washroomId"), Indexes.descending("timestamp")));
     }
 
     private StatusReport toEntity(Document document) {

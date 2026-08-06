@@ -2,6 +2,7 @@ package data_access.washroom;
 
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Indexes;
 import data_access.*;
 import data_access.building.DBBuildingDataAccessObject;
 import entity.ReviewSummary;
@@ -22,7 +23,16 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
     private static MongoCollection<Document> buildings;
     private static MongoCollection<Document> reviews;
     static final List<String> allowedAttributes = List.of(new String[]{
-            "buildingID", "floor"});
+            "buildingID",
+            "buildingCode",
+            "seedKey",
+            "name",
+            "floor",
+            "gender",
+            "accessible",
+            "numToilets",
+            "numSinks",
+            "locationDescription"});
 
     public DBWashroomDataAccessObject() {
         super();    // initializes the MongoClient and MongoDatabase from
@@ -78,7 +88,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
         Bson filter = parseConditions(conditions);
         List<Document> docs = getAll(filter);
 
-        List<Washroom> sortedWashrooms = docs.stream().map(DBWashroomDataAccessObject::createWashroom)
+        List<Washroom> sortedWashrooms = hydrate(docs).stream()
                 .sorted(Comparator.comparing((Washroom washroom) -> washroom.building().name(), String.CASE_INSENSITIVE_ORDER)
                         .thenComparing(Washroom::name, String.CASE_INSENSITIVE_ORDER)
                         .thenComparing(Washroom::id))
@@ -134,13 +144,32 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @return the washroom object constructed using that data
      */
     private static Washroom createWashroom(Document doc) {
+        return hydrate(List.of(doc)).getFirst();
+    }
+
+    /** Hydrates a result set with one building read and one review-summary aggregation. */
+    private static List<Washroom> hydrate(List<Document> washroomDocuments) {
+        if (washroomDocuments.isEmpty()) return List.of();
+        Map<String, Document> buildingsById = new HashMap<>();
+        Map<String, Document> buildingsByCode = new HashMap<>();
+        for (Document building : buildings.find()) {
+            buildingsById.put(MongoDocuments.id(building), building);
+            buildingsByCode.put(MongoDocuments.string(building, "", "buildingCode", "code"), building);
+        }
+        Set<String> washroomIds = washroomDocuments.stream().map(MongoDocuments::id).collect(java.util.stream.Collectors.toSet());
+        Map<String, ReviewSummary> summaries = reviewSummaries(washroomIds);
+        return washroomDocuments.stream()
+                .map(document -> createWashroom(document, buildingsById, buildingsByCode, summaries))
+                .toList();
+    }
+
+    private static Washroom createWashroom(Document doc, Map<String, Document> buildingsById,
+                                            Map<String, Document> buildingsByCode,
+                                            Map<String, ReviewSummary> summaries) {
         String id = MongoDocuments.id(doc);
         String buildingId = MongoDocuments.string(doc, "", "buildingID", "buildingId");
-        Document buildingDocument = MongoDocuments.findById(buildings, buildingId);
-        if (buildingDocument == null) {
-            String buildingCode = MongoDocuments.string(doc, buildingId, "buildingCode");
-            buildingDocument = buildings.find(new Document("buildingCode", buildingCode)).first();
-        }
+        Document buildingDocument = buildingsById.get(buildingId);
+        if (buildingDocument == null) buildingDocument = buildingsByCode.get(MongoDocuments.string(doc, buildingId, "buildingCode"));
         if (buildingDocument == null)
             throw new IllegalStateException("Washroom " + id + " references a missing building.");
         entity.Building building = toApplicationBuilding(buildingDocument);
@@ -152,7 +181,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
                 Math.max(0, MongoDocuments.integer(doc, 0, "numToilets", "toilets")),
                 Math.max(0, MongoDocuments.integer(doc, 0, "numSinks", "sinks")),
                 MongoDocuments.string(doc, "Inside " + building.name(), "locationDescription", "description"),
-                summary(id));
+                summaries.getOrDefault(id, ReviewSummary.empty()));
     }
 
     /**
@@ -241,24 +270,48 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
         return getMatching(List.<AbstractCondition<?>>of()).stream().map(washroom -> (entity.Washroom) washroom).toList();
     }
 
+    /** Fetches only known JSON-backed washrooms, while retaining batched hydration. */
+    public List<entity.Washroom> getByNames(Collection<String> names) {
+        if (names.isEmpty()) return List.of();
+        return getMatching(List.of(new CollectionCondition<>("name", Operator.IN, names))).stream()
+                .map(washroom -> (entity.Washroom) washroom)
+                .toList();
+    }
+
     @Override
     public List<entity.Washroom> getNearby(double latitude, double longitude, double radiusMeters) {
         return getAll().stream().filter(washroom -> distance(latitude, longitude,
                 washroom.building().latitude(), washroom.building().longitude()) <= radiusMeters).toList();
     }
 
-    private static entity.ReviewSummary summary(String washroomId) {
-        double rating = 0, cleanliness = 0;
-        int count = 0;
-        for (Document review : reviews.find()) {
-            if (!MongoDocuments.referenceMatches(review.get("washroomID"), washroomId)
-                    && !MongoDocuments.referenceMatches(review.get("washroomId"), washroomId)) continue;
-            rating += clampRating(MongoDocuments.number(review, 0, "rating", "stars"));
-            cleanliness += clampRating(MongoDocuments.number(review,
-                    MongoDocuments.number(review, 0, "rating", "stars"), "cleanliness"));
-            count++;
+    private static Map<String, ReviewSummary> reviewSummaries(Set<String> washroomIds) {
+        if (washroomIds.isEmpty()) return Map.of();
+        Document washroomReference = new Document("$ifNull", List.of("$washroomId", "$washroomID"));
+        Document rating = new Document("$ifNull", List.of("$rating", "$stars"));
+        Document cleanliness = new Document("$ifNull", List.of("$cleanliness", rating));
+        List<Document> pipeline = List.of(
+                new Document("$match", Filters.or(Filters.in("washroomId", washroomIds), Filters.in("washroomID", washroomIds))),
+                new Document("$group", new Document("_id", washroomReference)
+                        .append("rating", new Document("$avg", rating))
+                        .append("cleanliness", new Document("$avg", cleanliness))
+                        .append("count", new Document("$sum", 1))));
+        Map<String, ReviewSummary> summaries = new HashMap<>();
+        for (Document summary : reviews.aggregate(pipeline)) {
+            String washroomId = String.valueOf(summary.get("_id"));
+            summaries.put(washroomId, new ReviewSummary(
+                    clampRating(MongoDocuments.number(summary, 0, "rating")),
+                    clampRating(MongoDocuments.number(summary, 0, "cleanliness")),
+                    Math.max(0, MongoDocuments.integer(summary, 0, "count"))));
         }
-        return count == 0 ? entity.ReviewSummary.empty() : new entity.ReviewSummary(rating / count, cleanliness / count, count);
+        return summaries;
+    }
+
+    /** Creates indexes used by the primary map and filter queries. */
+    public void ensurePerformanceIndexes() {
+        collection.createIndex(Indexes.ascending("name"));
+        collection.createIndex(Indexes.ascending("accessible"));
+        collection.createIndex(Indexes.ascending("gender"));
+        collection.createIndex(Indexes.ascending("buildingCode"));
     }
 
     private static entity.Building toApplicationBuilding(Document document) {

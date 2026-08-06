@@ -4,30 +4,45 @@ import data_access.AbstractCondition;
 import data_access.CollectionCondition;
 import data_access.Condition;
 import data_access.Operator;
+import data_access.status.StatusReportDataAccessInterface;
 import data_access.user.UserDataAccessInterface;
-import entity.Review;
+import entity.Building;
+import entity.StatusReport;
 import entity.User;
 import entity.Washroom;
 import data_access.washroom.WashroomDataAccessInterface;
 import use_case.view_reviews.ReviewDataAccessInterface;
 
+import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Predicate;
 
 public class FilterInteractor implements FilterInputBoundary {
     WashroomDataAccessInterface washroomDAO;
     ReviewDataAccessInterface reviewDAO;
+    StatusReportDataAccessInterface statusReports;
     UserDataAccessInterface userDAO;
     FilterOutputBoundary presenter;
+    private final Set<String> permittedWashroomNames;
 
     public FilterInteractor(WashroomDataAccessInterface washroomDAO,
                             ReviewDataAccessInterface reviewDAO,
                             UserDataAccessInterface userDAO,
                             FilterOutputBoundary presenter) {
+        this(washroomDAO, reviewDAO, null, userDAO, presenter, Set.of());
+    }
+
+    public FilterInteractor(WashroomDataAccessInterface washroomDAO,
+                            ReviewDataAccessInterface reviewDAO,
+                            StatusReportDataAccessInterface statusReports,
+                            UserDataAccessInterface userDAO,
+                            FilterOutputBoundary presenter,
+                            Set<String> permittedWashroomNames) {
         this.washroomDAO = washroomDAO;
         this.reviewDAO = reviewDAO;
+        this.statusReports = statusReports;
         this.userDAO = userDAO;
         this.presenter = presenter;
+        this.permittedWashroomNames = Set.copyOf(permittedWashroomNames);
     }
 
     @Override
@@ -40,14 +55,29 @@ public class FilterInteractor implements FilterInputBoundary {
                             "accessible", Operator.EQ, true));
         }
 
-        conditions.add(
-                new CollectionCondition<List<String>>(
-                        "gender", Operator.IN, inputData.genders()));
+        if (inputData.gender() != null) {
+            conditions.add(
+                    new Condition<String>(
+                            "gender", Operator.EQ, inputData.gender()));
+        }
 
-        conditions.add(
-                new Condition<>(
-                        "buildingCode", Operator.EQ, inputData.building().getBuildingCode())
+        if (!permittedWashroomNames.isEmpty()) {
+            conditions.add(new CollectionCondition<>("name", Operator.IN, permittedWashroomNames));
+        }
+
+        if (!inputData.washroomID().isEmpty()) {
+            Optional<Washroom> washroom = washroomDAO.getById(inputData.washroomID());
+            if (washroom.isEmpty()) {
+                presenter.presentError("Invalid Washroom Selected.");
+                return;
+            } else {
+                Building building = washroom.get().building();
+                conditions.add(
+                        new Condition<>(
+                                "buildingCode", Operator.EQ, building.getBuildingCode())
                 );
+            }
+        }
 
         List<Washroom> initialWashrooms = washroomDAO.getMatching(conditions);
 
@@ -61,12 +91,13 @@ public class FilterInteractor implements FilterInputBoundary {
             }
         }
 
-        filterByRating(initialWashrooms, inputData);
-        filterByCleanliness(initialWashrooms, inputData);
+        filterByCurrentStatus(initialWashrooms, inputData);
 
         presenter.present(new FilterOutputData(
                 true,
-                initialWashrooms));
+                initialWashrooms,
+                inputData.latitude(),
+                inputData.longitude()));
     }
 
     /**
@@ -76,77 +107,27 @@ public class FilterInteractor implements FilterInputBoundary {
      * @param user The user whose reviews are required for the washroom to pass the filter.
      */
     private void filterByUser(List<Washroom> washrooms, User user) {
-        List<Review> reviews = reviewDAO.getReviewsByUser(user.getName());
-        List<String> washroomIDs = getWashroomIDs(reviews);
-
-        Predicate<Washroom> notHasOwnReviews = new Predicate<Washroom>() {
-            @Override
-            public boolean test(Washroom washroom) {
-                return !washroomIDs.contains(washroom.id());
-            }
-        };
-
-        washrooms.removeIf(notHasOwnReviews);
+        Set<String> washroomIds = reviewDAO.getReviewsByUser(user.getName()).stream()
+                .map(entity.Review::washroomId)
+                .collect(java.util.stream.Collectors.toSet());
+        washrooms.removeIf(washroom -> !washroomIds.contains(washroom.id()));
     }
 
-    /**
-     * Filters washrooms, only keeping the ones whose average rating is in the range specified
-     * in the input data.
-     * @param washrooms List of washrooms to filter on.
-     * @param inputData The input data to use for the rating range.
-     */
-    private void filterByRating(List<Washroom> washrooms, FilterInputData inputData) {
-        Predicate<Washroom> notInRange = new Predicate<Washroom>() {
-            @Override
-            public boolean test(Washroom washroom) {
-                List<Review> reviews = reviewDAO.getReviewsForWashroom(washroom.id());
-                List<Double> ratings = getRatings(reviews);
-                Double sum = 0.0;
-                for (Double rating: ratings) {
-                    sum += rating;
-                }
-                return !(inputData.minRating() <= sum/ratings.size() &&
-                        sum/ratings.size() <= inputData.maxRating());
-            }
-        };
-
-        washrooms.removeIf(notInRange);
-    }
-
-    /**
-     * Filters washrooms, only keeping the ones whose average cleanliness
-     * is in the range specified in the input data.
-     * @param washrooms List of washrooms to filter on.
-     * @param inputData The input data to use for the cleanliness range.
-     */
-    private void filterByCleanliness(List<Washroom> washrooms, FilterInputData inputData) {
-        Predicate<Washroom> notInRange = new Predicate<Washroom>() {
-            @Override
-            public boolean test(Washroom washroom) {
-                List<Review> reviews = reviewDAO.getReviewsForWashroom(washroom.id());
-                List<Double> cleans = getCleanliness(reviews);
-                Double sum = 0.0;
-                for (Double clean: cleans) {
-                    sum += clean;
-                }
-                return !(inputData.minRating() <= sum/cleans.size() &&
-                        sum/cleans.size() <= inputData.maxRating());
-            }
-        };
-
-        washrooms.removeIf(notInRange);
-    }
-
-    private static List<String> getWashroomIDs(List<Review> reviews) {
-        return reviews.stream().map(Review::washroomId).toList();
-    }
-
-    private static List<Double> getRatings(List<Review> reviews) {
-        return reviews.stream().map(Review::rating).toList();
-    }
-
-    private static List<Double> getCleanliness(List<Review> reviews) {
-        return reviews.stream().map(Review::cleanliness).toList();
+    /** Filters by each washroom's newest status report in the current clock hour. */
+    private void filterByCurrentStatus(List<Washroom> washrooms, FilterInputData inputData) {
+        if (statusReports == null) {
+            presenter.presentError("Live status filtering is unavailable.");
+            washrooms.clear();
+            return;
+        }
+        Map<String, StatusReport> currentStatus = statusReports.getCurrentHourForWashrooms(
+                washrooms.stream().map(Washroom::id).toList(), LocalDateTime.now().getHour());
+        washrooms.removeIf(washroom -> {
+            StatusReport status = currentStatus.get(washroom.id());
+            return status == null
+                    || status.busyness() > inputData.maxBusyness()
+                    || status.cleanliness() < inputData.minCleanliness();
+        });
     }
 
 

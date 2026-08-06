@@ -23,7 +23,6 @@ import interface_adapter.account.delete_account.DeleteAccountController;
 import interface_adapter.account.personal_plan.PersonalPlanController;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginViewModel;
-import interface_adapter.recommend.RecommendationViewModel;
 
 public final class AccountView extends JPanel {
 

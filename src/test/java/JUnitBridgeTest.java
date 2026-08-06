@@ -20,11 +20,6 @@ public final class JUnitBridgeTest {
     }
 
     @Test
-    void recommendation() {
-        RecommendWashroomInteractorTest.run();
-    }
-
-    @Test
     void statusReport() {
         SubmitStatusReportInteractorTest.run();
     }
