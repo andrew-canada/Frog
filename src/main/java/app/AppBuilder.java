@@ -67,22 +67,36 @@ public final class AppBuilder {
     private static final String MAIN = "main", REVIEWS = "reviews", LOGIN = "login", RECOMMEND = "recommend", STATUS = "status", BUSYNESS = "busyness", ACCOUNT = "account", MODERATE = "moderate";
     private static final Set<String> JSON_WASHROOM_NAMES = loadJsonWashroomNames();
 
+    /** Builds the application from the data already stored in MongoDB. */
     public JFrame build() {
+        return build(false);
+    }
+
+    /** Builds the application after verifying the connection and seeding its baseline data. */
+    public JFrame buildAndSeed() {
+        return build(true);
+    }
+
+    private JFrame build(boolean seedData) {
         String graphhopperKey = requiredEnvironment(GraphhopperRouteDataAccessObject.API_KEY_ENV);
         DBDataAccessObject connection = DBDataAccessObject.fromEnvironment();
-        try {
-            connection.verifyConnection();
-        } catch (RuntimeException failure) {
-            connection.close();
-            throw new IllegalStateException("Could not connect to the configured MongoDB database.", failure);
-        }
 
         var database = connection.database();
         var washrooms = new DBWashroomDataAccessObject(database);
         var reviews = new DBReviewDataAccessObject(database);
-        reviews.ensureJsonReviews(jsonWashrooms(washrooms));
         var users = new DBUserDataAccessObject(database);
         var reports = new DBStatusReportDataAccessObject(database);
+        if (seedData) {
+            try {
+                connection.verifyConnection();
+                List<entity.Washroom> jsonWashrooms = jsonWashrooms(washrooms);
+                reviews.ensureJsonReviews(jsonWashrooms);
+                reports.ensureJsonHourlyReports(jsonWashrooms);
+            } catch (RuntimeException failure) {
+                connection.close();
+                throw new IllegalStateException("Could not connect to or seed the MongoDB database.", failure);
+            }
+        }
         var routes = new GraphhopperRouteDataAccessObject(graphhopperKey);
         var geocoding = new GraphhopperGeocodingDataAccessObject(graphhopperKey);
         var enrollment = new DBEnrollmentDataAccessObject(database);
@@ -182,6 +196,7 @@ public final class AppBuilder {
 
         main.setOnBusyness(() -> selected(washrooms, main).ifPresentOrElse(
                 w -> {
+                    busyness.setLocationName(w.building().name());
                     busynessController.execute(w.id(), w.building().code(), DayOfWeek.from(java.time.LocalDate.now()));
                     layout.show(cards, BUSYNESS);
                 },
@@ -268,7 +283,8 @@ public final class AppBuilder {
     }
 
     private static void noWashroom(Component parent) {
-        JOptionPane.showMessageDialog(parent, "The database does not contain a selectable washroom.", "No washrooms", JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(parent, "Select a washroom from the list or map before continuing.",
+                "Select a washroom", JOptionPane.WARNING_MESSAGE);
     }
 
     private static String listDescription(Washroom washroom) {
