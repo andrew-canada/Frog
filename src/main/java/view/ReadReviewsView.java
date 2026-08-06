@@ -1,11 +1,15 @@
 package view;
 
 import interface_adapter.view_reviews.ReviewsViewModel;
+import interface_adapter.view_reviews.WashroomListViewModel;
 import use_case.view_reviews.ViewReviewsOutputData;
 
 import javax.swing.*;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Consumer;
 
 
@@ -24,18 +28,19 @@ public final class ReadReviewsView extends JPanel {
         setLayout(new BorderLayout());
         setBackground(Theme.PAPER);
         subtitle.setFont(subtitle.getFont().deriveFont(Font.BOLD));
-        add(header(), BorderLayout.NORTH);
+        add(header(model), BorderLayout.NORTH);
 
         reviews.setLayout(new BoxLayout(reviews, BoxLayout.Y_AXIS));
         reviews.setBackground(Theme.PAPER);
         JScrollPane scroll = new JScrollPane(reviews);
         scroll.setBorder(null);
         add(scroll, BorderLayout.CENTER);
+        scroll.getVerticalScrollBar().setValue(0);
 
         model.addPropertyChangeListener(e -> render(model.getState()));
     }
 
-    private JComponent header() {
+    private JComponent header(ReviewsViewModel s) {
         JPanel outer = new JPanel(new BorderLayout());
         outer.setBackground(Theme.PAPER);
         outer.setBorder(Theme.pad(18, 24, 14, 24));
@@ -46,6 +51,31 @@ public final class ReadReviewsView extends JPanel {
         text.add(subtitle);
         text.add(Box.createVerticalStrut(12));
         text.add(summary);
+        ReviewSortDropdownControl reviewSortDropdownControl = new ReviewSortDropdownControl();
+        reviewSortDropdownControl.addActionListener(e -> {
+            Comparator<ViewReviewsOutputData.ReviewDisplay> comparator;
+            String choice = reviewSortDropdownControl.getSelectedItem().toString();
+            if(choice.equals("Highest Rated")) {
+                comparator = ViewReviewsOutputData.ReviewDisplay.BY_HIGHEST_RATING;
+            } else if(choice.equals("Lowest Rated")) {
+                comparator = ViewReviewsOutputData.ReviewDisplay.BY_LOWEST_RATING;
+            } else if(choice.equals("Most Helpful")) {
+                comparator = ViewReviewsOutputData.ReviewDisplay.BY_HELPFULNESS;
+            } else if(choice.equals("Newest")) {
+                comparator = ViewReviewsOutputData.ReviewDisplay.BY_TIME_NEWEST;
+            } else if(choice.equals("Voted by Me")) {
+                comparator = ViewReviewsOutputData.ReviewDisplay.BY_ME;
+            } else {
+                comparator = ViewReviewsOutputData.ReviewDisplay.BY_HIGHEST_RATING;
+
+            }
+            ArrayList<ViewReviewsOutputData.ReviewDisplay> reviewList = new ArrayList<>(s.getState().reviews());
+            reviewList.sort(comparator);
+            reviews.removeAll();
+            renderReviews(reviewList);
+        });
+
+        text.add(reviewSortDropdownControl);
         outer.add(text);
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -64,8 +94,12 @@ public final class ReadReviewsView extends JPanel {
         subtitle.setText(s.subtitle());
         summary.setText(String.format("★ %.1f  ·  Based on %d reviews", s.rating(), s.reviewCount()));
         reviews.removeAll();
-
-        for (ViewReviewsOutputData.ReviewDisplay r : s.reviews()) {
+        renderReviews(s.reviews());
+        reviews.revalidate();
+        reviews.repaint();
+    }
+    public void renderReviews(List<ViewReviewsOutputData.ReviewDisplay> s){
+        for (ViewReviewsOutputData.ReviewDisplay r : s) {
             JPanel card = new JPanel(new BorderLayout(10, 10));
             card.setBackground(Theme.PAPER);
             card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Theme.LINE), Theme.pad(18, 24, 18, 24)));
@@ -114,8 +148,6 @@ public final class ReadReviewsView extends JPanel {
             card.add(meta, BorderLayout.EAST);
             reviews.add(card);
         }
-        reviews.revalidate();
-        reviews.repaint();
     }
 
     public void setOnBack(Runnable r) {
