@@ -23,7 +23,16 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
     private static MongoCollection<Document> buildings;
     private static MongoCollection<Document> reviews;
     static final List<String> allowedAttributes = List.of(new String[]{
-            "buildingID", "floor"});
+            "buildingID",
+            "buildingCode",
+            "seedKey",
+            "name",
+            "floor",
+            "gender",
+            "accessible",
+            "numToilets",
+            "numSinks",
+            "locationDescription"});
 
     public DBWashroomDataAccessObject() {
         super();    // initializes the MongoClient and MongoDatabase from

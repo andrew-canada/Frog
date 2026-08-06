@@ -5,6 +5,7 @@ import data_access.CollectionCondition;
 import data_access.Condition;
 import data_access.Operator;
 import data_access.user.UserDataAccessInterface;
+import entity.Building;
 import entity.Review;
 import entity.User;
 import entity.Washroom;
@@ -40,14 +41,25 @@ public class FilterInteractor implements FilterInputBoundary {
                             "accessible", Operator.EQ, true));
         }
 
-        conditions.add(
-                new CollectionCondition<List<String>>(
-                        "gender", Operator.IN, inputData.genders()));
+        if (inputData.gender() != null) {
+            conditions.add(
+                    new Condition<String>(
+                            "gender", Operator.EQ, inputData.gender()));
+        }
 
-        conditions.add(
-                new Condition<>(
-                        "buildingCode", Operator.EQ, inputData.building().getBuildingCode())
+        if (!inputData.washroomID().isEmpty()) {
+            Optional<Washroom> washroom = washroomDAO.getById(inputData.washroomID());
+            if (washroom.isEmpty()) {
+                presenter.presentError("Invalid Washroom Selected.");
+                return;
+            } else {
+                Building building = washroom.get().building();
+                conditions.add(
+                        new Condition<>(
+                                "buildingCode", Operator.EQ, building.getBuildingCode())
                 );
+            }
+        }
 
         List<Washroom> initialWashrooms = washroomDAO.getMatching(conditions);
 
@@ -66,7 +78,9 @@ public class FilterInteractor implements FilterInputBoundary {
 
         presenter.present(new FilterOutputData(
                 true,
-                initialWashrooms));
+                initialWashrooms,
+                inputData.latitude(),
+                inputData.longitude()));
     }
 
     /**
