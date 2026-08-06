@@ -210,7 +210,7 @@ public final class AppBuilder {
                     loggedInModel.getState().loggedIn() ? loggedInModel.getState().username() : "Anonymous",
                     () -> {
                         reviewController.execute(w.id(), currentUser.get());
-                        refreshMainWashrooms(washrooms, main, listModel, originLat, originLng);
+                        updateWashroomListRating(listModel, w.id(), reviewsModel.getState().rating());
                     }).setVisible(true),
             () -> noWashroom(frame)
         ));
@@ -276,6 +276,24 @@ public final class AppBuilder {
                         w.accessible())).toList();
         String selectedId = main.selectedId().isBlank() && !items.isEmpty() ? items.getFirst().id() : main.selectedId();
         listModel.setState(new WashroomListViewModel.State(items, selectedId, "Alphabetical", false));
+    }
+
+    /**
+     * A new review changes the aggregate rating for only its washroom.  Keep the
+     * already-loaded list and patch that one row instead of reloading every
+     * washroom (which also recalculates every review summary from MongoDB).
+     */
+    private static void updateWashroomListRating(WashroomListViewModel listModel, String washroomId,
+                                                  double rating) {
+        WashroomListViewModel.State current = listModel.getState();
+        List<WashroomListViewModel.Item> updated = current.items().stream()
+                .map(item -> item.id().equals(washroomId)
+                        ? new WashroomListViewModel.Item(item.id(), item.name(), item.description(), rating,
+                        item.distanceMeters(), item.accessible())
+                        : item)
+                .toList();
+        listModel.setState(new WashroomListViewModel.State(updated, current.selectedId(),
+                current.sortLabel(), current.routeVisible()));
     }
 
     private static Optional<Washroom> selected(DBWashroomDataAccessObject washrooms, MainView main) {
