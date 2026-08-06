@@ -35,6 +35,23 @@ public final class GraphhopperGeocodingDataAccessObject implements AddressLookup
         this.apiKey = apiKey;
     }
 
+    private static GeoPoint parsePoint(String json) {
+        Document root;
+        try {
+            root = Document.parse(json);
+        } catch (RuntimeException malformed) {
+            throw new IllegalStateException("GraphHopper returned invalid address data.", malformed);
+        }
+        List<Document> hits = root.getList("hits", Document.class);
+        if (hits == null || hits.isEmpty()) throw new IllegalArgumentException("No location matched that address.");
+        Document point = hits.getFirst().get("point", Document.class);
+        Number latitude = point == null ? null : point.get("lat", Number.class);
+        Number longitude = point == null ? null : point.get("lng", Number.class);
+        if (latitude == null || longitude == null)
+            throw new IllegalStateException("GraphHopper returned incomplete address data.");
+        return new GeoPoint(latitude.doubleValue(), longitude.doubleValue());
+    }
+
     @Override
     public GeoPoint lookup(String address) {
         if (address == null || address.isBlank()) throw new IllegalArgumentException("Enter an address to search.");
@@ -54,22 +71,5 @@ public final class GraphhopperGeocodingDataAccessObject implements AddressLookup
         } catch (IOException failure) {
             throw new IllegalStateException("Could not reach GraphHopper address search.", failure);
         }
-    }
-
-    private static GeoPoint parsePoint(String json) {
-        Document root;
-        try {
-            root = Document.parse(json);
-        } catch (RuntimeException malformed) {
-            throw new IllegalStateException("GraphHopper returned invalid address data.", malformed);
-        }
-        List<Document> hits = root.getList("hits", Document.class);
-        if (hits == null || hits.isEmpty()) throw new IllegalArgumentException("No location matched that address.");
-        Document point = hits.getFirst().get("point", Document.class);
-        Number latitude = point == null ? null : point.get("lat", Number.class);
-        Number longitude = point == null ? null : point.get("lng", Number.class);
-        if (latitude == null || longitude == null)
-            throw new IllegalStateException("GraphHopper returned incomplete address data.");
-        return new GeoPoint(latitude.doubleValue(), longitude.doubleValue());
     }
 }

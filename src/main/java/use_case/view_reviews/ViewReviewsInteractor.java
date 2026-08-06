@@ -1,11 +1,11 @@
 package use_case.view_reviews;
 
+import data_access.washroom.WashroomDataAccessInterface;
 import entity.Review;
 import entity.ReviewSummary;
 import entity.Washroom;
-import data_access.washroom.WashroomDataAccessInterface;
-import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
 import use_case.report_review.ReviewReportDataAccessInterface;
+import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
 import use_case.vote_helpful.ReviewScorer;
 
 import java.time.LocalDate;
@@ -30,6 +30,23 @@ public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
         this.presenter = presenter;
     }
 
+    private static String displayDescription(Washroom washroom) {
+        String name = washroom.name();
+        int separator = name.indexOf('|');
+        String description = separator >= 0 ? name.substring(separator + 1) : name;
+        return description.replaceAll("(?i)\\bwashrooms?\\b", "")
+                .replaceAll("\\s{2,}", " ")
+                .trim();
+    }
+
+    /**
+     * Ranking score: helpfulness (log) + recency (exponential decay).
+     */
+    private static double score(Review review) {
+        long ageInDays = ChronoUnit.DAYS.between(review.createdAt(), LocalDate.now());
+        return ReviewScorer.score(review.helpfulCount(), Math.max(0, ageInDays));
+    }
+
     @Override
     public void execute(ViewReviewsInputData input) {
         Washroom washroom = washrooms.getById(input.washroomId()).orElse(null);
@@ -46,20 +63,5 @@ public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
         presenter.present(new ViewReviewsOutputData(washroom.id(), washroom.building().name(), displayDescription(washroom),
                 summary.averageRating(), summary.averageCleanliness(), summary.reviewCount(),
                 washroom.numToilets(), washroom.numSinks(), display));
-    }
-
-    private static String displayDescription(Washroom washroom) {
-        String name = washroom.name();
-        int separator = name.indexOf('|');
-        String description = separator >= 0 ? name.substring(separator + 1) : name;
-        return description.replaceAll("(?i)\\bwashrooms?\\b", "")
-                .replaceAll("\\s{2,}", " ")
-                .trim();
-    }
-
-    /** Ranking score: helpfulness (log) + recency (exponential decay). */
-    private static double score(Review review) {
-        long ageInDays = ChronoUnit.DAYS.between(review.createdAt(), LocalDate.now());
-        return ReviewScorer.score(review.helpfulCount(), Math.max(0, ageInDays));
     }
 }

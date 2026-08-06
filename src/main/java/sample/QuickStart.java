@@ -1,12 +1,12 @@
 package sample;
 
-import static com.mongodb.client.model.Filters.eq;
-
-import org.bson.Document;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+
+import static com.mongodb.client.model.Filters.eq;
 
 // This is sample code for accessing the MongoDB database. To get the database working I created a free account,
 // then followed these instructions: https://www.mongodb.com/docs/drivers/java/sync/current/get-started

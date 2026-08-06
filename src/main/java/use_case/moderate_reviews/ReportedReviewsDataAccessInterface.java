@@ -1,6 +1,7 @@
 package use_case.moderate_reviews;
 
 import entity.Report;
+
 import java.util.List;
 
 /**
@@ -9,9 +10,13 @@ import java.util.List;
  */
 public interface ReportedReviewsDataAccessInterface {
 
-    /** @return every report currently on file (across all reviews). */
+    /**
+     * @return every report currently on file (across all reviews).
+     */
     List<Report> getAllReports();
 
-    /** Removes all reports against a review (used when reports are dismissed or the review is removed). */
+    /**
+     * Removes all reports against a review (used when reports are dismissed or the review is removed).
+     */
     void deleteReportsForReview(String reviewId);
 }

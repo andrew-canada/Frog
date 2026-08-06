@@ -11,9 +11,9 @@ public interface UserDataAccessInterface {
 
     void save(User user);
 
-    void setCurrentUser(User user);
-
     Optional<User> getCurrentUser();
+
+    void setCurrentUser(User user);
 
     void removeUser(String username);
 }

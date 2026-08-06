@@ -1,12 +1,10 @@
 package entity.review;
 
-import java.util.Comparator;
-
 
 public class WashroomReview implements Review {
 
-    private int stars;
-    private String text;
+    private final int stars;
+    private final String text;
     private int helpfuls;
     private int unhelpfuls;
 

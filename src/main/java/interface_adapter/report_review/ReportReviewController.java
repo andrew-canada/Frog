@@ -5,7 +5,9 @@ import use_case.report_review.ReportReviewInputData;
 
 import java.util.List;
 
-/** Controller for the Report Review use case. */
+/**
+ * Controller for the Report Review use case.
+ */
 public final class ReportReviewController {
 
     private final ReportReviewInputBoundary interactor;

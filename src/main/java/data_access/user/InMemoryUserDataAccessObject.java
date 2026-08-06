@@ -31,13 +31,13 @@ public final class InMemoryUserDataAccessObject implements UserDataAccessInterfa
     }
 
     @Override
-    public void setCurrentUser(User user) {
-        currentUser = user;
+    public Optional<User> getCurrentUser() {
+        return Optional.ofNullable(currentUser);
     }
 
     @Override
-    public Optional<User> getCurrentUser() {
-        return Optional.ofNullable(currentUser);
+    public void setCurrentUser(User user) {
+        currentUser = user;
     }
 
     @Override

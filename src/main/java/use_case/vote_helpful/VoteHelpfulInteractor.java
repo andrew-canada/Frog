@@ -1,7 +1,5 @@
 package use_case.vote_helpful;
 
-import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
-
 /**
  * The interactor for the Vote Review Helpful use case.
  * <p/>
@@ -21,8 +19,7 @@ public final class VoteHelpfulInteractor implements VoteHelpfulInputBoundary {
     public void toggle(VoteHelpfulInputData input) {
         if (votes.hasVoted(input.reviewId(), input.username())) {
             votes.removeVote(input.reviewId(), input.username());
-        }
-        else {
+        } else {
             votes.addVote(input.reviewId(), input.username());
         }
     }

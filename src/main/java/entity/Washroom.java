@@ -3,8 +3,6 @@ package entity;
 import java.util.Objects;
 
 public final class Washroom implements entity.washroom.Washroom {
-    public enum Gender {ALL_GENDER, WOMEN, MEN}
-
     private final String id;
     private final String name;
     private final Building building;
@@ -15,7 +13,6 @@ public final class Washroom implements entity.washroom.Washroom {
     private final int numSinks;
     private final String locationDescription;
     private ReviewSummary reviewSummary;
-
     public Washroom(String id, String name, entity.Building building, String floor, boolean accessible,
                     Gender gender, int numToilets, int numSinks, String locationDescription,
                     ReviewSummary reviewSummary) {
@@ -89,4 +86,6 @@ public final class Washroom implements entity.washroom.Washroom {
     public void updateReviewSummary(ReviewSummary summary) {
         this.reviewSummary = Objects.requireNonNull(summary);
     }
+
+    public enum Gender {ALL_GENDER, WOMEN, MEN}
 }

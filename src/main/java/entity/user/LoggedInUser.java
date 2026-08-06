@@ -10,7 +10,7 @@ public class LoggedInUser implements User {
     private final String name;
     private final String password;
     private final String personalPlan;
-    private List<Review> reviews;
+    private final List<Review> reviews;
 
     public LoggedInUser(String name, String password) {
         this(name, password, List.of(), "");
@@ -28,7 +28,7 @@ public class LoggedInUser implements User {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return this.name;
     }
 

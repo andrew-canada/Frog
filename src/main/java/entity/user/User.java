@@ -7,6 +7,6 @@ public interface User {
      *
      * @return the username of the user.
      */
-    String getName();
+    String name();
 }
 
