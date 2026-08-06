@@ -10,10 +10,10 @@ public final class StatusReportView extends JPanel {
     private final JSlider busyness = slider(), cleanliness = slider();
     private final JComboBox<MaintenanceIssue> issue = new JComboBox<>(MaintenanceIssue.values());
     private final JLabel message = Theme.label("Takes less than 10 seconds.", 13, Theme.MUTED);
+    private final JLabel washroomName = Theme.label("Select a washroom", 13, Theme.MUTED);
     private Runnable onSubmit = () -> {
     }, onCancel = () -> {
     };
-    private final JLabel washroomName = Theme.label("Select a washroom", 13, Theme.MUTED);
 
     public StatusReportView(StatusReportViewModel model) {
         setLayout(new GridBagLayout());

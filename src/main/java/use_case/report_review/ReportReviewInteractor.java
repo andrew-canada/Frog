@@ -1,7 +1,6 @@
 package use_case.report_review;
 
 import entity.Report;
-import use_case.report_review.ReviewReportDataAccessInterface;
 
 import java.time.Clock;
 import java.time.LocalDateTime;

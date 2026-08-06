@@ -8,10 +8,14 @@ import entity.Report;
  */
 public interface ReviewReportDataAccessInterface {
 
-    /** Saves a new report. */
+    /**
+     * Saves a new report.
+     */
     void save(Report report);
 
-    /** @return whether the given user has already reported the given review. */
+    /**
+     * @return whether the given user has already reported the given review.
+     */
     boolean hasReported(String reviewId, String username);
 
 }

@@ -4,11 +4,7 @@ import entity.Building;
 import entity.ReviewSummary;
 import entity.Washroom;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Comparator;
+import java.util.*;
 
 public final class InMemoryWashroomDataAccessObject {
     private final Map<String, Washroom> washrooms = new LinkedHashMap<>();
@@ -26,6 +22,12 @@ public final class InMemoryWashroomDataAccessObject {
         add(new Washroom("gerstein-main", "Gerstein, main floor", gerstein, "Main", false,
                 Washroom.Gender.WOMEN, 4, 3, "East reading room",
                 new ReviewSummary(3.9, 3.8, 11)));
+    }
+
+    private static double distance(double lat1, double lon1, double lat2, double lon2) {
+        double x = Math.toRadians(lon2 - lon1) * Math.cos(Math.toRadians((lat1 + lat2) / 2));
+        double y = Math.toRadians(lat2 - lat1);
+        return Math.sqrt(x * x + y * y) * 6_371_000;
     }
 
     public void add(Washroom washroom) {
@@ -50,11 +52,5 @@ public final class InMemoryWashroomDataAccessObject {
     public List<Washroom> getNearby(double lat, double lng, double radiusMeters) {
         return washrooms.values().stream().filter(w -> distance(lat, lng,
                 w.building().latitude(), w.building().longitude()) <= radiusMeters).toList();
-    }
-
-    private static double distance(double lat1, double lon1, double lat2, double lon2) {
-        double x = Math.toRadians(lon2 - lon1) * Math.cos(Math.toRadians((lat1 + lat2) / 2));
-        double y = Math.toRadians(lat2 - lat1);
-        return Math.sqrt(x * x + y * y) * 6_371_000;
     }
 }

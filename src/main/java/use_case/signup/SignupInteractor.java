@@ -1,8 +1,8 @@
 package use_case.signup;
 
+import data_access.user.UserDataAccessInterface;
 import entity.User;
 import org.mindrot.jbcrypt.BCrypt;
-import data_access.user.UserDataAccessInterface;
 
 public final class SignupInteractor implements SignupInputBoundary {
     private final UserDataAccessInterface users;

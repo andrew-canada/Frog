@@ -16,8 +16,8 @@ import java.util.List;
 public final class ReportReviewDialog extends JDialog {
 
     private static final String[] REASONS = {
-        "Spam", "Offensive or profane language", "Harassment",
-        "Off-topic", "False or misleading information", "Other"};
+            "Spam", "Offensive or profane language", "Harassment",
+            "Off-topic", "False or misleading information", "Other"};
 
     public ReportReviewDialog(Window owner, ReportReviewController controller,
                               ReportReviewViewModel model, String reviewId, String reporter) {
@@ -82,7 +82,8 @@ public final class ReportReviewDialog extends JDialog {
         };
         model.addPropertyChangeListener(listener);
         addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override public void windowClosed(java.awt.event.WindowEvent e) {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
                 model.removePropertyChangeListener(listener);
             }
         });

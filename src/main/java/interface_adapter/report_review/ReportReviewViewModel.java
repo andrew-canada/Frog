@@ -2,7 +2,9 @@ package interface_adapter.report_review;
 
 import interface_adapter.common.ViewModel;
 
-/** ViewModel for the Report Review dialog. */
+/**
+ * ViewModel for the Report Review dialog.
+ */
 public final class ReportReviewViewModel extends ViewModel<ReportReviewViewModel.State> {
 
     public ReportReviewViewModel() {
@@ -10,9 +12,10 @@ public final class ReportReviewViewModel extends ViewModel<ReportReviewViewModel
     }
 
     /**
-     * @param message a status/confirmation message
-     * @param success whether the report was accepted
+     * @param message   a status/confirmation message
+     * @param success   whether the report was accepted
      * @param submitted whether a submission has happened (to trigger the view)
      */
-    public record State(String message, boolean success, boolean submitted) { }
+    public record State(String message, boolean success, boolean submitted) {
+    }
 }

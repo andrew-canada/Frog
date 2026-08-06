@@ -3,11 +3,6 @@ package data_access;
 import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 /**
  * Class representing a condition to be fed into the DatabaseAccessObject methods
  * such as Condition("buildingCode", Operator.EQ, "BA") for the condition that the buildingCode

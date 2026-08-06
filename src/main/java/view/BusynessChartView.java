@@ -67,6 +67,11 @@ public final class BusynessChartView extends JPanel {
             setBorder(Theme.pad(18, 36, 18, 36));
         }
 
+        private static Color blend(Color a, Color b, float t) {
+            float ratio = Math.max(0, Math.min(1, t));
+            return new Color((int) (a.getRed() * (1 - ratio) + b.getRed() * ratio), (int) (a.getGreen() * (1 - ratio) + b.getGreen() * ratio), (int) (a.getBlue() * (1 - ratio) + b.getBlue() * ratio));
+        }
+
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -95,11 +100,6 @@ public final class BusynessChartView extends JPanel {
                 x.drawString(String.format("%.1f", level), px, py - 6);
             }
             x.dispose();
-        }
-
-        private static Color blend(Color a, Color b, float t) {
-            float ratio = Math.max(0, Math.min(1, t));
-            return new Color((int) (a.getRed() * (1 - ratio) + b.getRed() * ratio), (int) (a.getGreen() * (1 - ratio) + b.getGreen() * ratio), (int) (a.getBlue() * (1 - ratio) + b.getBlue() * ratio));
         }
     }
 }

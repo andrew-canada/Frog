@@ -61,11 +61,11 @@ public final class FilterPanel extends JPanel {
         add(buttonPanel);
     }
 
-    public int busyness(){
+    public int busyness() {
         return busyness.getValue();
     }
 
-    public int cleanliness(){
+    public int cleanliness() {
         return cleanliness.getValue();
     }
 

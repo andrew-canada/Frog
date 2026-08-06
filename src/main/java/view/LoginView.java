@@ -3,27 +3,21 @@ package view;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginViewModel;
 
-import java.awt.event.ActionListener;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import javax.swing.border.*;
-import java.io.File;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public final class LoginView implements ActionListener {
-    private JFrame windowFrame;
     private final JPanel panel1, panel2, panel3, panel4;
     private final JLabel usernameLabel, passwordLabel;
     private final JTextField usernameField;
     private final JPasswordField passwordField;
     private final JButton OKButton, cancelButton, continueAsGuestButton;
     private final JDialog dialog;
-
+    private JFrame windowFrame;
     private LoginController loginController;
-    private LoginViewModel loginViewModel;
+    private final LoginViewModel loginViewModel;
 
 
     public LoginView(LoginViewModel loginViewModel) {
