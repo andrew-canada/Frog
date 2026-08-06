@@ -1,5 +1,6 @@
 package view;
 
+import data_access.user.DBUserDataAccessObject;
 import entity.GeoPoint;
 import entity.Washroom;
 import interface_adapter.account.AccountState;
@@ -8,6 +9,8 @@ import interface_adapter.account.IsLoggedInViewModel;
 import interface_adapter.directions.MapViewModel;
 import interface_adapter.filter.FilterController;
 import interface_adapter.filter.FilterViewModel;
+import interface_adapter.logout.LogoutController;
+import interface_adapter.logout.LogoutPresenter;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
@@ -19,10 +22,13 @@ import org.jxmapviewer.cache.FileBasedLocalCache;
 import org.jxmapviewer.viewer.DefaultTileFactory;
 import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.viewer.TileFactoryInfo;
+import use_case.logout.LogoutInteractor;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.event.MouseAdapter;
@@ -37,6 +43,7 @@ import java.util.function.Function;
 
 public final class MainView extends JPanel {
     /** Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies. */
+    private final LogoutController logoutController;
     private final CardLayout buttonsLayout = new CardLayout();
     private final JPanel buttonsPanel = new JPanel(buttonsLayout);
     private IsLoggedInViewModel isLoggedIn =  new IsLoggedInViewModel();
@@ -76,12 +83,13 @@ public final class MainView extends JPanel {
     private double latitude = 43.6629, longitude = -79.3957;
 
     /** Retained for callers that do not provide filtering controls. */
-    public MainView(WashroomListViewModel washrooms, MapViewModel route) {
-        this(washrooms, route, new FilterViewModel(), new IsLoggedInViewModel());
+    public MainView(WashroomListViewModel washrooms, MapViewModel route) { // TODO: why is this still here its being a pain
+        this(washrooms, route, new FilterViewModel(), new IsLoggedInViewModel(), new LogoutController(new LogoutInteractor(new DBUserDataAccessObject(), new LogoutPresenter(new IsLoggedInViewModel()))));
     }
 
-    public MainView(WashroomListViewModel washrooms, MapViewModel route, FilterViewModel filter, IsLoggedInViewModel isLoggedIn) {
+    public MainView(WashroomListViewModel washrooms, MapViewModel route, FilterViewModel filter, IsLoggedInViewModel isLoggedIn, LogoutController logoutController) {
         this.isLoggedIn = isLoggedIn;
+        this.logoutController = logoutController;
         isLoggedIn.getState().addPropertyChangeListener(e -> render(isLoggedIn.getState()));
         setLayout(new BorderLayout());
         setBackground(Theme.PAPER);
@@ -131,6 +139,17 @@ public final class MainView extends JPanel {
         moderatorNav = nav("Moderator", () -> onModerator.run());
         for (JButton b : new JButton[]{nav("Account", () -> onAccount.run()), nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), moderatorNav})
             nav.add(b);
+        JButton logoutButton = Theme.button("Logout");
+        logoutButton.addActionListener(
+            new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+
+                    logoutController.execute();
+
+                }
+            }
+        );
+        nav.add(logoutButton);
         p.add(nav, BorderLayout.EAST);
         return p;
     }

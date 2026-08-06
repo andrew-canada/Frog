@@ -321,7 +321,7 @@ public final class AccountView extends JPanel {
                         deleteAccountContent.repaint();
 
                         deleteAccountButtons.remove(deleteAccountButton);
-                        deleteAccountContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                        deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
                         deleteAccountButtons.add(confirmDeleteAccountButton);
                         deleteAccountButtons.add(Box.createHorizontalStrut(10));
                         deleteAccountButtons.add(cancelDeleteAccountButton);

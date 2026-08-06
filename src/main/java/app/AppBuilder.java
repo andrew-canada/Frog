@@ -25,6 +25,8 @@ import interface_adapter.filter.FilterController;
 import interface_adapter.filter.FilterPresenter;
 import interface_adapter.filter.FilterViewModel;
 import interface_adapter.login.*;
+import interface_adapter.logout.LogoutController;
+import interface_adapter.logout.LogoutPresenter;
 import interface_adapter.status_report.*;
 import interface_adapter.view_reviews.*;
 import interface_adapter.report_review.*;
@@ -39,6 +41,7 @@ import use_case.busyness.BusynessStatsInteractor;
 import use_case.directions.GetDirectionsInteractor;
 import use_case.filter.FilterInteractor;
 import use_case.login.LoginInteractor;
+import use_case.logout.LogoutInteractor;
 import use_case.signup.SignupInteractor;
 import use_case.status_report.SubmitStatusReportInteractor;
 import use_case.view_reviews.ViewReviewsInteractor;
@@ -136,6 +139,7 @@ public final class AppBuilder {
         var changePasswordController = new ChangePasswordController(new ChangePasswordInteractor(users, new ChangePasswordPresenter(accountModel)));
         var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel, isLoggedIn)));
         var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
+        var logoutController = new LogoutController(new LogoutInteractor(users, new LogoutPresenter(isLoggedIn)));
         var filterController = new FilterController(new FilterInteractor(washrooms, reviews, reports, users,
                 new FilterPresenter(filterModel, listModel, mapModel), JSON_WASHROOM_NAMES));
 
@@ -151,7 +155,7 @@ public final class AppBuilder {
         });
         CardLayout layout = new CardLayout();
         JPanel cards = new JPanel(layout);
-        MainView main = new MainView(listModel, mapModel, filterModel, isLoggedIn);
+        MainView main = new MainView(listModel, mapModel, filterModel, isLoggedIn, logoutController);
         AtomicReference<List<Washroom>> displayedWashrooms = new AtomicReference<>(List.of());
         main.setAddressLookup(geocoding::lookup);
         double originLat=43.6629,originLng=-79.3957;
