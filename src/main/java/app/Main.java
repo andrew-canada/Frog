@@ -16,6 +16,7 @@ public final class Main {
             UIManager.put("Button.background", Color.WHITE);
             UIManager.put("Button.foreground", Color.BLACK);
             try {
+                // If the DB is updated, use buildAndSeed() instead of build()
                 JFrame app = new AppBuilder().build();
                 app.setLocationRelativeTo(null);
                 app.setVisible(true);
