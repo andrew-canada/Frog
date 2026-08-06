@@ -12,18 +12,15 @@ import com.google.genai.types.Type;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
 
     public static final String GEMINI_API_KEY_ENV = "GEMINI_API_KEY";
 
-    private final String dayPrompt = "Day of week";
-    private final String timePrompt = "Time (nearest hour) of washroom break";
-    private final String washroomPrompt = "Washroom";
+    private static final String dayPrompt = "Day of week";
+    private static final String timePrompt = "Time (nearest hour) of washroom break";
+    private static final String washroomPrompt = "Washroom";
 
     private final UserDataAccessInterface users;
     private final PersonalPlanOutputBoundary presenter;
@@ -65,21 +62,16 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
 
                 Client client = Client.builder().apiKey(apiKey).build();
                 GenerateContentResponse response = client.models.generateContent("gemini-3.6-flash", "This is a UOFT time table, generate a schedule of washroom breaks in the fall semester such that there are " + inputData.nTrips() + "washroom trips per day they are at school: " + calendar, config);
-                String personalPlan = response.text();
+                String personalPlanString = response.text();
                 if (checkValid(response.text(), Integer.parseInt(inputData.nTrips()))) {
                     throw new Exception();
                 }
-                System.out.println(personalPlan);
+                System.out.println(personalPlanString);
                 users.removeUser(user.username());
-                System.out.println(1);
-                User newUser = new User(user.username(), user.passwordHash(), personalPlan);
-                System.out.println(2);
+                User newUser = new User(user.username(), user.passwordHash(), personalPlanString);
                 users.save(newUser);
-                System.out.println(3);
                 users.setCurrentUser(newUser);
-                System.out.println(4);
-                presenter.present(new PersonalPlanOutputData(true, "", personalPlan));
-                System.out.println(5);
+                presenter.present(new PersonalPlanOutputData(true, "", personalPlanString));
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 presenter.present(new PersonalPlanOutputData(false, "Try again", ""));
@@ -88,7 +80,7 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
 
     }
 
-    public class WashroomPlan {
+    public static class WashroomPlan {
         @JsonProperty(dayPrompt)
         public String day;
         @JsonProperty(timePrompt)
@@ -97,7 +89,7 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
         public String washroom;
     }
 
-    public class EntirePlan {
+    public static class EntirePlan {
         public List<WashroomPlan> washrooms;
     }
 
@@ -122,6 +114,33 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
             return true;
         } catch (Exception e) {
             return false;
+        }
+
+    }
+
+    private HashMap<String, List<List<String>>> extractPlan(String response) {
+
+        try {
+            HashMap<String, List<List<String>>> plan =  new HashMap<>();
+            ObjectMapper mapper = new ObjectMapper();
+            EntirePlan entirePlan = mapper.readValue(response, EntirePlan.class);
+            HashMap<String, Integer> map = new HashMap<String, Integer>();
+            for (WashroomPlan washroomPlan : entirePlan.washrooms) {
+                map.put(washroomPlan.day, 1);
+            }
+            List<String> days = new ArrayList<String>(map.keySet());
+            for (String day : days) {
+                List<List<String>> dayPlan = new ArrayList<>();
+                for (WashroomPlan washroomPlan : entirePlan.washrooms) {
+                    if (washroomPlan.day.equals(day)) {
+                        dayPlan.add(List.of(washroomPlan.time, washroomPlan.washroom));
+                    }
+                }
+                plan.put(day, dayPlan);
+            }
+            return plan;
+        } catch (Exception e) {
+            return null;
         }
 
     }

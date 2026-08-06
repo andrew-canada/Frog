@@ -2,6 +2,9 @@ package view;
 
 import entity.GeoPoint;
 import entity.Washroom;
+import interface_adapter.account.AccountState;
+import interface_adapter.account.IsLoggedInState;
+import interface_adapter.account.IsLoggedInViewModel;
 import interface_adapter.directions.MapViewModel;
 import interface_adapter.filter.FilterController;
 import interface_adapter.filter.FilterViewModel;
@@ -34,6 +37,9 @@ import java.util.function.Function;
 
 public final class MainView extends JPanel {
     /** Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies. */
+    private final CardLayout buttonsLayout = new CardLayout();
+    private final JPanel buttonsPanel = new JPanel(buttonsLayout);
+    private IsLoggedInViewModel isLoggedIn =  new IsLoggedInViewModel();
     private static final Color MAP_LOW = Theme.COLORBLIND_BLUE;
     private static final Color MAP_HIGH = Theme.COLORBLIND_ORANGE;
     private final JPanel list = new JPanel();
@@ -71,13 +77,19 @@ public final class MainView extends JPanel {
 
     /** Retained for callers that do not provide filtering controls. */
     public MainView(WashroomListViewModel washrooms, MapViewModel route) {
-        this(washrooms, route, new FilterViewModel());
+        this(washrooms, route, new FilterViewModel(), new IsLoggedInViewModel());
     }
 
-    public MainView(WashroomListViewModel washrooms, MapViewModel route, FilterViewModel filter) {
+    public MainView(WashroomListViewModel washrooms, MapViewModel route, FilterViewModel filter, IsLoggedInViewModel isLoggedIn) {
+        this.isLoggedIn = isLoggedIn;
+        isLoggedIn.getState().addPropertyChangeListener(e -> render(isLoggedIn.getState()));
         setLayout(new BorderLayout());
         setBackground(Theme.PAPER);
-        add(header(), BorderLayout.NORTH);
+        JComponent loggedIn = headerLoggedIn();
+        JComponent loggedOut = headerLoggedOut();
+        buttonsPanel.add(loggedOut, "loggedOut");
+        buttonsPanel.add(loggedIn, "loggedIn");
+        add(buttonsPanel, BorderLayout.NORTH);
         JSplitPane content = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sidebar(washrooms), mapArea());
         content.setDividerLocation(290);
         content.setDividerSize(8);
@@ -107,7 +119,7 @@ public final class MainView extends JPanel {
         });
     }
 
-    private JComponent header() {
+    private JComponent headerLoggedIn() {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(Theme.PAPER);
         p.setBorder(Theme.pad(10, 18, 10, 18));
@@ -117,7 +129,22 @@ public final class MainView extends JPanel {
         JPanel nav = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         nav.setOpaque(false);
         moderatorNav = nav("Moderator", () -> onModerator.run());
-        for (JButton b : new JButton[]{nav("Account", () -> onAccount.run()), nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), moderatorNav, nav("Login", () -> onLogin.run())})
+        for (JButton b : new JButton[]{nav("Account", () -> onAccount.run()), nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), moderatorNav})
+            nav.add(b);
+        p.add(nav, BorderLayout.EAST);
+        return p;
+    }
+    private JComponent headerLoggedOut() {
+        JPanel p = new JPanel(new BorderLayout());
+        p.setBackground(Theme.PAPER);
+        p.setBorder(Theme.pad(10, 18, 10, 18));
+        JLabel brand = Theme.label("FlushID", 20, Theme.BLUE);
+        brand.setFont(brand.getFont().deriveFont(Font.BOLD));
+        p.add(brand, BorderLayout.WEST);
+        JPanel nav = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        nav.setOpaque(false);
+        moderatorNav = nav("Moderator", () -> onModerator.run());
+        for (JButton b : new JButton[]{nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), moderatorNav, nav("Login", () -> onLogin.run())})
             nav.add(b);
         p.add(nav, BorderLayout.EAST);
         return p;
@@ -400,6 +427,16 @@ public final class MainView extends JPanel {
 
     public String selectedId() {
         return selectedId;
+    }
+
+    private void render(IsLoggedInState state) {
+
+         if (state.getIsLoggedIn()) {
+             buttonsLayout.show(buttonsPanel, "loggedIn");
+         } else {
+             buttonsLayout.show(buttonsPanel, "loggedOut");
+         }
+
     }
 
     private static final class CampusMapPanel extends JPanel {

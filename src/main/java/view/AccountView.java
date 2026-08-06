@@ -10,10 +10,14 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import entity.User;
 import interface_adapter.account.AccountState;
 import interface_adapter.account.AccountViewModel;
@@ -23,6 +27,7 @@ import interface_adapter.account.delete_account.DeleteAccountController;
 import interface_adapter.account.personal_plan.PersonalPlanController;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginViewModel;
+import use_case.account.personal_plan.PersonalPlanInteractor;
 
 public final class AccountView extends JPanel {
 
@@ -363,10 +368,11 @@ public final class AccountView extends JPanel {
 
     private void render(AccountState state) {
 
-        System.out.println("?h");
         accountLabel.setText(state.getUsername());
 
-        personalPlanLabel.setText(state.getPersonalPlan());
+        renderPlan(state.getPersonalPlan());
+
+        // personalPlanLabel.setText(state.getPersonalPlan());
         personalPlanStatusLabel.setText(state.getPersonalPlanMessage());
 
         System.out.println(state.getChangeUsernameSuccess());
@@ -392,6 +398,43 @@ public final class AccountView extends JPanel {
         personalPlan.revalidate();
         personalPlan.repaint();
 
+    }
+
+    private void renderPlan(String plan) {
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<PersonalPlanInteractor.WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<PersonalPlanInteractor.WashroomPlan>>() {});
+
+            List<String> days = List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
+
+            JPanel planPanel = new JPanel();
+            planPanel.setLayout(new BoxLayout(planPanel, BoxLayout.X_AXIS));
+
+            for (String day : days) {
+                JPanel dayPanel = new JPanel();
+                dayPanel.setMaximumSize(new Dimension(300, 124));
+                dayPanel.setLayout(new BoxLayout(dayPanel, BoxLayout.Y_AXIS));
+                dayPanel.add(Theme.label(day, 14, Theme.INK));
+                for (PersonalPlanInteractor.WashroomPlan washroom : washroomList) {
+                    if (washroom.day.contains(day)) {
+                        JPanel card = new JPanel(new BorderLayout(4, 4));
+                        card.add(Theme.label(washroom.time, 14,  Theme.INK), BorderLayout.WEST);
+                        card.add(Theme.label(washroom.washroom, 14,  Theme.INK), BorderLayout.EAST);
+                        dayPanel.add(card);
+                    }
+                }
+                planPanel.add(dayPanel);
+
+            }
+
+            personalPlan.add(planPanel);
+            personalPlan.revalidate();
+            personalPlan.repaint();
+            System.out.println("success");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     public void setOnBack(Runnable r) {

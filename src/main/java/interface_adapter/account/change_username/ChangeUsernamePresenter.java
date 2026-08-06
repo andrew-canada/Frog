@@ -2,24 +2,29 @@ package interface_adapter.account.change_username;
 
 import interface_adapter.account.AccountState;
 import interface_adapter.account.AccountViewModel;
+import interface_adapter.account.IsLoggedInState;
+import interface_adapter.account.IsLoggedInViewModel;
 import use_case.account.change_username.ChangeUsernameOutputBoundary;
 import use_case.account.change_username.ChangeUsernameOutputData;
 
 public final class ChangeUsernamePresenter implements ChangeUsernameOutputBoundary {
 
     private final AccountViewModel viewModel;
+    private final IsLoggedInViewModel isLoggedInViewModel;
 
-    public ChangeUsernamePresenter(AccountViewModel viewModel) {
+    public ChangeUsernamePresenter(AccountViewModel viewModel, IsLoggedInViewModel isLoggedInViewModel) {
         this.viewModel = viewModel;
+        this.isLoggedInViewModel = isLoggedInViewModel;
     }
 
     public void present(ChangeUsernameOutputData outputData) {
 
-        System.out.println("in the presenter:" + outputData.success());
         AccountState state = viewModel.getState();
         state.setChangeUsernameMessage(outputData.message());
         state.setChangeUsernameSuccess(outputData.success());
         state.setUsername(outputData.username());
+        IsLoggedInState loggedInState = isLoggedInViewModel.getState();
+        loggedInState.setUsername(outputData.username());
 
     }
 

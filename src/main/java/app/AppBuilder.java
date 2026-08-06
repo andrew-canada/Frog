@@ -10,6 +10,7 @@ import data_access.user.DBUserDataAccessObject;
 import data_access.washroom.DBWashroomDataAccessObject;
 import entity.Washroom;
 import interface_adapter.account.AccountViewModel;
+import interface_adapter.account.IsLoggedInViewModel;
 import interface_adapter.account.change_password.ChangePasswordController;
 import interface_adapter.account.change_password.ChangePasswordPresenter;
 import interface_adapter.account.change_username.ChangeUsernameController;
@@ -106,6 +107,7 @@ public final class AppBuilder {
         var geocoding = new GraphhopperGeocodingDataAccessObject(graphhopperKey);
         var enrollment = new DBEnrollmentDataAccessObject(database);
 
+        var isLoggedIn = new IsLoggedInViewModel();
         var reviewsModel = new ReviewsViewModel();
         var writeReviewModel=new WriteReviewViewModel();
         var listModel = new WashroomListViewModel();
@@ -125,14 +127,14 @@ public final class AppBuilder {
         var reportController = new ReportReviewController(new ReportReviewInteractor(reviews, new ReportReviewPresenter(reportReviewModel)));
         var moderateController = new ModerateReviewsController(new ModerateReviewsInteractor(reviews, reviews, washrooms, new ModerateReviewsPresenter(moderateModel)));
         Supplier<String> currentUser = () -> loggedInModel.getState().username();
-        var loginController = new LoginController(new LoginInteractor(users, new LoginPresenter(loginModel, loggedInModel)));
+        var loginController = new LoginController(new LoginInteractor(users, new LoginPresenter(loginModel, loggedInModel, isLoggedIn)));
         var signupController = new SignupController(new SignupInteractor(users, new SignupPresenter(loginModel, loggedInModel)));
         var statusController = new StatusReportController(new SubmitStatusReportInteractor(reports, new StatusReportPresenter(statusModel)));
         var busynessController = new BusynessController(new BusynessStatsInteractor(reports, enrollment, new BusynessPresenter(busynessModel)));
         var directionsController = new DirectionsController(new GetDirectionsInteractor(washrooms, routes, new DirectionsPresenter(mapModel)));
-        var changeUsernameController = new ChangeUsernameController(new ChangeUsernameInteractor(users, new ChangeUsernamePresenter(accountModel)));
+        var changeUsernameController = new ChangeUsernameController(new ChangeUsernameInteractor(users, new ChangeUsernamePresenter(accountModel, isLoggedIn)));
         var changePasswordController = new ChangePasswordController(new ChangePasswordInteractor(users, new ChangePasswordPresenter(accountModel)));
-        var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel)));
+        var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel, isLoggedIn)));
         var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
         var filterController = new FilterController(new FilterInteractor(washrooms, reviews, reports, users,
                 new FilterPresenter(filterModel, listModel, mapModel), JSON_WASHROOM_NAMES));
@@ -149,7 +151,7 @@ public final class AppBuilder {
         });
         CardLayout layout = new CardLayout();
         JPanel cards = new JPanel(layout);
-        MainView main = new MainView(listModel, mapModel, filterModel);
+        MainView main = new MainView(listModel, mapModel, filterModel, isLoggedIn);
         AtomicReference<List<Washroom>> displayedWashrooms = new AtomicReference<>(List.of());
         main.setAddressLookup(geocoding::lookup);
         double originLat=43.6629,originLng=-79.3957;

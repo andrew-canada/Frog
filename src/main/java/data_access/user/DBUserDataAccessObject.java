@@ -13,6 +13,8 @@ import org.bson.conversions.Bson;
 
 import data_access.DBDataAccessObject;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.*;
 
 public class DBUserDataAccessObject extends DBDataAccessObject implements UserDataAccessInterface {
@@ -21,6 +23,8 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
     private entity.User currentApplicationUser;
     static final List<String> allowedAttributes = List.of(new String[]{
             "username", "passwordHash", "personalPlan"});
+
+    private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
 
     public DBUserDataAccessObject() {
         super();    // initializes the MongoClient and MongoDatabase from
@@ -31,6 +35,10 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
     public DBUserDataAccessObject(MongoDatabase database) {
         super(database);
         collection = database.getCollection("Users");
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        changes.addPropertyChangeListener(l);
     }
 
     /**
@@ -171,7 +179,11 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
 
     @Override
     public void setCurrentUser(entity.User user) {
+        entity.User prev = currentApplicationUser;
         currentApplicationUser = user;
+        if (Objects.isNull(prev) || Objects.isNull(user)) {
+            changes.firePropertyChange("state", prev, user);
+        }
     }
 
     @Override
@@ -182,7 +194,6 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
     @Override
     public void removeUser(String username) {
         delete(List.of(new Condition<>("username", data_access.Operator.EQ, username)));
-        delete(List.of(new Condition<>("name", data_access.Operator.EQ, username)));
     }
 
     private static String value(Document document, String fallback, String... fields) {
