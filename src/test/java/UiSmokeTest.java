@@ -35,7 +35,7 @@ final class UiSmokeTest {
                         })),
                         new RecommendationView(new RecommendationViewModel()), new StatusReportView(new StatusReportViewModel()),
                         new BusynessChartView(busyness), new FilterPanel());
-                list.setState(new WashroomListViewModel.State(List.of(new WashroomListViewModel.Item("w1", "Test building", "Single-user", 4.5, 200, true)), "w1", "Nearest", false));
+                list.setState(new WashroomListViewModel.State(List.of(new WashroomListViewModel.Item("w1", "Test washroom", 4.5, 200, true)), "w1", "Nearest", false));
                 busyness.setState(new BusynessViewModel.State(List.of(new BusynessStatsOutputData.HourBucket(8, 0, "no data")), "No data yet"));
                 for (JPanel view : views) {
                     view.setSize(900, 600);

@@ -3,14 +3,14 @@ package data_access.washroom;
 import entity.Building;
 import entity.ReviewSummary;
 import entity.Washroom;
+import use_case.gateway.WashroomDataAccessInterface;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Comparator;
 
-public final class InMemoryWashroomDataAccessObject {
+public final class InMemoryWashroomDataAccessObject implements WashroomDataAccessInterface {
     private final Map<String, Washroom> washrooms = new LinkedHashMap<>();
 
     public InMemoryWashroomDataAccessObject() {
@@ -30,23 +30,19 @@ public final class InMemoryWashroomDataAccessObject {
 
     public void add(Washroom washroom) {
         washrooms.put(washroom.id(), washroom);
-        List<Washroom> ordered = washrooms.values().stream()
-                .sorted(Comparator.comparing((Washroom value) -> value.building().name(), String.CASE_INSENSITIVE_ORDER)
-                        .thenComparing(Washroom::name, String.CASE_INSENSITIVE_ORDER)
-                        .thenComparing(Washroom::id))
-                .toList();
-        washrooms.clear();
-        ordered.forEach(value -> washrooms.put(value.id(), value));
     }
 
+    @Override
     public Optional<Washroom> getById(String id) {
         return Optional.ofNullable(washrooms.get(id));
     }
 
+    @Override
     public List<Washroom> getAll() {
         return List.copyOf(washrooms.values());
     }
 
+    @Override
     public List<Washroom> getNearby(double lat, double lng, double radiusMeters) {
         return washrooms.values().stream().filter(w -> distance(lat, lng,
                 w.building().latitude(), w.building().longitude()) <= radiusMeters).toList();

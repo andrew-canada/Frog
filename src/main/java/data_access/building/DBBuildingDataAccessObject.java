@@ -5,7 +5,6 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
 import data_access.Condition;
-import data_access.AbstractCondition;
 import data_access.MongoDocuments;
 import data_access.Operator;
 
@@ -13,7 +12,8 @@ import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
 
-import entity.Building;
+import entity.building.Building;
+import entity.building.GenericBuildingFactory;
 import data_access.DBDataAccessObject;
 
 import java.io.*;
@@ -43,7 +43,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param conditions a list of condition objects that the returned buildings must satisfy
      * @return The buildings that match all the conditions
      */
-    public static List<entity.Building> getMatching(Iterable<AbstractCondition<?>> conditions) {
+    public static List<entity.Building> getMatching(Iterable<Condition<?>> conditions) {
         return new ArrayList<>(getMatchingIDMap(conditions).values());
 
     }
@@ -54,9 +54,9 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the conditions
      */
-    public static List<entity.Building> getMatching(AbstractCondition<?> condition) {
+    public static List<entity.Building> getMatching(Condition<?> condition) {
 
-        List<AbstractCondition<?>> conditions = new ArrayList<>();
+        List<Condition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         return getMatching(conditions);
 
@@ -68,7 +68,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param conditions a list of condition objects that the returned buildings must satisfy
      * @return The buildings that match all the conditions mapped to their IDs in the database.
      */
-    public static Map<String, entity.Building> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
+    public static Map<String, entity.Building> getMatchingIDMap(Iterable<Condition<?>> conditions) {
 
         checkAttribute(conditions);
 
@@ -90,21 +90,21 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the condition mapped to their IDs in the database.
      */
-    public static Map<String, entity.Building> getMatchingIDMap(AbstractCondition<?> condition) {
+    public static Map<String, entity.Building> getMatchingIDMap(Condition<?> condition) {
 
-        List<AbstractCondition<?>> conditions = new ArrayList<>();
+        List<Condition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         return getMatchingIDMap(conditions);
 
     }
 
     /**
-     * Parses a list of AbstractCondition objects into a single Bson filter
+     * Parses a list of Condition objects into a single Bson filter
      *
      * @param conditions list of condition objects to be connected by and statements
      * @return a Bson filter representing satisfying all conditions
      */
-    private static Bson parseConditions(Iterable<AbstractCondition<?>> conditions) {
+    private static Bson parseConditions(Iterable<Condition<?>> conditions) {
         List<Bson> filters = new ArrayList<>();
         conditions.forEach((condition) -> filters.add(condition.getFilter()));
         return filters.isEmpty() ? new Document() : Filters.and(filters);
@@ -205,7 +205,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      *
      * @param condition The condition to check.
      */
-    private static void checkAttribute(AbstractCondition<?> condition) {
+    private static void checkAttribute(Condition<?> condition) {
         if (!allowedAttributes.contains(condition.getFieldName())) {
             throw new RuntimeException("Not a valid attribute");
         }
@@ -217,8 +217,8 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      *
      * @param conditions The conditions to check.
      */
-    private static void checkAttribute(Iterable<AbstractCondition<?>> conditions) {
-        for (AbstractCondition<?> condition : conditions) {
+    private static void checkAttribute(Iterable<Condition<?>> conditions) {
+        for (Condition<?> condition : conditions) {
             checkAttribute(condition);
         }
     }
@@ -226,10 +226,10 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
     /**
      * Deletes every entry in the database that matches the given conditions
      *
-     * @param conditions List of AbstractCondition objects. An object must satisfy
+     * @param conditions List of Condition objects. An object must satisfy
      *                   all conditions to be deleted
      */
-    public void delete(Iterable<AbstractCondition<?>> conditions) {
+    public void delete(Iterable<Condition<?>> conditions) {
         checkAttribute(conditions);
 
         Bson filter = parseConditions(conditions);
@@ -239,10 +239,10 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
     /**
      * Deletes every entry in the database that matches the given condition
      *
-     * @param condition A AbstractCondition object that the object must satisfy.
+     * @param condition A Condition object that the object must satisfy.
      */
-    public void delete(AbstractCondition<?> condition) {
-        List<AbstractCondition<?>> conditions = new ArrayList<>();
+    public void delete(Condition<?> condition) {
+        List<Condition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         delete(conditions);
     }
@@ -296,7 +296,6 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
     }
 
     public static void main(String[] args) throws FileNotFoundException {
-        /**
         DBBuildingDataAccessObject buildingDAO = new DBBuildingDataAccessObject();
         Condition condition = new Condition<>("buildingCode", Operator.NE, "00");
         buildingDAO.delete(condition);
@@ -309,11 +308,6 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
         } catch (Exception e) {
             System.out.println("Building entrance failed. ");
         }
-         */
-        DBBuildingDataAccessObject buildingDAO = new DBBuildingDataAccessObject();
-        Condition condition = new Condition<>("buildingCode", Operator.NE, "00");
-        System.out.println(buildingDAO.getMatching(condition));
-
 
     }
 }

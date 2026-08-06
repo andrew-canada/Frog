@@ -1,4 +1,4 @@
-package data_access.user;
+package use_case.gateway;
 
 import entity.User;
 

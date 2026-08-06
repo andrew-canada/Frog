@@ -1,7 +1,6 @@
-import data_access.route.RouteDataAccessInterface;
-import data_access.washroom.WashroomDataAccessInterface;
 import entity.*;
 import use_case.directions.*;
+import use_case.gateway.*;
 
 import java.util.*;
 

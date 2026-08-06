@@ -1,4 +1,4 @@
 package use_case.view_reviews;
 
-public record ViewReviewsInputData(String washroomId, String username) {
+public record ViewReviewsInputData(String washroomId) {
 }

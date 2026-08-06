@@ -6,24 +6,18 @@ import use_case.view_reviews.ViewReviewsOutputData;
 import javax.swing.*;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
-import java.util.function.Consumer;
 
 
 public final class ReadReviewsView extends JPanel {
-    private static final Color HELPFUL_GREEN = new Color(0x4C, 0xAF, 0x50);
-    private final JLabel title = Theme.title("Reviews"), subtitle = Theme.label("", 12, Theme.INK), summary = Theme.label("", 13, Theme.MUTED);
+    private final JLabel title = Theme.title("Reviews"), subtitle = Theme.label("", 12, Theme.MUTED), summary = Theme.label("", 13, Theme.MUTED);
     private final JPanel reviews = new JPanel();
     private Runnable onBack = () -> {
     }, onWrite = () -> {
-    };
-    private Consumer<String> onHelpful = id -> {
-    }, onReport = id -> {
     };
 
     public ReadReviewsView(ReviewsViewModel model) {
         setLayout(new BorderLayout());
         setBackground(Theme.PAPER);
-        subtitle.setFont(subtitle.getFont().deriveFont(Font.BOLD));
         add(header(), BorderLayout.NORTH);
 
         reviews.setLayout(new BoxLayout(reviews, BoxLayout.Y_AXIS));
@@ -62,7 +56,7 @@ public final class ReadReviewsView extends JPanel {
     public void render(ReviewsViewModel.State s) {
         title.setText(s.name());
         subtitle.setText(s.subtitle());
-        summary.setText(String.format("★ %.1f  ·  Based on %d reviews", s.rating(), s.reviewCount()));
+        summary.setText(String.format("★ %.1f  ·  Based on %d reviews  ·  %d toilets  ·  %d sinks", s.rating(), s.reviewCount(), s.toilets(), s.sinks()));
         reviews.removeAll();
 
         for (ViewReviewsOutputData.ReviewDisplay r : s.reviews()) {
@@ -84,33 +78,7 @@ public final class ReadReviewsView extends JPanel {
             meta.setLayout(new BoxLayout(meta, BoxLayout.Y_AXIS));
             meta.add(Theme.label(r.date().format(DateTimeFormatter.ofPattern("MMM d, yyyy")), 12, Theme.MUTED));
             meta.add(Box.createVerticalStrut(12));
-            JButton helpful = Theme.button("Helpful · " + r.helpfulCount());
-            if (r.votedByCurrentUser()) {
-                // Turn off the look-and-feel's own button-face painting so our green background
-                // actually shows; otherwise the L&F paints its grey face over setBackground().
-                helpful.setContentAreaFilled(false);
-                helpful.setOpaque(true);
-                helpful.setBackground(HELPFUL_GREEN);
-                helpful.setForeground(Color.WHITE);
-            }
-            helpful.addActionListener(e -> onHelpful.accept(r.reviewId()));
-            meta.add(helpful);
-            meta.add(Box.createVerticalStrut(6));
-            JButton report = Theme.button(r.reportedByCurrentUser() ? "Reported" : "Report");
-            if (r.reportedByCurrentUser()) {
-                // Inert "reported" chip: no action listener (so it can't report again), but kept
-                // enabled so the accent colors render - a disabled button greys its text.
-                report.setContentAreaFilled(false);
-                report.setOpaque(true);
-                report.setBackground(Theme.BERRY);
-                report.setForeground(Color.WHITE);
-                report.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(Theme.BERRY.darker()), Theme.pad(8, 14, 8, 14)));
-                report.setFocusable(false);
-            } else {
-                report.addActionListener(e -> onReport.accept(r.reviewId()));
-            }
-            meta.add(report);
+            meta.add(Theme.button("Helpful · " + r.helpfulCount()));
             card.add(meta, BorderLayout.EAST);
             reviews.add(card);
         }
@@ -124,13 +92,5 @@ public final class ReadReviewsView extends JPanel {
 
     public void setOnWrite(Runnable r) {
         onWrite = r;
-    }
-
-    public void setOnHelpful(Consumer<String> c) {
-        onHelpful = c;
-    }
-
-    public void setOnReport(Consumer<String> c) {
-        onReport = c;
     }
 }

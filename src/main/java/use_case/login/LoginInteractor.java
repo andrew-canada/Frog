@@ -2,7 +2,7 @@ package use_case.login;
 
 import entity.User;
 import org.mindrot.jbcrypt.BCrypt;
-import data_access.user.UserDataAccessInterface;
+import use_case.gateway.UserDataAccessInterface;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

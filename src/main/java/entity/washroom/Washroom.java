@@ -1,5 +1,6 @@
 package entity.washroom;
 
+import entity.building.Building;
 import entity.review.Review;
 
 import java.util.List;

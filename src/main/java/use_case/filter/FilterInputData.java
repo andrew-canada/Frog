@@ -1,6 +1,6 @@
 package use_case.filter;
 
-import entity.Building;
+import entity.building.Building;
 
 import java.util.List;
 

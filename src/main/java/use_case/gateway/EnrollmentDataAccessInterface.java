@@ -1,4 +1,4 @@
-package data_access.enrollment;
+package use_case.gateway;
 
 import entity.EnrollmentMeeting;
 

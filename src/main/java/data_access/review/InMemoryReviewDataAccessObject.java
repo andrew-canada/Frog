@@ -1,28 +1,15 @@
 package data_access.review;
 
-import entity.Report;
 import entity.Review;
 import entity.ReviewSummary;
-import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
-import use_case.moderate_reviews.ReviewAdminDataAccessInterface;
-import use_case.moderate_reviews.ReportedReviewsDataAccessInterface;
-import use_case.report_review.ReviewReportDataAccessInterface;
 import use_case.view_reviews.ReviewDataAccessInterface;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
-public final class InMemoryReviewDataAccessObject implements ReviewDataAccessInterface,
-        HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface, ReviewAdminDataAccessInterface, ReportedReviewsDataAccessInterface {
+public final class InMemoryReviewDataAccessObject implements ReviewDataAccessInterface {
     private final List<Review> reviews = new ArrayList<>();
-    private final Map<String, Set<String>> votesByReview = new HashMap<>();
-    private final List<Report> reports = new ArrayList<>();
 
     public InMemoryReviewDataAccessObject() {
         reviews.add(new Review("r1", "bahen-2", "sheena_q", 5, 5,
@@ -39,7 +26,6 @@ public final class InMemoryReviewDataAccessObject implements ReviewDataAccessInt
         reviews.addAll(seed);
     }
 
-    // --- View Reviews ----------------------------------------------------------
     @Override
     public List<Review> getReviewsForWashroom(String id) {
         return reviews.stream().filter(r -> r.washroomId().equals(id)).toList();
@@ -56,71 +42,5 @@ public final class InMemoryReviewDataAccessObject implements ReviewDataAccessInt
     @Override
     public List<Review> getReviewsByUser(String username) {
         return reviews.stream().filter(r -> username.equals(r.authorUsername())).toList();
-    }
-
-    // --- Helpful votes ---------------------------------------------------------
-    @Override
-    public boolean hasVoted(String reviewId, String username) {
-        return votesByReview.getOrDefault(reviewId, Set.of()).contains(username);
-    }
-
-    @Override
-    public void addVote(String reviewId, String username) {
-        if (votesByReview.computeIfAbsent(reviewId, key -> new HashSet<>()).add(username)) {
-            adjustHelpful(reviewId, +1);
-        }
-    }
-
-    @Override
-    public void removeVote(String reviewId, String username) {
-        if (votesByReview.getOrDefault(reviewId, Set.of()).remove(username)) {
-            adjustHelpful(reviewId, -1);
-        }
-    }
-
-    private void adjustHelpful(String reviewId, int delta) {
-        for (int i = 0; i < reviews.size(); i++) {
-            Review r = reviews.get(i);
-            if (r.id().equals(reviewId)) {
-                int count = Math.max(0, r.helpfulCount() + delta);
-                reviews.set(i, new Review(r.id(), r.washroomId(), r.authorUsername(), r.rating(),
-                        r.cleanliness(), r.comment(), count, r.createdAt()));
-                return;
-            }
-        }
-    }
-
-    // --- Reports ---------------------------------------------------------------
-    @Override
-    public void save(Report report) {
-        reports.add(report);
-    }
-
-    @Override
-    public boolean hasReported(String reviewId, String username) {
-        return reports.stream()
-                .anyMatch(report -> report.reviewId().equals(reviewId) && username.equals(report.reporterUsername()));
-    }
-
-    @Override
-    public List<Report> getAllReports() {
-        return List.copyOf(reports);
-    }
-
-    @Override
-    public void deleteReportsForReview(String reviewId) {
-        reports.removeIf(report -> report.reviewId().equals(reviewId));
-    }
-
-    // --- Review admin ----------------------------------------------------------
-    @Override
-    public Optional<Review> getById(String reviewId) {
-        return reviews.stream().filter(r -> r.id().equals(reviewId)).findFirst();
-    }
-
-    @Override
-    public void deleteReview(String reviewId) {
-        reviews.removeIf(r -> r.id().equals(reviewId));
-        votesByReview.remove(reviewId);
     }
 }

@@ -2,6 +2,7 @@ package data_access.route;
 
 import entity.GeoPoint;
 import org.bson.Document;
+import use_case.gateway.AddressLookupDataAccessInterface;
 
 import java.io.IOException;
 import java.net.URI;

@@ -5,6 +5,7 @@ import com.mongodb.client.MongoDatabase;
 import data_access.MongoDocuments;
 import entity.EnrollmentMeeting;
 import org.bson.Document;
+import use_case.gateway.EnrollmentDataAccessInterface;
 
 import java.time.DayOfWeek;
 import java.util.ArrayList;

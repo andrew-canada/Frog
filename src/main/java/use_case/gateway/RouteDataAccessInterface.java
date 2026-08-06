@@ -1,4 +1,4 @@
-package data_access.route;
+package use_case.gateway;
 
 import entity.GeoPoint;
 import entity.Route;
