@@ -10,8 +10,6 @@ public record ViewReviewsOutputData(String washroomId, String washroomName, Stri
         reviews = List.copyOf(reviews);
     }
 
-    public record ReviewDisplay(String reviewId, double rating, String comment, int helpfulCount,
-                                LocalDate date, String author, boolean votedByCurrentUser,
-                                boolean reportedByCurrentUser) {
+    public record ReviewDisplay(double rating, String comment, int helpfulCount, LocalDate date, String author) {
     }
 }

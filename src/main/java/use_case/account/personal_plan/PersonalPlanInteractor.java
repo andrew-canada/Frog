@@ -1,7 +1,7 @@
 package use_case.account.personal_plan;
 
 import entity.User;
-import data_access.user.UserDataAccessInterface;
+import use_case.gateway.UserDataAccessInterface;
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
 

@@ -2,21 +2,25 @@ package data_access.washroom;
 
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import data_access.*;
+import com.mongodb.client.model.Updates;
+import data_access.Condition;
+import data_access.MongoDocuments;
+import data_access.Operator;
 import data_access.building.DBBuildingDataAccessObject;
 import entity.ReviewSummary;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
 
-import entity.Washroom;
+import entity.washroom.Washroom;
+import data_access.DBDataAccessObject;
 
 import javax.json.*;
 import java.io.FileReader;
 import java.io.Reader;
 import java.util.*;
 
-public class DBWashroomDataAccessObject extends DBDataAccessObject implements WashroomDataAccessInterface {
+public class DBWashroomDataAccessObject extends DBDataAccessObject implements use_case.gateway.WashroomDataAccessInterface {
 
     static MongoCollection<Document> collection;
     private static MongoCollection<Document> buildings;
@@ -45,8 +49,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @param conditions a list of condition objects that the returned washrooms must satisfy
      * @return The washrooms that match all the conditions
      */
-    @Override
-    public List<entity.Washroom> getMatching(Iterable<AbstractCondition<?>> conditions) {
+    public static List<Washroom> getMatching(Iterable<Condition<?>> conditions) {
         return new ArrayList<>(getMatchingIDMap(conditions).values());
 
     }
@@ -57,9 +60,9 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the conditions
      */
-    public List<Washroom> getMatching(AbstractCondition<?> condition) {
+    public static List<Washroom> getMatching(Condition<?> condition) {
 
-        List<AbstractCondition<?>> conditions = new ArrayList<>();
+        List<Condition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         return getMatching(conditions);
 
@@ -71,21 +74,16 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @param conditions a list of condition objects that the returned washrooms must satisfy
      * @return The washrooms that match all the conditions mapped to their IDs in the database.
      */
-    @Override
-    public Map<String, Washroom> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
+    public static Map<String, Washroom> getMatchingIDMap(Iterable<Condition<?>> conditions) {
         checkAttribute(conditions);
 
         Bson filter = parseConditions(conditions);
         List<Document> docs = getAll(filter);
 
-        List<Washroom> sortedWashrooms = docs.stream().map(DBWashroomDataAccessObject::createWashroom)
-                .sorted(Comparator.comparing((Washroom washroom) -> washroom.building().name(), String.CASE_INSENSITIVE_ORDER)
-                        .thenComparing(Washroom::name, String.CASE_INSENSITIVE_ORDER)
-                        .thenComparing(Washroom::id))
-                .toList();
-        Map<String, Washroom> washrooms = new LinkedHashMap<>();
-        for (Washroom washroom : sortedWashrooms) {
-            washrooms.put(washroom.id(), washroom);
+        Map<String, Washroom> washrooms = new HashMap<>();
+        for (Document doc : docs) {
+            Washroom washroom = createWashroom(doc);
+            washrooms.put(MongoDocuments.id(doc), washroom);
         }
         return washrooms;
     }
@@ -96,21 +94,21 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the condition mapped to their IDs in the database.
      */
-    public Map<String, Washroom> getMatchingIDMap(AbstractCondition<?> condition) {
+    public static Map<String, Washroom> getMatchingIDMap(Condition<?> condition) {
 
-        List<AbstractCondition<?>> conditions = new ArrayList<>();
+        List<Condition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         return getMatchingIDMap(conditions);
 
     }
 
     /**
-     * Parses a list of AbstractCondition objects into a single Bson filter
+     * Parses a list of Condition objects into a single Bson filter
      *
      * @param conditions list of condition objects to be connected by and statements
      * @return a Bson filter representing satisfying all conditions
      */
-    private static Bson parseConditions(Iterable<AbstractCondition<?>> conditions) {
+    private static Bson parseConditions(Iterable<Condition<?>> conditions) {
         List<Bson> filters = new ArrayList<>();
         conditions.forEach((condition) -> filters.add(condition.getFilter()));
         return filters.isEmpty() ? new Document() : Filters.and(filters);
@@ -147,7 +145,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
         String floor = MongoDocuments.string(doc, "Unknown floor", "floor");
         String name = MongoDocuments.string(doc, building.name() + ", " + floor, "name");
         entity.Washroom.Gender gender = parseGender(MongoDocuments.string(doc, "ALL_GENDER", "gender"));
-        return new Washroom(id, name, building, floor,
+        return new entity.Washroom(id, name, building, floor,
                 MongoDocuments.bool(doc, false, "accessible"), gender,
                 Math.max(0, MongoDocuments.integer(doc, 0, "numToilets", "toilets")),
                 Math.max(0, MongoDocuments.integer(doc, 0, "numSinks", "sinks")),
@@ -161,8 +159,8 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      *
      * @param conditions The conditions to check.
      */
-    private static void checkAttribute(Iterable<AbstractCondition<?>> conditions) {
-        for (AbstractCondition<?> condition : conditions) {
+    private static void checkAttribute(Iterable<Condition<?>> conditions) {
+        for (Condition<?> condition : conditions) {
             checkAttribute(condition);
         }
     }
@@ -173,7 +171,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      *
      * @param condition The condition to check.
      */
-    private static void checkAttribute(AbstractCondition<?> condition) {
+    private static void checkAttribute(Condition<?> condition) {
         if (!allowedAttributes.contains(condition.getFieldName())) {
             throw new RuntimeException("Not a valid attribute");
         }
@@ -209,10 +207,10 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
     /**
      * Deletes every entry in the database that matches the given conditions
      *
-     * @param conditions List of AbstractCondition objects. An object must satisfy
+     * @param conditions List of Condition objects. An object must satisfy
      *                   all conditions to be deleted
      */
-    public static void delete(Iterable<AbstractCondition<?>> conditions) {
+    public static void delete(Iterable<Condition<?>> conditions) {
         checkAttribute(conditions);
         Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);
@@ -221,13 +219,44 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
     /**
      * Deletes every entry in the database that matches the given condition
      *
-     * @param condition A AbstractCondition object that the object must satisfy.
+     * @param condition A Condition object that the object must satisfy.
      */
-    public void delete(AbstractCondition<?> condition) {
-        List<AbstractCondition<?>> conditions = new ArrayList<>();
+    public void delete(Condition<?> condition) {
+        List<Condition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         delete(conditions);
 
+    }
+
+    /**
+     * Idempotently creates one selectable washroom per campus landmark.
+     */
+    public void ensureCampusWashrooms(List<entity.Building> campusBuildings) {
+        for (entity.Building building : campusBuildings) {
+            Document buildingDocument = buildings.find(Filters.eq("buildingCode", building.code())).first();
+            if (buildingDocument == null) continue;
+            Object buildingId = buildingDocument.get("_id");
+            String seedKey = "campus-" + building.code().toLowerCase(Locale.ROOT) + "-washroom";
+            Document existing = collection.find(Filters.eq("seedKey", seedKey)).first();
+            entity.Washroom campusWashroom = new entity.Washroom(seedKey, building.name(), building, "Main floor", false,
+                    entity.Washroom.Gender.ALL_GENDER, 0, 0, "Main-floor washroom location at " + building.name(),
+                    entity.ReviewSummary.empty());
+            if (existing == null) write(campusWashroom, buildingId.toString());
+            else collection.updateOne(Filters.eq("seedKey", seedKey),
+                    Updates.combine(
+                            Updates.set("seedKey", seedKey),
+                            Updates.set("buildingID", buildingId),
+                            Updates.set("buildingCode", building.code()),
+                            Updates.set("name", building.name()),
+                            Updates.set("floor", "Main floor"),
+                            Updates.set("gender", "ALL_GENDER"),
+                            Updates.set("accessible", false),
+                            Updates.set("accessibility", false),
+                            Updates.set("numToilets", 0),
+                            Updates.set("numSinks", 0),
+                            Updates.set("locationDescription", "Main-floor washroom location at " + building.name())
+                    ));
+        }
     }
 
     @Override
@@ -238,7 +267,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
 
     @Override
     public List<entity.Washroom> getAll() {
-        return getMatching(List.<AbstractCondition<?>>of()).stream().map(washroom -> (entity.Washroom) washroom).toList();
+        return getMatching(List.<Condition<?>>of()).stream().map(washroom -> (entity.Washroom) washroom).toList();
     }
 
     @Override

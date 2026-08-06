@@ -7,9 +7,6 @@ public record BusynessStatsOutputData(List<HourBucket> buckets, String sourceNot
         buckets = List.copyOf(buckets);
     }
 
-    public record HourBucket(int hour, double busynessLevel, double cleanlinessLevel, String dominantSource) {
-        public HourBucket(int hour, double busynessLevel, String dominantSource) {
-            this(hour, busynessLevel, 0, dominantSource);
-        }
+    public record HourBucket(int hour, double busynessLevel, String dominantSource) {
     }
 }

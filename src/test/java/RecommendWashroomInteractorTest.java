@@ -1,6 +1,5 @@
-import data_access.status.StatusReportDataAccessInterface;
-import data_access.washroom.WashroomDataAccessInterface;
 import entity.*;
+import use_case.gateway.*;
 import use_case.recommend.*;
 
 import java.time.LocalDateTime;

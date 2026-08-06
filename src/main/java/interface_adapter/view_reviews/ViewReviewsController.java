@@ -10,7 +10,7 @@ public final class ViewReviewsController {
         this.interactor = interactor;
     }
 
-    public void execute(String washroomId, String username) {
-        interactor.execute(new ViewReviewsInputData(washroomId, username));
+    public void execute(String washroomId) {
+        interactor.execute(new ViewReviewsInputData(washroomId));
     }
 }

@@ -4,18 +4,19 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import data_access.Condition;
-import data_access.AbstractCondition;
 import data_access.MongoDocuments;
 import entity.user.LoggedInUser;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
 
+import entity.user.User;
+import entity.user.LoggedInUserFactory;
 import data_access.DBDataAccessObject;
 
 import java.util.*;
 
-public class DBUserDataAccessObject extends DBDataAccessObject implements UserDataAccessInterface {
+public class DBUserDataAccessObject extends DBDataAccessObject implements use_case.gateway.UserDataAccessInterface {
 
     static MongoCollection<Document> collection;
     private entity.User currentApplicationUser;
@@ -39,7 +40,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
      * @param conditions a list of condition objects that the returned users must satisfy
      * @return The users that match all the conditions
      */
-    public List<LoggedInUser> getMatching(Iterable<AbstractCondition<?>> conditions) {
+    public List<LoggedInUser> getMatching(Iterable<Condition<?>> conditions) {
         return new ArrayList<>(getMatchingIDMap(conditions).values());
     }
 
@@ -49,7 +50,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
      * @param conditions a list of condition objects that the returned users must satisfy
      * @return The users that match all the conditions mapped to their IDs in the database.
      */
-    public Map<String, LoggedInUser> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
+    public Map<String, LoggedInUser> getMatchingIDMap(Iterable<Condition<?>> conditions) {
         checkAttribute(conditions);
 
         Bson filter = parseConditions(conditions);
@@ -64,12 +65,12 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
     }
 
     /**
-     * Parses a list of AbstractCondition objects into a single Bson filter
+     * Parses a list of Condition objects into a single Bson filter
      *
      * @param conditions list of condition objects to be connected by and statements
      * @return a Bson filter representing satisfying all conditions
      */
-    private static Bson parseConditions(Iterable<AbstractCondition<?>> conditions) {
+    private static Bson parseConditions(Iterable<Condition<?>> conditions) {
         List<Bson> filters = new ArrayList<>();
         conditions.forEach((condition) -> filters.add(condition.getFilter()));
         return filters.isEmpty() ? new Document() : Filters.and(filters);
@@ -116,10 +117,10 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
     /**
      * Deletes every entry in the database that matches the given conditions
      *
-     * @param conditions List of AbstractCondition objects. An object must satisfy
+     * @param conditions List of Condition objects. An object must satisfy
      *                   all conditions to be deleted
      */
-    public void delete(Iterable<AbstractCondition<?>> conditions) {
+    public void delete(Iterable<Condition<?>> conditions) {
         checkAttribute(conditions);
         Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);
@@ -131,7 +132,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
      *
      * @param condition The condition to check.
      */
-    private static void checkAttribute(AbstractCondition<?> condition) {
+    private static void checkAttribute(Condition<?> condition) {
         if (!allowedAttributes.contains(condition.getFieldName())) {
             throw new RuntimeException("Not a valid attribute");
         }
@@ -143,8 +144,8 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
      *
      * @param conditions The conditions to check.
      */
-    private static void checkAttribute(Iterable<AbstractCondition<?>> conditions) {
-        for (AbstractCondition<?> condition : conditions) {
+    private static void checkAttribute(Iterable<Condition<?>> conditions) {
+        for (Condition<?> condition : conditions) {
             checkAttribute(condition);
         }
     }
