@@ -55,6 +55,8 @@ final class ViewReviewsInteractorTest {
 
         };
         new ViewReviewsInteractor(reviews, washrooms, votes, reports, output).execute(new ViewReviewsInputData("w1", "tester"));
+        TestSupport.check(result[0].washroomName().equals("Bahen"), "building name");
+        TestSupport.check(result[0].subtitle().equals("Test"), "cleaned description");
         TestSupport.check(result[0].reviewCount() == 2, "summary count");
         TestSupport.check(result[0].reviews().get(0).helpfulCount() == 9, "most helpful first");
     }

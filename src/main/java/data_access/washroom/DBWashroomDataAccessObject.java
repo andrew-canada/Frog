@@ -2,7 +2,6 @@ package data_access.washroom;
 
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Updates;
 import data_access.*;
 import data_access.building.DBBuildingDataAccessObject;
 import entity.ReviewSummary;
@@ -88,10 +87,14 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
         Bson filter = parseConditions(conditions);
         List<Document> docs = getAll(filter);
 
-        Map<String, Washroom> washrooms = new HashMap<>();
-        for (Document doc : docs) {
-            Washroom washroom = createWashroom(doc);
-            washrooms.put(MongoDocuments.id(doc), washroom);
+        List<Washroom> sortedWashrooms = docs.stream().map(DBWashroomDataAccessObject::createWashroom)
+                .sorted(Comparator.comparing((Washroom washroom) -> washroom.building().name(), String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Washroom::name, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Washroom::id))
+                .toList();
+        Map<String, Washroom> washrooms = new LinkedHashMap<>();
+        for (Washroom washroom : sortedWashrooms) {
+            washrooms.put(washroom.id(), washroom);
         }
         return washrooms;
     }
@@ -235,44 +238,6 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
         delete(conditions);
 
     }
-
-    /**
-     * Idempotently creates one selectable washroom per campus landmark.
-     */
-    public void ensureCampusWashrooms(List<entity.Building> campusBuildings) {
-        for (entity.Building building : campusBuildings) {
-            Document buildingDocument = buildings.find(Filters.eq("buildingCode", building.code())).first();
-            if (buildingDocument == null) continue;
-            Object buildingId = buildingDocument.get("_id");
-            String seedKey = "campus-" + building.code().toLowerCase(Locale.ROOT) + "-washroom";
-            Document existing = collection.find(Filters.eq("seedKey", seedKey)).first();
-            FixtureCounts fixtures = fixtureCounts(building.code());
-            entity.Washroom campusWashroom = new entity.Washroom(seedKey, building.name(), building, "Main floor", false,
-                    entity.Washroom.Gender.ALL_GENDER, fixtures.toilets(), fixtures.sinks(), "Main-floor washroom location at " + building.name(),
-                    entity.ReviewSummary.empty());
-            if (existing == null) write(campusWashroom, buildingId.toString());
-            else collection.updateOne(Filters.eq("seedKey", seedKey),
-                    Updates.combine(
-                            Updates.set("seedKey", seedKey),
-                            Updates.set("buildingID", buildingId),
-                            Updates.set("buildingCode", building.code()),
-                            Updates.set("name", building.name()),
-                            Updates.set("floor", "Main floor"),
-                            Updates.set("gender", "ALL_GENDER"),
-                            Updates.set("accessible", false),
-                            Updates.set("accessibility", false),
-                            Updates.set("numToilets", fixtures.toilets()),
-                            Updates.set("numSinks", fixtures.sinks()),
-                            Updates.set("locationDescription", "Main-floor washroom location at " + building.name())
-                    ));
-        }
-    }
-
-    private static FixtureCounts fixtureCounts(String buildingCode) {
-        return new FixtureCounts(0, 0);
-    }
-
-    private record FixtureCounts(int toilets, int sinks) { }
 
     @Override
     public Optional<entity.Washroom> getById(String id) {

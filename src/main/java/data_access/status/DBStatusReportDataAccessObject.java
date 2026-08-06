@@ -7,11 +7,16 @@ import entity.MaintenanceIssue;
 import entity.StatusReport;
 import org.bson.Document;
 
+import com.mongodb.client.model.Filters;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 public final class DBStatusReportDataAccessObject implements StatusReportDataAccessInterface {
     private final MongoCollection<Document> reports;
@@ -26,6 +31,34 @@ public final class DBStatusReportDataAccessObject implements StatusReportDataAcc
                 .append("username", report.username()).append("busyness", report.busyness())
                 .append("cleanliness", report.cleanliness()).append("issue", report.issue().name())
                 .append("timestamp", Date.from(report.timestamp().atZone(ZoneId.systemDefault()).toInstant())));
+    }
+
+    /** Adds one persistent, varied status report for every hour of every JSON-sourced washroom. */
+    public void ensureJsonHourlyReports(List<entity.Washroom> washrooms) {
+        LocalDate reportDay = LocalDate.now().minusDays(1);
+        Set<String> existingSeedKeys = new HashSet<>();
+        for (Document report : reports.find(Filters.regex("seedKey", "^json-hourly-status-"))) {
+            existingSeedKeys.add(MongoDocuments.string(report, "", "seedKey"));
+        }
+        List<Document> newReports = new ArrayList<>();
+        for (int washroomIndex = 0; washroomIndex < washrooms.size(); washroomIndex++) {
+            entity.Washroom washroom = washrooms.get(washroomIndex);
+            for (int hour = 0; hour < 24; hour++) {
+                String seedKey = "json-hourly-status-" + washroom.id() + "-" + hour;
+                if (existingSeedKeys.contains(seedKey)) continue;
+                int busyness = 1 + Math.floorMod(washroomIndex * 2 + hour * 3, 5);
+                int cleanliness = 1 + Math.floorMod(washroomIndex * 3 + hour * 2, 5);
+                LocalDateTime timestamp = LocalDateTime.of(reportDay, LocalTime.of(hour, 0));
+                newReports.add(new Document("washroomId", washroom.id())
+                        .append("username", "System seed")
+                        .append("busyness", busyness)
+                        .append("cleanliness", cleanliness)
+                        .append("issue", MaintenanceIssue.NONE.name())
+                        .append("timestamp", Date.from(timestamp.atZone(ZoneId.systemDefault()).toInstant()))
+                        .append("seedKey", seedKey));
+            }
+        }
+        if (!newReports.isEmpty()) reports.insertMany(newReports);
     }
 
     @Override

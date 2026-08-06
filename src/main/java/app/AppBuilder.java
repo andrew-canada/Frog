@@ -1,7 +1,6 @@
 package app;
 
 import data_access.DBDataAccessObject;
-import data_access.building.DBBuildingDataAccessObject;
 import data_access.enrollment.DBEnrollmentDataAccessObject;
 import data_access.review.DBReviewDataAccessObject;
 import data_access.route.GraphhopperRouteDataAccessObject;
@@ -52,12 +51,17 @@ import java.util.function.Supplier;
 import view.*;
 
 import javax.swing.*;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.InputStream;
 import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -65,26 +69,38 @@ import java.util.concurrent.CompletableFuture;
  */
 public final class AppBuilder {
     private static final String MAIN = "main", REVIEWS = "reviews", LOGIN = "login", RECOMMEND = "recommend", STATUS = "status", BUSYNESS = "busyness", ACCOUNT = "account", MODERATE = "moderate";
+    private static final Set<String> JSON_WASHROOM_NAMES = loadJsonWashroomNames();
 
+    /** Builds the application from the data already stored in MongoDB. */
     public JFrame build() {
+        return build(false);
+    }
+
+    /** Builds the application after verifying the connection and seeding its baseline data. */
+    public JFrame buildAndSeed() {
+        return build(true);
+    }
+
+    private JFrame build(boolean seedData) {
         String graphhopperKey = requiredEnvironment(GraphhopperRouteDataAccessObject.API_KEY_ENV);
         DBDataAccessObject connection = DBDataAccessObject.fromEnvironment();
-        try {
-            connection.verifyConnection();
-        } catch (RuntimeException failure) {
-            connection.close();
-            throw new IllegalStateException("Could not connect to the configured MongoDB database.", failure);
-        }
 
         var database = connection.database();
-        var buildings = new DBBuildingDataAccessObject(database);
-        var campusLocations = buildings.ensureLocations(UofTCampusLocations.coreLocations());
         var washrooms = new DBWashroomDataAccessObject(database);
-        washrooms.ensureCampusWashrooms(campusLocations);
         var reviews = new DBReviewDataAccessObject(database);
-        reviews.ensureCampusReviews(washrooms.getAll());
         var users = new DBUserDataAccessObject(database);
         var reports = new DBStatusReportDataAccessObject(database);
+        if (seedData) {
+            try {
+                connection.verifyConnection();
+                List<entity.Washroom> jsonWashrooms = jsonWashrooms(washrooms);
+                reviews.ensureJsonReviews(jsonWashrooms);
+                reports.ensureJsonHourlyReports(jsonWashrooms);
+            } catch (RuntimeException failure) {
+                connection.close();
+                throw new IllegalStateException("Could not connect to or seed the MongoDB database.", failure);
+            }
+        }
         var routes = new GraphhopperRouteDataAccessObject(graphhopperKey);
         var geocoding = new GraphhopperGeocodingDataAccessObject(graphhopperKey);
         var enrollment = new DBEnrollmentDataAccessObject(database);
@@ -186,6 +202,7 @@ public final class AppBuilder {
 
         main.setOnBusyness(() -> selected(washrooms, main).ifPresentOrElse(
                 w -> {
+                    busyness.setLocationName(w.building().name());
                     busynessController.execute(w.id(), w.building().code(), DayOfWeek.from(java.time.LocalDate.now()));
                     layout.show(cards, BUSYNESS);
                 },
@@ -200,7 +217,7 @@ public final class AppBuilder {
                     loggedInModel.getState().loggedIn() ? loggedInModel.getState().username() : "Anonymous",
                     () -> {
                         reviewController.execute(w.id(), currentUser.get());
-                        refreshMainWashrooms(washrooms, main, listModel, originLat, originLng);
+                        updateWashroomListRating(listModel, w.id(), reviewsModel.getState().rating());
                     }).setVisible(true),
             () -> noWashroom(frame)
         ));
@@ -258,14 +275,32 @@ public final class AppBuilder {
     }
     private static void refreshMainWashrooms(DBWashroomDataAccessObject washrooms, MainView main,
                                              WashroomListViewModel listModel, double originLat, double originLng) {
-        List<Washroom> availableWashrooms = washrooms.getAll();
+        List<Washroom> availableWashrooms = jsonWashrooms(washrooms);
         main.setWashrooms(availableWashrooms);
         List<WashroomListViewModel.Item> items = availableWashrooms.stream().map(w ->
-                new WashroomListViewModel.Item(w.id(), listName(w), w.reviewSummary().averageRating(),
+                new WashroomListViewModel.Item(w.id(), w.building().name(), listDescription(w), w.reviewSummary().averageRating(),
                         (int) Math.round(distance(originLat, originLng, w.building().latitude(), w.building().longitude())),
                         w.accessible())).toList();
         String selectedId = main.selectedId().isBlank() && !items.isEmpty() ? items.getFirst().id() : main.selectedId();
-        listModel.setState(new WashroomListViewModel.State(items, selectedId, "Sort by: Nearest", false));
+        listModel.setState(new WashroomListViewModel.State(items, selectedId, "Alphabetical", false));
+    }
+
+    /**
+     * A new review changes the aggregate rating for only its washroom.  Keep the
+     * already-loaded list and patch that one row instead of reloading every
+     * washroom (which also recalculates every review summary from MongoDB).
+     */
+    private static void updateWashroomListRating(WashroomListViewModel listModel, String washroomId,
+                                                  double rating) {
+        WashroomListViewModel.State current = listModel.getState();
+        List<WashroomListViewModel.Item> updated = current.items().stream()
+                .map(item -> item.id().equals(washroomId)
+                        ? new WashroomListViewModel.Item(item.id(), item.name(), item.description(), rating,
+                        item.distanceMeters(), item.accessible())
+                        : item)
+                .toList();
+        listModel.setState(new WashroomListViewModel.State(updated, current.selectedId(),
+                current.sortLabel(), current.routeVisible()));
     }
 
     private static Optional<Washroom> selected(DBWashroomDataAccessObject washrooms, MainView main) {
@@ -273,17 +308,35 @@ public final class AppBuilder {
     }
 
     private static void noWashroom(Component parent) {
-        JOptionPane.showMessageDialog(parent, "The database does not contain a selectable washroom.", "No washrooms", JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(parent, "Select a washroom from the list or map before continuing.",
+                "Select a washroom", JOptionPane.WARNING_MESSAGE);
     }
 
-    private static String listName(Washroom washroom) {
-        return switch (washroom.building().code()) {
-            case "BA" -> "Bahen Centre";
-            case "MY" -> "Myhal Centre";
-            case "TC" -> "Trinity College";
-            case "HH" -> "Hart House";
-            default -> washroom.name();
-        };
+    private static String listDescription(Washroom washroom) {
+        String name = washroom.name();
+        int separator = name.indexOf('|');
+        String description = separator >= 0 ? name.substring(separator + 1) : name;
+        return description.replaceAll("(?i)\\bwashrooms?\\b", "")
+                .replaceAll("\\s{2,}", " ")
+                .trim();
+    }
+
+    private static Set<String> loadJsonWashroomNames() {
+        InputStream input = AppBuilder.class.getResourceAsStream("/data/washrooms.json");
+        if (input == null) throw new IllegalStateException("Missing data/washrooms.json resource.");
+        try (input; JsonReader reader = Json.createReader(input)) {
+            return Set.copyOf(reader.readArray().stream()
+                    .map(value -> ((JsonObject) value).getString("name"))
+                    .toList());
+        } catch (Exception failure) {
+            throw new IllegalStateException("Could not load data/washrooms.json.", failure);
+        }
+    }
+
+    private static List<Washroom> jsonWashrooms(DBWashroomDataAccessObject washrooms) {
+        return washrooms.getAll().stream()
+                .filter(washroom -> JSON_WASHROOM_NAMES.contains(washroom.name()))
+                .toList();
     }
 
     private static String requiredEnvironment(String name) {
