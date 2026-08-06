@@ -2,7 +2,7 @@ package use_case.signup;
 
 import entity.User;
 import org.mindrot.jbcrypt.BCrypt;
-import use_case.gateway.UserDataAccessInterface;
+import data_access.user.UserDataAccessInterface;
 
 public final class SignupInteractor implements SignupInputBoundary {
     private final UserDataAccessInterface users;

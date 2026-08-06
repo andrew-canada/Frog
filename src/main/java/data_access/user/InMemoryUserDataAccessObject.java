@@ -2,7 +2,6 @@ package data_access.user;
 
 import entity.User;
 import org.mindrot.jbcrypt.BCrypt;
-import use_case.gateway.UserDataAccessInterface;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

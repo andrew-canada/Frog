@@ -1,5 +1,5 @@
 import entity.User;
-import use_case.gateway.UserDataAccessInterface;
+import data_access.user.UserDataAccessInterface;
 import use_case.signup.*;
 
 import java.util.Optional;

@@ -2,8 +2,8 @@ package use_case.recommend;
 
 import entity.StatusReport;
 import entity.Washroom;
-import use_case.gateway.StatusReportDataAccessInterface;
-import use_case.gateway.WashroomDataAccessInterface;
+import data_access.status.StatusReportDataAccessInterface;
+import data_access.washroom.WashroomDataAccessInterface;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
