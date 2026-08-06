@@ -27,6 +27,7 @@ public class FilterPresenter implements FilterOutputBoundary {
                 washroom -> new WashroomListViewModel.Item(
                         washroom.id(),
                         washroom.name(),
+                        washroom.locationDescription(),
                         washroom.reviewSummary().averageRating(),
                         (int) Math.round(distance(
                                 outputData.latitude(),
