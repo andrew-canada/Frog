@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 public final class ReadReviewsView extends JPanel {
     private static final Color HELPFUL_GREEN = new Color(0x4C, 0xAF, 0x50);
-    private final JLabel title = Theme.title("Reviews"), subtitle = Theme.label("", 12, Theme.MUTED), summary = Theme.label("", 13, Theme.MUTED);
+    private final JLabel title = Theme.title("Reviews"), subtitle = Theme.label("", 12, Theme.INK), summary = Theme.label("", 13, Theme.MUTED);
     private final JPanel reviews = new JPanel();
     private Runnable onBack = () -> {
     }, onWrite = () -> {
@@ -23,6 +23,7 @@ public final class ReadReviewsView extends JPanel {
     public ReadReviewsView(ReviewsViewModel model) {
         setLayout(new BorderLayout());
         setBackground(Theme.PAPER);
+        subtitle.setFont(subtitle.getFont().deriveFont(Font.BOLD));
         add(header(), BorderLayout.NORTH);
 
         reviews.setLayout(new BoxLayout(reviews, BoxLayout.Y_AXIS));
@@ -61,7 +62,7 @@ public final class ReadReviewsView extends JPanel {
     public void render(ReviewsViewModel.State s) {
         title.setText(s.name());
         subtitle.setText(s.subtitle());
-        summary.setText(String.format("★ %.1f  ·  Based on %d reviews  ·  %d toilets  ·  %d sinks", s.rating(), s.reviewCount(), s.toilets(), s.sinks()));
+        summary.setText(String.format("★ %.1f  ·  Based on %d reviews", s.rating(), s.reviewCount()));
         reviews.removeAll();
 
         for (ViewReviewsOutputData.ReviewDisplay r : s.reviews()) {

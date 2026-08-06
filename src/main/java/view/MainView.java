@@ -25,6 +25,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +36,7 @@ public final class MainView extends JPanel {
     private final JPanel list = new JPanel();
     private final JLabel routeLabel = Theme.label("Select a washroom to explore", 13, Theme.MUTED);
     private final CampusMapPanel map = new CampusMapPanel();
+    private final Map<String, JPanel> cardsByWashroomId = new HashMap<>();
     private JButton moderatorNav;
     private String selectedId = "";
     private List<WashroomListViewModel.Item> renderedItems = List.of();
@@ -66,8 +68,11 @@ public final class MainView extends JPanel {
         setLayout(new BorderLayout());
         setBackground(Theme.PAPER);
         add(header(), BorderLayout.NORTH);
-        add(sidebar(), BorderLayout.WEST);
-        add(mapArea(), BorderLayout.CENTER);
+        JSplitPane content = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sidebar(), mapArea());
+        content.setDividerLocation(290);
+        content.setDividerSize(8);
+        content.setContinuousLayout(true);
+        add(content, BorderLayout.CENTER);
         map.setOnWashroomSelected(this::selectWashroom);
         washrooms.addPropertyChangeListener(e -> renderList(washrooms.getState().items()));
         route.addPropertyChangeListener(e -> {
@@ -128,6 +133,8 @@ public final class MainView extends JPanel {
         list.setBackground(Theme.PAPER);
         JScrollPane scroll = new JScrollPane(list);
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.getVerticalScrollBar().setUnitIncrement(32);
+        scroll.getVerticalScrollBar().setBlockIncrement(192);
         p.add(scroll, BorderLayout.CENTER);
         return p;
     }
@@ -154,19 +161,30 @@ public final class MainView extends JPanel {
     public void renderList(List<WashroomListViewModel.Item> items) {
         renderedItems = List.copyOf(items);
         list.removeAll();
-        if (!items.isEmpty() && (selectedId.isBlank() || items.stream().noneMatch(item -> item.id().equals(selectedId))))
-            selectedId = items.getFirst().id();
+        cardsByWashroomId.clear();
+        if (!selectedId.isBlank() && items.stream().noneMatch(item -> item.id().equals(selectedId)))
+            selectedId = "";
         map.setSelectedWashroom(selectedId);
         for (var item : items) {
             JPanel card = new JPanel(new BorderLayout(4, 4));
-            card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 106));
+            card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 124));
             card.setBackground(item.id().equals(selectedId) ? Theme.PALE_BLUE : Theme.PAPER);
             card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(item.id().equals(selectedId) ? Theme.BLUE : Theme.LINE), Theme.pad(10, 10, 10, 10)));
             JLabel name = Theme.label(item.name(), 14, item.id().equals(selectedId) ? Theme.BLUE : Theme.INK);
             name.setFont(name.getFont().deriveFont(Font.BOLD));
             card.add(name, BorderLayout.NORTH);
+            JLabel description = Theme.label(item.description(), 12, Theme.INK);
+            description.setFont(description.getFont().deriveFont(Font.BOLD));
+            description.setAlignmentX(Component.LEFT_ALIGNMENT);
             JLabel details = Theme.label(String.format("★ %.1f · %d m away", item.rating(), item.distanceMeters()), 12, Theme.MUTED);
-            card.add(details, BorderLayout.CENTER);
+            JPanel information = new JPanel();
+            information.setLayout(new BoxLayout(information, BoxLayout.Y_AXIS));
+            information.setOpaque(false);
+            information.add(description);
+            information.add(Box.createVerticalStrut(4));
+            details.setAlignmentX(Component.LEFT_ALIGNMENT);
+            information.add(details);
+            card.add(information, BorderLayout.CENTER);
             JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
             actions.setOpaque(false);
             JButton reviews = Theme.button("Reviews"), directions = Theme.button("Directions");
@@ -180,9 +198,13 @@ public final class MainView extends JPanel {
             };
             card.addMouseListener(select);
             name.addMouseListener(select);
+            information.addMouseListener(select);
+            description.addMouseListener(select);
             details.addMouseListener(select);
             card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             name.setCursor(card.getCursor());
+            information.setCursor(card.getCursor());
+            description.setCursor(card.getCursor());
             details.setCursor(card.getCursor());
             reviews.addActionListener(e -> {
                 selectWashroom(item.id());
@@ -195,6 +217,7 @@ public final class MainView extends JPanel {
             actions.add(reviews);
             actions.add(directions);
             card.add(actions, BorderLayout.SOUTH);
+            cardsByWashroomId.put(item.id(), card);
             list.add(card);
             list.add(Box.createVerticalStrut(10));
         }
@@ -206,6 +229,14 @@ public final class MainView extends JPanel {
         if (id == null || id.isBlank() || id.equals(selectedId)) return;
         selectedId = id;
         renderList(renderedItems);
+        scrollSelectedCardIntoView();
+    }
+
+    private void scrollSelectedCardIntoView() {
+        JPanel selectedCard = cardsByWashroomId.get(selectedId);
+        if (selectedCard == null) return;
+        SwingUtilities.invokeLater(() -> selectedCard.scrollRectToVisible(
+                new Rectangle(0, 0, selectedCard.getWidth(), selectedCard.getHeight())));
     }
 
     public void setWashrooms(List<Washroom> washrooms) {
@@ -383,10 +414,19 @@ public final class MainView extends JPanel {
             markerHitTargets.clear();
             drawRoute(canvas, map);
             drawPoint(canvas, map, viewport, origin, "You", Theme.BLUE, "", "", false);
+            Map<GeoPoint, List<Washroom>> washroomsByLocation = new LinkedHashMap<>();
             for (Washroom washroom : washrooms) {
-                boolean selected = washroom.id().equals(selectedWashroomId);
-                drawPoint(canvas, map, viewport, new GeoPoint(washroom.building().latitude(), washroom.building().longitude()),
-                        washroom.building().name(), selected ? Theme.BLUE : Theme.BERRY, washroom.building().code(), washroom.id(), selected);
+                GeoPoint location = new GeoPoint(washroom.building().latitude(), washroom.building().longitude());
+                washroomsByLocation.computeIfAbsent(location, ignored -> new java.util.ArrayList<>()).add(washroom);
+            }
+            for (List<Washroom> washroomsAtLocation : washroomsByLocation.values()) {
+                Washroom representative = washroomsAtLocation.getFirst();
+                boolean selected = washroomsAtLocation.stream()
+                        .anyMatch(washroom -> washroom.id().equals(selectedWashroomId));
+                drawPoint(canvas, map, viewport,
+                        new GeoPoint(representative.building().latitude(), representative.building().longitude()),
+                        representative.building().name(), selected ? Theme.BLUE : Theme.BERRY,
+                        representative.building().code(), representative.id(), selected);
             }
             canvas.dispose();
         }
@@ -423,15 +463,17 @@ public final class MainView extends JPanel {
                 canvas.setFont(canvas.getFont().deriveFont(Font.BOLD, 8f));
                 canvas.drawString(code, x - canvas.getFontMetrics().stringWidth(code) / 2, y + 3);
             }
-            canvas.setFont(canvas.getFont().deriveFont(Font.BOLD, 11f));
-            int labelWidth = canvas.getFontMetrics().stringWidth(label);
-            canvas.setColor(new Color(255, 255, 255, 225));
-            canvas.fillRoundRect(x + 13, y - 20, labelWidth + 10, 18, 8, 8);
-            canvas.setColor(Theme.INK);
-            canvas.drawString(label, x + 18, y - 7);
+            if (selected && !label.isBlank()) {
+                canvas.setFont(canvas.getFont().deriveFont(Font.BOLD, 11f));
+                int labelWidth = canvas.getFontMetrics().stringWidth(label);
+                canvas.setColor(new Color(255, 255, 255, 225));
+                canvas.fillRoundRect(x + 13, y - 20, labelWidth + 10, 18, 8, 8);
+                canvas.setColor(Theme.INK);
+                canvas.drawString(label, x + 18, y - 7);
+            }
             if (!washroomId.isBlank()) {
                 markerHitTargets.put(washroomId, new Rectangle(x - viewport.x - 16, y - viewport.y - 24,
-                        labelWidth + 45, 42));
+                        32, 32));
             }
         }
 

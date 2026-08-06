@@ -1,7 +1,6 @@
 package app;
 
 import data_access.DBDataAccessObject;
-import data_access.building.DBBuildingDataAccessObject;
 import data_access.enrollment.DBEnrollmentDataAccessObject;
 import data_access.review.DBReviewDataAccessObject;
 import data_access.route.GraphhopperRouteDataAccessObject;
@@ -48,12 +47,17 @@ import java.util.function.Supplier;
 import view.*;
 
 import javax.swing.*;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.InputStream;
 import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -61,6 +65,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public final class AppBuilder {
     private static final String MAIN = "main", REVIEWS = "reviews", LOGIN = "login", RECOMMEND = "recommend", STATUS = "status", BUSYNESS = "busyness", ACCOUNT = "account", MODERATE = "moderate";
+    private static final Set<String> JSON_WASHROOM_NAMES = loadJsonWashroomNames();
 
     public JFrame build() {
         String graphhopperKey = requiredEnvironment(GraphhopperRouteDataAccessObject.API_KEY_ENV);
@@ -73,12 +78,9 @@ public final class AppBuilder {
         }
 
         var database = connection.database();
-        var buildings = new DBBuildingDataAccessObject(database);
-        var campusLocations = buildings.ensureLocations(UofTCampusLocations.coreLocations());
         var washrooms = new DBWashroomDataAccessObject(database);
-        washrooms.ensureCampusWashrooms(campusLocations);
         var reviews = new DBReviewDataAccessObject(database);
-        reviews.ensureCampusReviews(washrooms.getAll());
+        reviews.ensureJsonReviews(jsonWashrooms(washrooms));
         var users = new DBUserDataAccessObject(database);
         var reports = new DBStatusReportDataAccessObject(database);
         var routes = new GraphhopperRouteDataAccessObject(graphhopperKey);
@@ -251,14 +253,14 @@ public final class AppBuilder {
     }
     private static void refreshMainWashrooms(DBWashroomDataAccessObject washrooms, MainView main,
                                              WashroomListViewModel listModel, double originLat, double originLng) {
-        List<Washroom> availableWashrooms = washrooms.getAll();
+        List<Washroom> availableWashrooms = jsonWashrooms(washrooms);
         main.setWashrooms(availableWashrooms);
         List<WashroomListViewModel.Item> items = availableWashrooms.stream().map(w ->
-                new WashroomListViewModel.Item(w.id(), listName(w), w.reviewSummary().averageRating(),
+                new WashroomListViewModel.Item(w.id(), w.building().name(), listDescription(w), w.reviewSummary().averageRating(),
                         (int) Math.round(distance(originLat, originLng, w.building().latitude(), w.building().longitude())),
                         w.accessible())).toList();
         String selectedId = main.selectedId().isBlank() && !items.isEmpty() ? items.getFirst().id() : main.selectedId();
-        listModel.setState(new WashroomListViewModel.State(items, selectedId, "Sort by: Nearest", false));
+        listModel.setState(new WashroomListViewModel.State(items, selectedId, "Alphabetical", false));
     }
 
     private static Optional<Washroom> selected(DBWashroomDataAccessObject washrooms, MainView main) {
@@ -269,14 +271,31 @@ public final class AppBuilder {
         JOptionPane.showMessageDialog(parent, "The database does not contain a selectable washroom.", "No washrooms", JOptionPane.WARNING_MESSAGE);
     }
 
-    private static String listName(Washroom washroom) {
-        return switch (washroom.building().code()) {
-            case "BA" -> "Bahen Centre";
-            case "MY" -> "Myhal Centre";
-            case "TC" -> "Trinity College";
-            case "HH" -> "Hart House";
-            default -> washroom.name();
-        };
+    private static String listDescription(Washroom washroom) {
+        String name = washroom.name();
+        int separator = name.indexOf('|');
+        String description = separator >= 0 ? name.substring(separator + 1) : name;
+        return description.replaceAll("(?i)\\bwashrooms?\\b", "")
+                .replaceAll("\\s{2,}", " ")
+                .trim();
+    }
+
+    private static Set<String> loadJsonWashroomNames() {
+        InputStream input = AppBuilder.class.getResourceAsStream("/data/washrooms.json");
+        if (input == null) throw new IllegalStateException("Missing data/washrooms.json resource.");
+        try (input; JsonReader reader = Json.createReader(input)) {
+            return Set.copyOf(reader.readArray().stream()
+                    .map(value -> ((JsonObject) value).getString("name"))
+                    .toList());
+        } catch (Exception failure) {
+            throw new IllegalStateException("Could not load data/washrooms.json.", failure);
+        }
+    }
+
+    private static List<Washroom> jsonWashrooms(DBWashroomDataAccessObject washrooms) {
+        return washrooms.getAll().stream()
+                .filter(washroom -> JSON_WASHROOM_NAMES.contains(washroom.name()))
+                .toList();
     }
 
     private static String requiredEnvironment(String name) {

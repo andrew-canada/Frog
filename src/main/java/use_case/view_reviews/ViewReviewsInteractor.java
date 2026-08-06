@@ -43,10 +43,18 @@ public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
                 .map(r -> new ViewReviewsOutputData.ReviewDisplay(r.id(), r.rating(), r.comment(), r.helpfulCount(),
                         r.createdAt(), r.authorUsername(), votes.hasVoted(r.id(), input.username()),
                         reports.hasReported(r.id(), input.username()))).toList();
-        presenter.present(new ViewReviewsOutputData(washroom.id(), washroom.name(),
-                washroom.gender().name().replace('_', '-').toLowerCase() + (washroom.accessible() ? " · accessible" : ""),
+        presenter.present(new ViewReviewsOutputData(washroom.id(), washroom.building().name(), displayDescription(washroom),
                 summary.averageRating(), summary.averageCleanliness(), summary.reviewCount(),
                 washroom.numToilets(), washroom.numSinks(), display));
+    }
+
+    private static String displayDescription(Washroom washroom) {
+        String name = washroom.name();
+        int separator = name.indexOf('|');
+        String description = separator >= 0 ? name.substring(separator + 1) : name;
+        return description.replaceAll("(?i)\\bwashrooms?\\b", "")
+                .replaceAll("\\s{2,}", " ")
+                .trim();
     }
 
     /** Ranking score: helpfulness (log) + recency (exponential decay). */

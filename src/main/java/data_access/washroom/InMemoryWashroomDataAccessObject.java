@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Comparator;
 
 public final class InMemoryWashroomDataAccessObject {
     private final Map<String, Washroom> washrooms = new LinkedHashMap<>();
@@ -29,6 +30,13 @@ public final class InMemoryWashroomDataAccessObject {
 
     public void add(Washroom washroom) {
         washrooms.put(washroom.id(), washroom);
+        List<Washroom> ordered = washrooms.values().stream()
+                .sorted(Comparator.comparing((Washroom value) -> value.building().name(), String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Washroom::name, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Washroom::id))
+                .toList();
+        washrooms.clear();
+        ordered.forEach(value -> washrooms.put(value.id(), value));
     }
 
     public Optional<Washroom> getById(String id) {
