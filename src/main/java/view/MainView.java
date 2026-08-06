@@ -3,6 +3,8 @@ package view;
 import entity.GeoPoint;
 import entity.Washroom;
 import interface_adapter.directions.MapViewModel;
+import interface_adapter.filter.FilterController;
+import interface_adapter.filter.FilterViewModel;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
@@ -25,8 +27,11 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.*;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Filter;
 
 public final class MainView extends JPanel {
     private final JPanel list = new JPanel();
@@ -36,6 +41,7 @@ public final class MainView extends JPanel {
     private JButton moderatorNav;
     private String selectedId = "";
     private List<WashroomListViewModel.Item> renderedItems = List.of();
+    private FilterController filterController;
 
     private Consumer<String> onReviews = id -> {
     };
@@ -60,7 +66,7 @@ public final class MainView extends JPanel {
     };
     private double latitude = 43.6629, longitude = -79.3957;
 
-    public MainView(WashroomListViewModel washrooms, MapViewModel route) {
+    public MainView(WashroomListViewModel washrooms, MapViewModel route, FilterViewModel filter) {
         setLayout(new BorderLayout());
         setBackground(Theme.PAPER);
         add(header(), BorderLayout.NORTH);
@@ -74,11 +80,19 @@ public final class MainView extends JPanel {
         route.addPropertyChangeListener(e -> {
             MapViewModel.State s = route.getState();
             if (s.success()) {
+
                 routeLabel.setText("<html><b>" + s.distance() + "</b> · about " + s.duration() + " walk · live GraphHopper route</html>");
                 map.setRoute(s.points());
             } else {
                 routeLabel.setText(s.message());
                 map.clearRoute();
+            }
+        });
+        filter.addPropertyChangeListener(e ->
+        {
+            FilterViewModel.State s = filter.getState();
+            if(!s.success()) {
+                JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(this), s.message());
             }
         });
     }
@@ -105,7 +119,7 @@ public final class MainView extends JPanel {
         return b;
     }
 
-    private JComponent sidebar(WashroomListViewModel washrooms) {
+    private JComponent sidebar() {
         JPanel p = new JPanel(new BorderLayout(0, 10));
         p.setPreferredSize(new Dimension(290, 0));
         p.setBackground(Theme.PAPER);
@@ -116,29 +130,7 @@ public final class MainView extends JPanel {
         controls.add(location);
         controls.add(filters);
         controls.add(new JLabel("Sort by:"));
-        SortDropdownControl sortDropdownControl = new SortDropdownControl();
-        sortDropdownControl.addActionListener(e -> {
-            JComboBox<String> cb = (JComboBox<String>) e.getSource();
-            String selected = (String) cb.getSelectedItem();
-            System.out.println(selected);
-            WashroomListViewModel.State currState = washrooms.getState();
-            washrooms.setState(new WashroomListViewModel.State(
-                    currState.items(),
-                    currState.selectedId(),
-                    sortDropdownControl.getSelectedItem().toString(),
-                    currState.routeVisible()));
-            Comparator<WashroomListViewModel.Item> comparator;
-            if (sortDropdownControl.getSelectedItem().toString().equals("Highest rated")) {
-                comparator = WashroomListViewModel.Item.BY_RATING;
-            } else {
-                comparator = WashroomListViewModel.Item.BY_DISTANCE;
-
-            }
-            ArrayList<WashroomListViewModel.Item> sortedWashroom = new ArrayList<>(washrooms.getState().items());
-            sortedWashroom.sort(comparator);
-            renderList(sortedWashroom);
-        });
-        controls.add(sortDropdownControl);
+        controls.add(new SortDropdownControl());
         p.add(controls, BorderLayout.NORTH);
         location.addActionListener(e -> new LocationInputDialog(SwingUtilities.getWindowAncestor(this), addressLookup, (lat, lng) -> {
             latitude = lat;
@@ -146,8 +138,7 @@ public final class MainView extends JPanel {
             map.setOrigin(new GeoPoint(lat, lng));
             routeLabel.setText("Location updated — choose directions");
         }).setVisible(true));
-
-        filters.addActionListener(e -> JOptionPane.showMessageDialog(this, new FilterPanel(), "Filters", JOptionPane.PLAIN_MESSAGE));
+        filters.addActionListener(e -> new FilterView(SwingUtilities.getWindowAncestor(this), "Filter", selectedId(), filterController, latitude, longitude).setVisible(true));
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
         list.setBackground(Theme.PAPER);
         JScrollPane scroll = new JScrollPane(list);
@@ -299,6 +290,8 @@ public final class MainView extends JPanel {
     public void setOnModerator(Runnable r) {
         onModerator = r;
     }
+
+    public void setFilterController(FilterController f) {filterController = f;}
 
     /**
      * Reflects the number of reported reviews awaiting moderation on the Moderator nav button:

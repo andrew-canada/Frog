@@ -2,7 +2,6 @@ package interface_adapter.view_reviews;
 
 import interface_adapter.common.ViewModel;
 
-import java.util.Comparator;
 import java.util.List;
 
 public final class WashroomListViewModel extends ViewModel<WashroomListViewModel.State> {

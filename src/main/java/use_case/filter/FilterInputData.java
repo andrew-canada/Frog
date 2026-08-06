@@ -10,7 +10,9 @@ public record FilterInputData(
         float minCleanliness,
         float maxCleanliness,
         boolean accessible,
-        List<String> genders,
-        Building building,
-        boolean ownReviews) {
+        String gender,
+        String washroomID,
+        boolean ownReviews,
+        double latitude,
+        double longitude) {
 };

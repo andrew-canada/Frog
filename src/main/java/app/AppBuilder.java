@@ -20,6 +20,9 @@ import interface_adapter.account.personal_plan.PersonalPlanController;
 import interface_adapter.account.personal_plan.PersonalPlanPresenter;
 import interface_adapter.busyness.*;
 import interface_adapter.directions.*;
+import interface_adapter.filter.FilterController;
+import interface_adapter.filter.FilterPresenter;
+import interface_adapter.filter.FilterViewModel;
 import interface_adapter.login.*;
 import interface_adapter.recommend.*;
 import interface_adapter.status_report.*;
@@ -34,6 +37,7 @@ import use_case.account.delete_account.DeleteAccountInteractor;
 import use_case.account.personal_plan.PersonalPlanInteractor;
 import use_case.busyness.BusynessStatsInteractor;
 import use_case.directions.GetDirectionsInteractor;
+import use_case.filter.FilterInteractor;
 import use_case.login.LoginInteractor;
 import use_case.recommend.RecommendWashroomInteractor;
 import use_case.signup.SignupInteractor;
@@ -113,6 +117,7 @@ public final class AppBuilder {
         var mapModel = new MapViewModel();
         var reportReviewModel = new ReportReviewViewModel();
         var moderateModel = new ModerateReviewsViewModel();
+        var filterModel = new FilterViewModel();
 
         var reviewController = new ViewReviewsController(new ViewReviewsInteractor(reviews, washrooms, reviews, reviews, new ViewReviewsPresenter(reviewsModel)));
         var writeReviewController=new WriteReviewController(new WriteReviewInteractor(reviews,new WriteReviewPresenter(writeReviewModel)));
@@ -130,6 +135,7 @@ public final class AppBuilder {
         var changePasswordController = new ChangePasswordController(new ChangePasswordInteractor(users, new ChangePasswordPresenter(accountModel)));
         var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel)));
         var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
+        var filterController = new FilterController(new FilterInteractor(washrooms, reviews, users, new FilterPresenter(filterModel, listModel, mapModel)));
 
         JFrame frame = new JFrame("FlushID — U of T washroom finder");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -143,7 +149,7 @@ public final class AppBuilder {
         });
         CardLayout layout = new CardLayout();
         JPanel cards = new JPanel(layout);
-        MainView main = new MainView(listModel, mapModel);
+        MainView main = new MainView(listModel, mapModel, filterModel);
         main.setAddressLookup(geocoding::lookup);
         double originLat=43.6629,originLng=-79.3957;
 
@@ -202,6 +208,7 @@ public final class AppBuilder {
                 },
                 () -> noWashroom(frame)
         ));
+        main.setFilterController(filterController);
 
         readReviews.setOnBack(showMain);
 
