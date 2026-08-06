@@ -1,5 +1,5 @@
+import data_access.washroom.WashroomDataAccessInterface;
 import entity.*;
-import use_case.gateway.*;
 import use_case.view_reviews.*;
 
 import java.time.LocalDate;
@@ -44,7 +44,19 @@ final class ViewReviewsInteractorTest {
                 throw new AssertionError(m);
             }
         };
-        new ViewReviewsInteractor(reviews, washrooms, output).execute(new ViewReviewsInputData("w1"));
+        use_case.vote_helpful.HelpfulVoteDataAccessInterface votes = new use_case.vote_helpful.HelpfulVoteDataAccessInterface() {
+            public boolean hasVoted(String r, String u) { return false; }
+            public void addVote(String r, String u) { }
+            public void removeVote(String r, String u) { }
+        };
+        use_case.report_review.ReviewReportDataAccessInterface reports = new use_case.report_review.ReviewReportDataAccessInterface() {
+            public void save(Report report) { }
+            public boolean hasReported(String r, String u) { return false; }
+
+        };
+        new ViewReviewsInteractor(reviews, washrooms, votes, reports, output).execute(new ViewReviewsInputData("w1", "tester"));
+        TestSupport.check(result[0].washroomName().equals("Bahen"), "building name");
+        TestSupport.check(result[0].subtitle().equals("Test"), "cleaned description");
         TestSupport.check(result[0].reviewCount() == 2, "summary count");
         TestSupport.check(result[0].reviews().get(0).helpfulCount() == 9, "most helpful first");
     }

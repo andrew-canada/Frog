@@ -7,12 +7,13 @@ import java.util.List;
 
 public final class WashroomListViewModel extends ViewModel<WashroomListViewModel.State> {
     public WashroomListViewModel() {
-        super(new State(List.of(), null, "Sort by: Nearest", false));
+        super(new State(List.of(), null, "Alphabetical", false));
     }
 
-    public record Item(String id, String name, double rating, int distanceMeters, boolean accessible) {
-        public static final Comparator<Item> BY_DISTANCE = Comparator.comparing(Item::distanceMeters);
-        public static final Comparator<Item> BY_RATING = Comparator.comparing(Item::rating);
+    public record Item(String id, String name, String description, double rating, int distanceMeters, boolean accessible) {
+        public Item(String id, String name, double rating, int distanceMeters, boolean accessible) {
+            this(id, name, "", rating, distanceMeters, accessible);
+        }
     }
 
     public record State(List<Item> items, String selectedId, String sortLabel, boolean routeVisible) {

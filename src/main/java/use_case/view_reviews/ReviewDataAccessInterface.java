@@ -11,4 +11,7 @@ public interface ReviewDataAccessInterface {
     ReviewSummary getSummary(String washroomId);
 
     List<Review> getReviewsByUser(String username);
+    default void save(Review review) {
+        throw new UnsupportedOperationException("This review repository is read-only.");
+    }
 }

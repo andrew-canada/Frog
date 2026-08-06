@@ -3,8 +3,8 @@ package use_case.directions;
 import entity.GeoPoint;
 import entity.Route;
 import entity.Washroom;
-import use_case.gateway.RouteDataAccessInterface;
-import use_case.gateway.WashroomDataAccessInterface;
+import data_access.route.RouteDataAccessInterface;
+import data_access.washroom.WashroomDataAccessInterface;
 
 import java.util.List;
 

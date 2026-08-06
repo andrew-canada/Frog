@@ -1,6 +1,7 @@
+import data_access.enrollment.EnrollmentDataAccessInterface;
+import data_access.status.StatusReportDataAccessInterface;
 import entity.*;
 import use_case.busyness.*;
-import use_case.gateway.*;
 
 import java.time.*;
 import java.util.*;
@@ -16,13 +17,16 @@ final class BusynessStatsInteractorTest {
             }
 
             public List<StatusReport> getForWashroom(String id, LocalDateTime f, LocalDateTime t) {
-                return List.of();
+                return List.of(
+                        new StatusReport(id, "older", 1, 5, MaintenanceIssue.NONE, LocalDateTime.of(2026, 8, 4, 9, 0)),
+                        new StatusReport(id, "newer", 5, 2, MaintenanceIssue.NONE, LocalDateTime.of(2026, 8, 5, 9, 0)));
             }
         };
         EnrollmentDataAccessInterface enrollment = (code, day) -> List.of(new EnrollmentMeeting(9, 11, 300));
         final BusynessStatsOutputData[] out = new BusynessStatsOutputData[1];
         new BusynessStatsInteractor(reports, enrollment, d -> out[0] = d).execute(new BusynessStatsInputData("w1", "BA", DayOfWeek.THURSDAY));
-        TestSupport.check(out[0].buckets().size() == 13, "hourly buckets");
-        TestSupport.check(out[0].buckets().get(1).busynessLevel() > out[0].buckets().get(0).busynessLevel(), "enrollment raises predicted traffic");
+        TestSupport.check(out[0].buckets().size() == 24, "hourly buckets");
+        TestSupport.check(out[0].buckets().get(9).busynessLevel() == 5, "latest report sets busyness");
+        TestSupport.check(out[0].buckets().get(9).cleanlinessLevel() == 2, "latest report sets cleanliness");
     }
 }

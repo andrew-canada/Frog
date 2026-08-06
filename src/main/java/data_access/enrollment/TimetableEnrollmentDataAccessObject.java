@@ -1,7 +1,6 @@
 package data_access.enrollment;
 
 import entity.EnrollmentMeeting;
-import use_case.gateway.EnrollmentDataAccessInterface;
 
 import java.time.DayOfWeek;
 import java.util.List;
