@@ -31,9 +31,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.logging.Filter;
 
 public final class MainView extends JPanel {
+    /** Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies. */
+    private static final Color MAP_LOW = Theme.COLORBLIND_BLUE;
+    private static final Color MAP_HIGH = Theme.COLORBLIND_ORANGE;
     private final JPanel list = new JPanel();
     private final JLabel routeLabel = Theme.label("Select a washroom to explore", 13, Theme.MUTED);
     private final JLabel heatmapLegend = Theme.label("", 11, Theme.MUTED);
@@ -100,7 +102,7 @@ public final class MainView extends JPanel {
             if(!s.success()) {
                 JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(this), s.message());
             } else {
-                map.setWashrooms(filter.getState().washrooms());
+                map.setWashrooms(s.washrooms());
             }
         });
     }
@@ -132,35 +134,36 @@ public final class MainView extends JPanel {
         p.setPreferredSize(new Dimension(290, 0));
         p.setBackground(Theme.PAPER);
         p.setBorder(Theme.pad(14, 18, 14, 12));
-        JPanel controls = new JPanel(new GridLayout(2, 2, 8, 8));
+        JPanel controls = new JPanel(new GridLayout(3, 2, 8, 8));
         controls.setOpaque(false);
         JButton location = Theme.button("Location"), filters = Theme.button("Filters");
+        JButton clear = Theme.button("Clear Filters");
         controls.add(location);
         controls.add(filters);
+        controls.add(new JLabel());
+        controls.add(clear);
         controls.add(new JLabel("Sort by:"));
-        SortDropdownControl sortDropdownControl = new SortDropdownControl();
-        sortDropdownControl.addActionListener(e -> {
-            JComboBox<String> cb = (JComboBox<String>) e.getSource();
-            String selected = (String) cb.getSelectedItem();
-            System.out.println(selected);
+        WashroomSortDropdownControl washroomSortDropdownControl = new WashroomSortDropdownControl();
+        washroomSortDropdownControl.addActionListener(e -> {
             WashroomListViewModel.State currState = washrooms.getState();
             washrooms.setState(new WashroomListViewModel.State(
                     currState.items(),
                     currState.selectedId(),
-                    sortDropdownControl.getSelectedItem().toString(),
+                    washroomSortDropdownControl.getSelectedItem().toString(),
                     currState.routeVisible()));
             Comparator<WashroomListViewModel.Item> comparator;
-            if (sortDropdownControl.getSelectedItem().toString().equals("Highest rated")) {
+            if (washroomSortDropdownControl.getSelectedItem().toString().equals("Highest Rated")) {
                 comparator = WashroomListViewModel.Item.BY_RATING;
-            } else {
+            } else if (washroomSortDropdownControl.getSelectedItem().toString().equals("Nearest")){
                 comparator = WashroomListViewModel.Item.BY_DISTANCE;
-
+            } else {
+                comparator = WashroomListViewModel.Item.BY_ALPHABETICAL;
             }
             ArrayList<WashroomListViewModel.Item> sortedWashroom = new ArrayList<>(washrooms.getState().items());
             sortedWashroom.sort(comparator);
             renderList(sortedWashroom);
         });
-        controls.add(sortDropdownControl);
+        controls.add(washroomSortDropdownControl);
         p.add(controls, BorderLayout.NORTH);
         location.addActionListener(e -> new LocationInputDialog(SwingUtilities.getWindowAncestor(this), addressLookup, (lat, lng) -> {
             latitude = lat;
@@ -169,6 +172,7 @@ public final class MainView extends JPanel {
             routeLabel.setText("Location updated — choose directions");
         }).setVisible(true));
         filters.addActionListener(e -> new FilterView(SwingUtilities.getWindowAncestor(this), "Filter", selectedId(), filterController, latitude, longitude).setVisible(true));
+        clear.addActionListener(e -> filterController.execute(5, 1, false, false, false, selectedId(), null, latitude, longitude));
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
         list.setBackground(Theme.PAPER);
         JScrollPane scroll = new JScrollPane(list);
@@ -224,11 +228,11 @@ public final class MainView extends JPanel {
         busynessHeatmap.setText("Busyness heatmap" + (busynessHeatmapVisible ? " (On)" : ""));
         cleanlinessHeatmap.setText("Cleanliness heatmap" + (cleanlinessHeatmapVisible ? " (On)" : ""));
         if (busynessHeatmapVisible && cleanlinessHeatmapVisible) {
-            heatmapLegend.setText("Heatmap: busyness outer glow · cleanliness inner glow · blue = lower · berry = higher · gray = no data");
+            heatmapLegend.setText("Heatmap: busyness outer glow · cleanliness inner glow · blue = lower · orange = higher · gray = no data");
         } else if (busynessHeatmapVisible) {
-            heatmapLegend.setText("Busyness heatmap: blue = less busy · berry = more busy · gray = no data");
+            heatmapLegend.setText("Busyness heatmap: blue = less busy · orange = more busy · gray = no data");
         } else if (cleanlinessHeatmapVisible) {
-            heatmapLegend.setText("Cleanliness heatmap: blue = lower · berry = higher · gray = no data");
+            heatmapLegend.setText("Cleanliness heatmap: blue = lower · orange = higher · gray = no data");
         }
         heatmapLegend.setVisible(busynessHeatmapVisible || cleanlinessHeatmapVisible);
         map.setHeatmapVisibility(busynessHeatmapVisible, cleanlinessHeatmapVisible);
@@ -520,14 +524,14 @@ public final class MainView extends JPanel {
             Map<GeoPoint, List<Washroom>> washroomsByLocation = washroomsByLocation();
             drawHeatmaps(canvas, map, washroomsByLocation);
             drawRoute(canvas, map);
-            drawPoint(canvas, map, viewport, origin, "You", Theme.BLUE, "", "", false);
+            drawPoint(canvas, map, viewport, origin, "You", MAP_LOW, "", "", false);
             for (List<Washroom> washroomsAtLocation : washroomsByLocation.values()) {
                 Washroom representative = washroomsAtLocation.getFirst();
                 boolean selected = washroomsAtLocation.stream()
                         .anyMatch(washroom -> washroom.id().equals(selectedWashroomId));
                 drawPoint(canvas, map, viewport,
                         new GeoPoint(representative.building().latitude(), representative.building().longitude()),
-                        representative.building().name(), selected ? Theme.BLUE : Theme.BERRY,
+                        representative.building().name(), selected ? MAP_LOW : MAP_HIGH,
                         representative.building().code(), representative.id(), selected);
             }
             canvas.dispose();
@@ -583,12 +587,12 @@ public final class MainView extends JPanel {
         }
 
         private static Color heatColor(double value) {
-            if (Double.isNaN(value)) return new Color(130, 130, 130);
+            if (Double.isNaN(value)) return Theme.NO_DATA;
             double progress = Math.max(0, Math.min(1, (value - 1) / 4));
             return new Color(
-                    (int) Math.round(Theme.BLUE.getRed() + (Theme.BERRY.getRed() - Theme.BLUE.getRed()) * progress),
-                    (int) Math.round(Theme.BLUE.getGreen() + (Theme.BERRY.getGreen() - Theme.BLUE.getGreen()) * progress),
-                    (int) Math.round(Theme.BLUE.getBlue() + (Theme.BERRY.getBlue() - Theme.BLUE.getBlue()) * progress));
+                    (int) Math.round(MAP_LOW.getRed() + (MAP_HIGH.getRed() - MAP_LOW.getRed()) * progress),
+                    (int) Math.round(MAP_LOW.getGreen() + (MAP_HIGH.getGreen() - MAP_LOW.getGreen()) * progress),
+                    (int) Math.round(MAP_LOW.getBlue() + (MAP_HIGH.getBlue() - MAP_LOW.getBlue()) * progress));
         }
 
         private static Color withAlpha(Color color, int alpha) {
@@ -606,7 +610,7 @@ public final class MainView extends JPanel {
             canvas.setColor(new Color(255, 255, 255, 210));
             canvas.setStroke(new BasicStroke(9, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             canvas.draw(path);
-            canvas.setColor(new Color(42, 119, 205));
+            canvas.setColor(MAP_LOW);
             canvas.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             canvas.draw(path);
         }

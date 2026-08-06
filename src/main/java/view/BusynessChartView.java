@@ -43,7 +43,7 @@ public final class BusynessChartView extends JPanel {
             cleanlinessChart.data = model.getState().buckets();
             busynessChart.repaint();
             cleanlinessChart.repaint();
-            note.setText(model.getState().note() + " · blue = lower, berry = higher");
+            note.setText(model.getState().note() + " · blue = lower, orange = higher");
         });
     }
 
@@ -88,7 +88,7 @@ public final class BusynessChartView extends JPanel {
                 int h = (int) ((bottom - top) * (level / 5));
                 int px = left + i * (w + gap), py = bottom - h;
                 float t = (float) Math.max(0, Math.min(1, (level - 1) / 4));
-                x.setColor(blend(Theme.BLUE, Theme.BERRY, t));
+                x.setColor(blend(Theme.COLORBLIND_BLUE, Theme.COLORBLIND_ORANGE, t));
                 x.fillRoundRect(px, py, w, h, 10, 10);
                 x.setColor(Theme.MUTED);
                 if (i % 2 == 0) x.drawString(String.format("%d", b.hour()), px, bottom + 16);
