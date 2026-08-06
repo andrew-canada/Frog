@@ -119,7 +119,7 @@ public final class MainView extends JPanel {
         return b;
     }
 
-    private JComponent sidebar() {
+    private JComponent sidebar(WashroomListViewModel washrooms) {
         JPanel p = new JPanel(new BorderLayout(0, 10));
         p.setPreferredSize(new Dimension(290, 0));
         p.setBackground(Theme.PAPER);
@@ -130,7 +130,29 @@ public final class MainView extends JPanel {
         controls.add(location);
         controls.add(filters);
         controls.add(new JLabel("Sort by:"));
-        controls.add(new SortDropdownControl());
+        SortDropdownControl sortDropdownControl = new SortDropdownControl();
+        sortDropdownControl.addActionListener(e -> {
+            JComboBox<String> cb = (JComboBox<String>) e.getSource();
+            String selected = (String) cb.getSelectedItem();
+            System.out.println(selected);
+            WashroomListViewModel.State currState = washrooms.getState();
+            washrooms.setState(new WashroomListViewModel.State(
+                    currState.items(),
+                    currState.selectedId(),
+                    sortDropdownControl.getSelectedItem().toString(),
+                    currState.routeVisible()));
+            Comparator<WashroomListViewModel.Item> comparator;
+            if (sortDropdownControl.getSelectedItem().toString().equals("Highest rated")) {
+                comparator = WashroomListViewModel.Item.BY_RATING;
+            } else {
+                comparator = WashroomListViewModel.Item.BY_DISTANCE;
+
+            }
+            ArrayList<WashroomListViewModel.Item> sortedWashroom = new ArrayList<>(washrooms.getState().items());
+            sortedWashroom.sort(comparator);
+            renderList(sortedWashroom);
+        });
+        controls.add(sortDropdownControl);
         p.add(controls, BorderLayout.NORTH);
         location.addActionListener(e -> new LocationInputDialog(SwingUtilities.getWindowAncestor(this), addressLookup, (lat, lng) -> {
             latitude = lat;
