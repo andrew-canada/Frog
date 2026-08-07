@@ -1,5 +1,6 @@
 package use_case.view_reviews;
 
+import data_access.review.ReviewDataAccessInterface;
 import entity.Review;
 import entity.ReviewSummary;
 import entity.Washroom;

@@ -4,16 +4,12 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Indexes;
 import data_access.AbstractCondition;
-import data_access.Condition;
 import data_access.MongoDocuments;
-import entity.review.WashroomReview;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
 
 import entity.review.Review;
-import entity.review.WashroomReviewFactory;
-import entity.washroom.Washroom;
 import entity.Report;
 import data_access.DBDataAccessObject;
 import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
@@ -27,7 +23,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 public class DBReviewDataAccessObject extends DBDataAccessObject
-        implements use_case.view_reviews.ReviewDataAccessInterface,
+        implements ReviewDataAccessInterface,
         HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface, ReviewAdminDataAccessInterface, ReportedReviewsDataAccessInterface {
 
     static MongoCollection<Document> collection;

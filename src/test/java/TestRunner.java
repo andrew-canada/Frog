@@ -9,6 +9,7 @@ public final class TestRunner {
         run("GraphhopperRouteDataAccessObjectTest", GraphhopperRouteDataAccessObjectTest::run);
         run("GraphhopperGeocodingDataAccessObjectTest", GraphhopperGeocodingDataAccessObjectTest::run);
         run("UiSmokeTest", UiSmokeTest::run);
+        run("FilterInteractorTest", FilterInteractorTest::run);
         System.out.println("All 7 interactor tests, the GraphHopper adapter test, and the UI smoke test passed.");
     }
 

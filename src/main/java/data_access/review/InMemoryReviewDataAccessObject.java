@@ -7,7 +7,6 @@ import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
 import use_case.moderate_reviews.ReviewAdminDataAccessInterface;
 import use_case.moderate_reviews.ReportedReviewsDataAccessInterface;
 import use_case.report_review.ReviewReportDataAccessInterface;
-import use_case.view_reviews.ReviewDataAccessInterface;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
