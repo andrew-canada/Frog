@@ -14,9 +14,11 @@ import org.bson.conversions.Bson;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import use_case.moderate_reviews.ModeratorDataAccessInterface;
+
 import java.util.*;
 
-public class DBUserDataAccessObject extends DBDataAccessObject implements UserDataAccessInterface {
+public class DBUserDataAccessObject extends DBDataAccessObject implements UserDataAccessInterface, ModeratorDataAccessInterface {
 
     static final List<String> allowedAttributes = List.of(new String[]{
             "username", "passwordHash", "personalPlan"});
@@ -181,6 +183,11 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
     @Override
     public void save(entity.User user) {
         write(new LoggedInUser(user.username(), user.passwordHash(), List.of(), user.personalPlan(), user.isModerator()), null);
+    }
+
+    @Override
+    public boolean isModerator(String username) {
+        return get(username).map(entity.User::isModerator).orElse(false);
     }
 
     @Override
