@@ -428,6 +428,10 @@ public final class AppBuilder {
             if (SwingUtilities.isEventDispatchThread()) update.run();
             else SwingUtilities.invokeLater(update);
         });
+
+        // Gate the Moderator nav entry on the logged-in user's moderator status (hidden by default).
+        loggedInModel.addPropertyChangeListener(e ->
+                main.setModerator(loggedInModel.getState().moderator()));
         login.setOnBack(showMain);
         login.setOnSignup(() -> new SignupDialog(frame, signupController).setVisible(true));
         status.setOnCancel(showMain);

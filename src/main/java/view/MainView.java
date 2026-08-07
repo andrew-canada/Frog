@@ -130,6 +130,7 @@ public final class MainView extends JPanel {
         JPanel nav = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         nav.setOpaque(false);
         moderatorNav = nav("Moderator", () -> onModerator.run());
+        moderatorNav.setVisible(false); // hidden until a moderator logs in
         for (JButton b : new JButton[]{nav("Account", () -> onAccount.run()), nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), moderatorNav})
             nav.add(b);
         p.add(nav, BorderLayout.EAST);
@@ -145,8 +146,7 @@ public final class MainView extends JPanel {
         p.add(brand, BorderLayout.WEST);
         JPanel nav = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         nav.setOpaque(false);
-        moderatorNav = nav("Moderator", () -> onModerator.run());
-        for (JButton b : new JButton[]{nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), moderatorNav, nav("Login", () -> onLogin.run())})
+        for (JButton b : new JButton[]{nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), nav("Login", () -> onLogin.run())})
             nav.add(b);
         p.add(nav, BorderLayout.EAST);
         return p;
@@ -395,6 +395,13 @@ public final class MainView extends JPanel {
 
     public void setFilterController(FilterController f) {
         filterController = f;
+    }
+
+    /** Shows the Moderator nav entry only for a user with moderator privileges. */
+    public void setModerator(boolean isModerator) {
+        if (moderatorNav != null) {
+            moderatorNav.setVisible(isModerator);
+        }
     }
 
     /**
