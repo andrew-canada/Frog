@@ -286,6 +286,8 @@ public final class AppBuilder {
         var washrooms = new DBWashroomDataAccessObject(database);
         var reviews = new DBReviewDataAccessObject(database);
         var users = new DBUserDataAccessObject(database);
+        users.ensureModerator("frog");     // grant moderator to known accounts
+        users.ensureModerator("sheena_q");
         var reports = new DBStatusReportDataAccessObject(database);
         var routes = new GraphhopperRouteDataAccessObject(graphhopperKey);
         var geocoding = new GraphhopperGeocodingDataAccessObject(graphhopperKey);

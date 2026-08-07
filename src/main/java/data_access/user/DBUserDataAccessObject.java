@@ -190,6 +190,16 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
         return get(username).map(entity.User::isModerator).orElse(false);
     }
 
+    /**
+     * Grants moderator to an existing account. No-op if the account doesn't exist.
+     *
+     * @param username the account to promote to moderator
+     */
+    public void ensureModerator(String username) {
+        collection.updateOne(Filters.eq("username", username),
+                new Document("$set", new Document("isModerator", true)));
+    }
+
     @Override
     public Optional<entity.User> getCurrentUser() {
         return Optional.ofNullable(currentApplicationUser);
