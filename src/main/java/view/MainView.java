@@ -199,7 +199,7 @@ public final class MainView extends JPanel {
             longitude = lng;
             map.setOrigin(new GeoPoint(lat, lng));
             routeLabel.setText("Location updated — choose directions");
-        }).setVisible(true));
+        }, latitude, longitude).setVisible(true));
         filters.addActionListener(e -> new FilterView(SwingUtilities.getWindowAncestor(this), "Filter", selectedId(), filterController, latitude, longitude).setVisible(true));
         clear.addActionListener(e -> filterController.execute(5, 1, false, false, false, selectedId(), null, latitude, longitude));
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
