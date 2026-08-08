@@ -35,6 +35,7 @@ import interface_adapter.moderate_reviews.ModerateReviewsViewModel;
 import interface_adapter.report_review.ReportReviewController;
 import interface_adapter.report_review.ReportReviewPresenter;
 import interface_adapter.report_review.ReportReviewViewModel;
+import interface_adapter.sort_washrooms.SortWashroomViewModel;
 import interface_adapter.status_report.StatusReportController;
 import interface_adapter.status_report.StatusReportPresenter;
 import interface_adapter.status_report.StatusReportViewModel;
@@ -306,6 +307,7 @@ public final class AppBuilder {
         var reportReviewModel = new ReportReviewViewModel();
         var moderateModel = new ModerateReviewsViewModel();
         var filterModel = new FilterViewModel();
+        var sortWashroomViewModel = new SortWashroomViewModel();
 
         var reviewController = new ViewReviewsController(new ViewReviewsInteractor(reviews, washrooms, reviews, reviews, new ViewReviewsPresenter(reviewsModel)));
         var writeReviewController = new WriteReviewController(new WriteReviewInteractor(reviews, new WriteReviewPresenter(writeReviewModel)));

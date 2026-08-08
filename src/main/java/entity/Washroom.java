@@ -2,7 +2,7 @@ package entity;
 
 import java.util.Objects;
 
-public final class Washroom implements entity.washroom.Washroom {
+public final class Washroom{
     private final String id;
     private final String name;
     private final Building building;
@@ -54,11 +54,6 @@ public final class Washroom implements entity.washroom.Washroom {
         return floor;
     }
 
-    @Override
-    public String getFloor() {
-        return floor;
-    }
-
     public boolean accessible() {
         return accessible;
     }
@@ -88,4 +83,5 @@ public final class Washroom implements entity.washroom.Washroom {
     }
 
     public enum Gender {ALL_GENDER, WOMEN, MEN}
+
 }

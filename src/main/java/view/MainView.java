@@ -7,6 +7,7 @@ import interface_adapter.account.IsLoggedInViewModel;
 import interface_adapter.directions.MapViewModel;
 import interface_adapter.filter.FilterController;
 import interface_adapter.filter.FilterViewModel;
+import interface_adapter.sort_washrooms.SortWashroomController;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
@@ -52,6 +53,7 @@ public final class MainView extends JPanel {
     private String selectedId = "";
     private List<WashroomListViewModel.Item> renderedItems = List.of();
     private FilterController filterController;
+    private SortWashroomController sortWashroomController;
 
     private Consumer<String> onReviews = id -> {
     };
@@ -174,23 +176,10 @@ public final class MainView extends JPanel {
         controls.add(new JLabel("Sort by:"));
         WashroomSortDropdownControl washroomSortDropdownControl = new WashroomSortDropdownControl();
         washroomSortDropdownControl.addActionListener(e -> {
-            WashroomListViewModel.State currState = washrooms.getState();
-            washrooms.setState(new WashroomListViewModel.State(
-                    currState.items(),
-                    currState.selectedId(),
-                    washroomSortDropdownControl.getSelectedItem().toString(),
-                    currState.routeVisible()));
-            Comparator<WashroomListViewModel.Item> comparator;
-            if (washroomSortDropdownControl.getSelectedItem().toString().equals("Highest Rated")) {
-                comparator = WashroomListViewModel.Item.BY_RATING;
-            } else if (washroomSortDropdownControl.getSelectedItem().toString().equals("Nearest")) {
-                comparator = WashroomListViewModel.Item.BY_DISTANCE;
-            } else {
-                comparator = WashroomListViewModel.Item.BY_ALPHABETICAL;
-            }
-            ArrayList<WashroomListViewModel.Item> sortedWashroom = new ArrayList<>(washrooms.getState().items());
-            sortedWashroom.sort(comparator);
-            renderList(sortedWashroom);
+           sortWashroomController.execute(
+                   washroomSortDropdownControl.getSelectedItem().toString(),
+                   latitude,
+                   longitude);
         });
         controls.add(washroomSortDropdownControl);
         p.add(controls, BorderLayout.NORTH);
