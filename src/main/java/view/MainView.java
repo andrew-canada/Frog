@@ -22,13 +22,13 @@ import org.jxmapviewer.viewer.TileFactoryInfo;
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.*;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -194,12 +194,14 @@ public final class MainView extends JPanel {
         });
         controls.add(washroomSortDropdownControl);
         p.add(controls, BorderLayout.NORTH);
+
+        MapClicker mapClicker = new MapClicker(map);
         location.addActionListener(e -> new LocationInputDialog(SwingUtilities.getWindowAncestor(this), addressLookup, (lat, lng) -> {
             latitude = lat;
             longitude = lng;
             map.setOrigin(new GeoPoint(lat, lng));
             routeLabel.setText("Location updated — choose directions");
-        }, latitude, longitude).setVisible(true));
+        }, latitude, longitude, mapClicker).setVisible(true));
         filters.addActionListener(e -> new FilterView(SwingUtilities.getWindowAncestor(this), "Filter", selectedId(), filterController, latitude, longitude).setVisible(true));
         clear.addActionListener(e -> filterController.execute(5, 1, false, false, false, selectedId(), null, latitude, longitude));
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
@@ -454,7 +456,7 @@ public final class MainView extends JPanel {
         }
     }
 
-    private static final class CampusMapPanel extends JPanel {
+    static final class CampusMapPanel extends JPanel {
         private final JXMapViewer viewer;
         private final Map<String, Rectangle> markerHitTargets = new HashMap<>();
         private List<GeoPoint> route = List.of();
@@ -717,6 +719,19 @@ public final class MainView extends JPanel {
             Set<GeoPosition> positions = new HashSet<>();
             for (GeoPoint point : route) positions.add(toPosition(point));
             viewer.zoomToBestFit(positions, .82);
+        }
+
+        public void addMouseListener(MouseListener m) {
+            System.out.println("added mouselistener");
+            viewer.addMouseListener(m);
+        }
+
+        public void removeMouseListener(MouseListener m) {
+            viewer.removeMouseListener(m);
+        }
+
+        public GeoPosition convertPointToGeoPosition(Point2D pt) {
+            return viewer.convertPointToGeoPosition(pt);
         }
     }
 }

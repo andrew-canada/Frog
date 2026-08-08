@@ -1,9 +1,11 @@
 package view;
 
 import entity.GeoPoint;
+import org.jxmapviewer.input.MapClickListener;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -14,7 +16,7 @@ public final class LocationInputDialog extends JDialog {
     private final Function<String, GeoPoint> addressLookup;
     private final BiConsumer<Double, Double> onSave;
 
-    public LocationInputDialog(Window owner, Function<String, GeoPoint> addressLookup, BiConsumer<Double, Double> onSave, Double currLat, Double currLong) {
+    public LocationInputDialog(Window owner, Function<String, GeoPoint> addressLookup, BiConsumer<Double, Double> onSave, Double currLat, Double currLong, MapClicker mapClicker) {
         super(owner, "Set your location", ModalityType.APPLICATION_MODAL);
         this.addressLookup = addressLookup;
         this.onSave = onSave;
@@ -35,9 +37,17 @@ public final class LocationInputDialog extends JDialog {
         latitude = new JTextField(currLat.toString(), 10);
         longitude = new JTextField(currLong.toString(), 10);
         p.add(address, c);
+        c.gridx = 0;
+        c.gridy++;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        mapClicker.addOnSave(onSave);
+        mapClicker.addFrame(this);
+        JButton clickLocation = Theme.primary("Right click on map to select location");
+        clickLocation.addActionListener(mapClicker);
+        p.add(clickLocation, c);
         JButton useAddress = Theme.primary("Use address");
         c.gridx = 1;
-        c.gridy++;
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.NONE;
         p.add(useAddress, c);
