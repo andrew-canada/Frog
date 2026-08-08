@@ -40,7 +40,7 @@ public class SortWashroomInteractor implements SortWashroomsInputBoundary{
         } else {
             comparator = Comparator.comparing(
                     (entity.Washroom washroom) ->
-                            washroom.reviewSummary().averageRating()).reversed();
+                            washroom.name().toString());
         }
         ArrayList<Washroom> sortedWashroom = new ArrayList<>(washroomDAO.getAll());
         sortedWashroom.sort(comparator);

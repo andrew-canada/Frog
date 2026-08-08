@@ -4,6 +4,7 @@ import entity.Washroom;
 import interface_adapter.filter.FilterViewModel;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import use_case.filter.FilterOutputBoundary;
+import use_case.filter.FilterOutputData;
 import use_case.sort_washrooms.SortWashroomsOutputBoundary;
 import use_case.sort_washrooms.SortWashroomsOutputData;
 
@@ -11,16 +12,31 @@ import javax.swing.*;
 import java.util.List;
 
 public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
-    private final SortWashroomViewModel viewModel;
+    private final WashroomListViewModel listModel;
+    private final SortWashroomViewModel sortModel;
 
-    public SortWashroomPresenter(SortWashroomViewModel viewModel){
-        this.viewModel = viewModel;
+    public SortWashroomPresenter(WashroomListViewModel listModel,
+                                 SortWashroomViewModel sortModel){
+        this.listModel = listModel;
+        this.sortModel = sortModel;
     }
+
 
     private static double distance(double a, double b, double c, double d) {
         double x = Math.toRadians(d - b) * Math.cos(Math.toRadians((a + c) / 2));
         double y = Math.toRadians(c - a);
         return Math.sqrt(x * x + y * y) * 6_371_000;
+    }
+
+    /**
+     * Keeps filtered cards consistent with the initial washroom-list display.
+     */
+    private static String listDescription(String washroomName) {
+        int separator = washroomName.indexOf('|');
+        String description = separator >= 0 ? washroomName.substring(separator + 1) : washroomName;
+        return description.replaceAll("(?i)\\bwashrooms?\\b", "")
+                .replaceAll("\\s{2,}", " ")
+                .trim();
     }
 
     @Override
@@ -29,7 +45,7 @@ public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
                 washroom -> new WashroomListViewModel.Item(
                         washroom.id(),
                         washroom.building().name(),
-                        washroom.locationDescription(),
+                        listDescription(washroom.name()),
                         washroom.reviewSummary().averageRating(),
                         (int) Math.round(distance(
                                 outputData.latitude(),
@@ -38,9 +54,21 @@ public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
                                 washroom.building().longitude())),
                         washroom.accessible())).toList();
         Runnable update = () -> {
-            viewModel.setState(new SortWashroomViewModel.State(true, items));
+            listModel.setState(new WashroomListViewModel.State(items, null, "Sort by: Nearest", false));
+            sortModel.setState(new
+                    interface_adapter.sort_washrooms.SortWashroomViewModel.State(true, outputData.washrooms()));
         };
         if (SwingUtilities.isEventDispatchThread()) update.run();
         else SwingUtilities.invokeLater(update);
+
+        /**
+         List<GeoPoint> points = outputData.washrooms().stream().map(
+         washroom -> new GeoPoint(washroom.building().latitude(), washroom.building().longitude())).toList();
+         Runnable update = () -> mapModel.setState(new MapViewModel.State(outputData.success(),
+         points,
+         "", "", ""));
+         if (SwingUtilities.isEventDispatchThread()) update.run();
+         else SwingUtilities.invokeLater(update);
+         */
     }
 }

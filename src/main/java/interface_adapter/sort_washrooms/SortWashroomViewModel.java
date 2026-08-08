@@ -8,7 +8,7 @@ import java.util.List;
 
 public final class SortWashroomViewModel extends ViewModel<interface_adapter.sort_washrooms.SortWashroomViewModel.State> {
     public SortWashroomViewModel() {
-        super(new SortWashroomViewModel.State(false, new ArrayList<>()));
+        super(new interface_adapter.sort_washrooms.SortWashroomViewModel.State(true, new ArrayList<>()));
     }
 
     public record State(boolean success, List<Washroom> washrooms) {

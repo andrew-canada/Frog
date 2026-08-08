@@ -8,6 +8,7 @@ import interface_adapter.directions.MapViewModel;
 import interface_adapter.filter.FilterController;
 import interface_adapter.filter.FilterViewModel;
 import interface_adapter.sort_washrooms.SortWashroomController;
+import interface_adapter.sort_washrooms.SortWashroomViewModel;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
@@ -80,10 +81,14 @@ public final class MainView extends JPanel {
      * Retained for callers that do not provide filtering controls.
      */
     public MainView(WashroomListViewModel washrooms, MapViewModel route) {
-        this(washrooms, route, new FilterViewModel(), new IsLoggedInViewModel());
+        this(washrooms, route, new FilterViewModel(), new SortWashroomViewModel(), new IsLoggedInViewModel());
     }
 
-    public MainView(WashroomListViewModel washrooms, MapViewModel route, FilterViewModel filter, IsLoggedInViewModel isLoggedIn) {
+    public MainView(WashroomListViewModel washrooms,
+                    MapViewModel route,
+                    FilterViewModel filter,
+                    SortWashroomViewModel sortWashroom,
+                    IsLoggedInViewModel isLoggedIn) {
         this.isLoggedIn = isLoggedIn;
         isLoggedIn.getState().addPropertyChangeListener(e -> render(isLoggedIn.getState()));
         setLayout(new BorderLayout());
@@ -119,6 +124,10 @@ public final class MainView extends JPanel {
             } else {
                 map.setWashrooms(s.washrooms());
             }
+        });
+        sortWashroom.addPropertyChangeListener(e -> {
+            SortWashroomViewModel.State state = sortWashroom.getState();
+            map.setWashrooms(state.washrooms());
         });
     }
 
@@ -175,12 +184,6 @@ public final class MainView extends JPanel {
         controls.add(clear);
         controls.add(new JLabel("Sort by:"));
         WashroomSortDropdownControl washroomSortDropdownControl = new WashroomSortDropdownControl();
-        washroomSortDropdownControl.addActionListener(e -> {
-           sortWashroomController.execute(
-                   washroomSortDropdownControl.getSelectedItem().toString(),
-                   latitude,
-                   longitude);
-        });
         controls.add(washroomSortDropdownControl);
         p.add(controls, BorderLayout.NORTH);
         location.addActionListener(e -> new LocationInputDialog(SwingUtilities.getWindowAncestor(this), addressLookup, (lat, lng) -> {
@@ -189,7 +192,17 @@ public final class MainView extends JPanel {
             map.setOrigin(new GeoPoint(lat, lng));
             routeLabel.setText("Location updated — choose directions");
         }).setVisible(true));
-        filters.addActionListener(e -> new FilterView(SwingUtilities.getWindowAncestor(this), "Filter", selectedId(), filterController, latitude, longitude).setVisible(true));
+        filters.addActionListener(e ->
+                new FilterView(SwingUtilities.getWindowAncestor(this),
+                        "Filter",
+                        selectedId(),
+                        filterController,
+                        latitude,
+                        longitude).setVisible(true));
+        washroomSortDropdownControl.addActionListener(e -> sortWashroomController.execute(
+                washroomSortDropdownControl.getSelectedItem().toString(),
+                latitude,
+                longitude));
         clear.addActionListener(e -> filterController.execute(5, 1, false, false, false, selectedId(), null, latitude, longitude));
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
         list.setBackground(Theme.PAPER);
@@ -385,6 +398,8 @@ public final class MainView extends JPanel {
     public void setFilterController(FilterController f) {
         filterController = f;
     }
+
+    public void setSortWashroomController(SortWashroomController s) {sortWashroomController = s;}
 
     /** Shows the Moderator nav entry only for a user with moderator privileges. */
     public void setModerator(boolean isModerator) {

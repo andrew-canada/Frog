@@ -1,6 +1,5 @@
 package interface_adapter.sort_washrooms;
 
-import interface_adapter.filter.FilterController;
 import use_case.sort_washrooms.SortWashroomInputData;
 import use_case.sort_washrooms.SortWashroomsInputBoundary;
 
