@@ -10,7 +10,10 @@ public final class TestRunner {
         run("GraphhopperGeocodingDataAccessObjectTest", GraphhopperGeocodingDataAccessObjectTest::run);
         run("UiSmokeTest", UiSmokeTest::run);
         run("FilterInteractorTest", FilterInteractorTest::run);
-        System.out.println("All 7 interactor tests, the GraphHopper adapter test, and the UI smoke test passed.");
+        run("VoteHelpfulInteractorTest", VoteHelpfulInteractorTest::run);
+        run("ReportReviewInteractorTest", ReportReviewInteractorTest::run);
+        run("ModerateReviewsInteractorTest", ModerateReviewsInteractorTest::run);
+        System.out.println("All 10 interactor tests, the GraphHopper adapter test, and the UI smoke test passed.");
     }
 
     private static void run(String name, Runnable test) {
