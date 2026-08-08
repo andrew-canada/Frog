@@ -33,12 +33,14 @@ public class MapClicker implements ActionListener {
                     Point pt = e.getPoint();
                     GeoPosition pos = map.convertPointToGeoPosition(pt);
                     onSave.accept(pos.getLatitude(), pos.getLongitude());
+                    map.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     map.removeMouseListener(this);
                 }
             }
         };
 
         map.addMouseListener(new MapClickListener(map, onSave));
+        map.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
         frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
     }
 
