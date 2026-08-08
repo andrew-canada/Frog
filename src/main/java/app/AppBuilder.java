@@ -286,6 +286,8 @@ public final class AppBuilder {
         var washrooms = new DBWashroomDataAccessObject(database);
         var reviews = new DBReviewDataAccessObject(database);
         var users = new DBUserDataAccessObject(database);
+        users.ensureModerator("frog");     // grant moderator to known accounts
+        users.ensureModerator("sheena_q");
         var reports = new DBStatusReportDataAccessObject(database);
         var routes = new GraphhopperRouteDataAccessObject(graphhopperKey);
         var geocoding = new GraphhopperGeocodingDataAccessObject(graphhopperKey);
@@ -309,7 +311,7 @@ public final class AppBuilder {
         var writeReviewController = new WriteReviewController(new WriteReviewInteractor(reviews, new WriteReviewPresenter(writeReviewModel)));
         var voteController = new VoteHelpfulController(new VoteHelpfulInteractor(reviews));
         var reportController = new ReportReviewController(new ReportReviewInteractor(reviews, new ReportReviewPresenter(reportReviewModel)));
-        var moderateController = new ModerateReviewsController(new ModerateReviewsInteractor(reviews, reviews, washrooms, new ModerateReviewsPresenter(moderateModel)));
+        var moderateController = new ModerateReviewsController(new ModerateReviewsInteractor(reviews, reviews, washrooms, users, new ModerateReviewsPresenter(moderateModel)));
         Supplier<String> currentUser = () -> loggedInModel.getState().username();
         var loginController = new LoginController(new LoginInteractor(users, new LoginPresenter(loginModel, loggedInModel, isLoggedIn)));
         var signupController = new SignupController(new SignupInteractor(users, new SignupPresenter(loginModel, loggedInModel)));
@@ -428,6 +430,10 @@ public final class AppBuilder {
             if (SwingUtilities.isEventDispatchThread()) update.run();
             else SwingUtilities.invokeLater(update);
         });
+
+        // Gate the Moderator nav entry on the logged-in user's moderator status (hidden by default).
+        loggedInModel.addPropertyChangeListener(e ->
+                main.setModerator(loggedInModel.getState().moderator()));
         login.setOnBack(showMain);
         login.setOnSignup(() -> new SignupDialog(frame, signupController).setVisible(true));
         status.setOnCancel(showMain);
