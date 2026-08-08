@@ -6,23 +6,23 @@ import data_access.Condition;
 import data_access.Operator;
 import data_access.status.StatusReportDataAccessInterface;
 import data_access.user.UserDataAccessInterface;
+import data_access.washroom.WashroomDataAccessInterface;
 import entity.Building;
 import entity.StatusReport;
 import entity.User;
 import entity.Washroom;
-import data_access.washroom.WashroomDataAccessInterface;
 import data_access.review.ReviewDataAccessInterface;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class FilterInteractor implements FilterInputBoundary {
+    private final Set<String> permittedWashroomNames;
     WashroomDataAccessInterface washroomDAO;
     ReviewDataAccessInterface reviewDAO;
     StatusReportDataAccessInterface statusReports;
     UserDataAccessInterface userDAO;
     FilterOutputBoundary presenter;
-    private final Set<String> permittedWashroomNames;
 
     public FilterInteractor(WashroomDataAccessInterface washroomDAO,
                             ReviewDataAccessInterface reviewDAO,
@@ -103,17 +103,20 @@ public class FilterInteractor implements FilterInputBoundary {
     /**
      * Filters washrooms, modifying the inputted list to remove washrooms which don't have
      * reviews by the given user
+     *
      * @param washrooms A Map from washroomID to Washroom object of the washrooms to be filtered.
-     * @param user The user whose reviews are required for the washroom to pass the filter.
+     * @param user      The user whose reviews are required for the washroom to pass the filter.
      */
     private void filterByUser(List<Washroom> washrooms, User user) {
-        Set<String> washroomIds = reviewDAO.getReviewsByUser(user.getName()).stream()
+        Set<String> washroomIds = reviewDAO.getReviewsByUser(user.name()).stream()
                 .map(entity.Review::washroomId)
                 .collect(java.util.stream.Collectors.toSet());
         washrooms.removeIf(washroom -> !washroomIds.contains(washroom.id()));
     }
 
-    /** Filters by each washroom's newest status report in the current clock hour. */
+    /**
+     * Filters by each washroom's newest status report in the current clock hour.
+     */
     private void filterByCurrentStatus(List<Washroom> washrooms, FilterInputData inputData) {
         if (statusReports == null) {
             presenter.presentError("Live status filtering is unavailable.");

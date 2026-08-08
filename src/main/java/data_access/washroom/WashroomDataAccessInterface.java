@@ -1,7 +1,6 @@
 package data_access.washroom;
 
 import data_access.AbstractCondition;
-import data_access.Condition;
 import entity.Washroom;
 
 import java.util.List;

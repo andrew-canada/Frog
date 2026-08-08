@@ -2,17 +2,19 @@ package view;
 
 import entity.GeoPoint;
 import entity.Washroom;
+import interface_adapter.account.IsLoggedInState;
+import interface_adapter.account.IsLoggedInViewModel;
 import interface_adapter.directions.MapViewModel;
 import interface_adapter.filter.FilterController;
 import interface_adapter.filter.FilterViewModel;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
+import org.jxmapviewer.cache.FileBasedLocalCache;
 import org.jxmapviewer.input.CenterMapListener;
 import org.jxmapviewer.input.PanKeyListener;
 import org.jxmapviewer.input.PanMouseInputListener;
 import org.jxmapviewer.input.ZoomMouseWheelListenerCursor;
-import org.jxmapviewer.cache.FileBasedLocalCache;
 import org.jxmapviewer.viewer.DefaultTileFactory;
 import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.viewer.TileFactoryInfo;
@@ -20,27 +22,30 @@ import org.jxmapviewer.viewer.TileFactoryInfo;
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
-import java.awt.geom.Path2D;
-import java.awt.geom.Point2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class MainView extends JPanel {
-    /** Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies. */
     private static final Color MAP_LOW = Theme.COLORBLIND_BLUE;
     private static final Color MAP_HIGH = Theme.COLORBLIND_ORANGE;
+    /**
+     * Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies.
+     */
+    private final CardLayout buttonsLayout = new CardLayout();
+    private final JPanel buttonsPanel = new JPanel(buttonsLayout);
     private final JPanel list = new JPanel();
     private final JLabel routeLabel = Theme.label("Select a washroom to explore", 13, Theme.MUTED);
     private final JLabel heatmapLegend = Theme.label("", 11, Theme.MUTED);
     private final CampusMapPanel map = new CampusMapPanel();
     private final Map<String, JPanel> cardsByWashroomId = new HashMap<>();
+    private IsLoggedInViewModel isLoggedIn = new IsLoggedInViewModel();
     private JButton moderatorNav;
     private JButton busynessHeatmap, cleanlinessHeatmap;
     private boolean busynessHeatmapVisible, cleanlinessHeatmapVisible;
@@ -69,15 +74,23 @@ public final class MainView extends JPanel {
     };
     private double latitude = 43.6629, longitude = -79.3957;
 
-    /** Retained for callers that do not provide filtering controls. */
+    /**
+     * Retained for callers that do not provide filtering controls.
+     */
     public MainView(WashroomListViewModel washrooms, MapViewModel route) {
-        this(washrooms, route, new FilterViewModel());
+        this(washrooms, route, new FilterViewModel(), new IsLoggedInViewModel());
     }
 
-    public MainView(WashroomListViewModel washrooms, MapViewModel route, FilterViewModel filter) {
+    public MainView(WashroomListViewModel washrooms, MapViewModel route, FilterViewModel filter, IsLoggedInViewModel isLoggedIn) {
+        this.isLoggedIn = isLoggedIn;
+        isLoggedIn.getState().addPropertyChangeListener(e -> render(isLoggedIn.getState()));
         setLayout(new BorderLayout());
         setBackground(Theme.PAPER);
-        add(header(), BorderLayout.NORTH);
+        JComponent loggedIn = headerLoggedIn();
+        JComponent loggedOut = headerLoggedOut();
+        buttonsPanel.add(loggedOut, "loggedOut");
+        buttonsPanel.add(loggedIn, "loggedIn");
+        add(buttonsPanel, BorderLayout.NORTH);
         JSplitPane content = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sidebar(washrooms), mapArea());
         content.setDividerLocation(290);
         content.setDividerSize(8);
@@ -99,7 +112,7 @@ public final class MainView extends JPanel {
         filter.addPropertyChangeListener(e ->
         {
             FilterViewModel.State s = filter.getState();
-            if(!s.success()) {
+            if (!s.success()) {
                 JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(this), s.message());
             } else {
                 map.setWashrooms(s.washrooms());
@@ -107,7 +120,7 @@ public final class MainView extends JPanel {
         });
     }
 
-    private JComponent header() {
+    private JComponent headerLoggedIn() {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(Theme.PAPER);
         p.setBorder(Theme.pad(10, 18, 10, 18));
@@ -117,7 +130,23 @@ public final class MainView extends JPanel {
         JPanel nav = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         nav.setOpaque(false);
         moderatorNav = nav("Moderator", () -> onModerator.run());
-        for (JButton b : new JButton[]{nav("Account", () -> onAccount.run()), nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), moderatorNav, nav("Login", () -> onLogin.run())})
+        for (JButton b : new JButton[]{nav("Account", () -> onAccount.run()), nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), moderatorNav})
+            nav.add(b);
+        p.add(nav, BorderLayout.EAST);
+        return p;
+    }
+
+    private JComponent headerLoggedOut() {
+        JPanel p = new JPanel(new BorderLayout());
+        p.setBackground(Theme.PAPER);
+        p.setBorder(Theme.pad(10, 18, 10, 18));
+        JLabel brand = Theme.label("FlushID", 20, Theme.BLUE);
+        brand.setFont(brand.getFont().deriveFont(Font.BOLD));
+        p.add(brand, BorderLayout.WEST);
+        JPanel nav = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        nav.setOpaque(false);
+        moderatorNav = nav("Moderator", () -> onModerator.run());
+        for (JButton b : new JButton[]{nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), moderatorNav, nav("Login", () -> onLogin.run())})
             nav.add(b);
         p.add(nav, BorderLayout.EAST);
         return p;
@@ -154,7 +183,7 @@ public final class MainView extends JPanel {
             Comparator<WashroomListViewModel.Item> comparator;
             if (washroomSortDropdownControl.getSelectedItem().toString().equals("Highest Rated")) {
                 comparator = WashroomListViewModel.Item.BY_RATING;
-            } else if (washroomSortDropdownControl.getSelectedItem().toString().equals("Nearest")){
+            } else if (washroomSortDropdownControl.getSelectedItem().toString().equals("Nearest")) {
                 comparator = WashroomListViewModel.Item.BY_DISTANCE;
             } else {
                 comparator = WashroomListViewModel.Item.BY_ALPHABETICAL;
@@ -323,18 +352,11 @@ public final class MainView extends JPanel {
         map.setWashrooms(washrooms);
     }
 
-    /** Supplies the latest reported values used by the optional map heatmap layers. */
+    /**
+     * Supplies the latest reported values used by the optional map heatmap layers.
+     */
     public void setHeatmapData(List<HeatmapData> values) {
         map.setHeatmapData(values);
-    }
-
-    /** A NaN value means that no recent report is available for that measurement. */
-    public record HeatmapData(String washroomId, double busyness, double cleanliness) {
-        public HeatmapData {
-            if (washroomId == null || washroomId.isBlank()) {
-                throw new IllegalArgumentException("washroomId is required");
-            }
-        }
     }
 
     public void setAddressLookup(Function<String, GeoPoint> lookup) {
@@ -371,7 +393,9 @@ public final class MainView extends JPanel {
         onModerator = r;
     }
 
-    public void setFilterController(FilterController f) {filterController = f;}
+    public void setFilterController(FilterController f) {
+        filterController = f;
+    }
 
     /**
      * Reflects the number of reported reviews awaiting moderation on the Moderator nav button:
@@ -402,8 +426,30 @@ public final class MainView extends JPanel {
         return selectedId;
     }
 
+    private void render(IsLoggedInState state) {
+
+        if (state.getIsLoggedIn()) {
+            buttonsLayout.show(buttonsPanel, "loggedIn");
+        } else {
+            buttonsLayout.show(buttonsPanel, "loggedOut");
+        }
+
+    }
+
+    /**
+     * A NaN value means that no recent report is available for that measurement.
+     */
+    public record HeatmapData(String washroomId, double busyness, double cleanliness) {
+        public HeatmapData {
+            if (washroomId == null || washroomId.isBlank()) {
+                throw new IllegalArgumentException("washroomId is required");
+            }
+        }
+    }
+
     private static final class CampusMapPanel extends JPanel {
         private final JXMapViewer viewer;
+        private final Map<String, Rectangle> markerHitTargets = new HashMap<>();
         private List<GeoPoint> route = List.of();
         private List<Washroom> washrooms = List.of();
         private Map<String, HeatmapData> heatmapData = Map.of();
@@ -411,7 +457,6 @@ public final class MainView extends JPanel {
         private boolean showBusynessHeatmap, showCleanlinessHeatmap;
         private Consumer<String> onWashroomSelected = id -> {
         };
-        private final Map<String, Rectangle> markerHitTargets = new HashMap<>();
         private GeoPoint origin = new GeoPoint(43.6629, -79.3957);
 
         CampusMapPanel() {
@@ -462,6 +507,31 @@ public final class MainView extends JPanel {
             attribution.setBorder(Theme.pad(4, 8, 4, 8));
             add(viewer, BorderLayout.CENTER);
             add(attribution, BorderLayout.SOUTH);
+        }
+
+        /**
+         * Keeps each glow approximately the same real-world size as the map zoom changes.
+         */
+        private static int scaledHeatRadius(JXMapViewer map, int baseRadius) {
+            double zoomFactor = Math.pow(2, 3 - map.getZoom());
+            return (int) Math.round(Math.max(24, Math.min(180, baseRadius * zoomFactor)));
+        }
+
+        private static Color heatColor(double value) {
+            if (Double.isNaN(value)) return Theme.NO_DATA;
+            double progress = Math.max(0, Math.min(1, (value - 1) / 4));
+            return new Color(
+                    (int) Math.round(MAP_LOW.getRed() + (MAP_HIGH.getRed() - MAP_LOW.getRed()) * progress),
+                    (int) Math.round(MAP_LOW.getGreen() + (MAP_HIGH.getGreen() - MAP_LOW.getGreen()) * progress),
+                    (int) Math.round(MAP_LOW.getBlue() + (MAP_HIGH.getBlue() - MAP_LOW.getBlue()) * progress));
+        }
+
+        private static Color withAlpha(Color color, int alpha) {
+            return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
+        }
+
+        private static GeoPosition toPosition(GeoPoint point) {
+            return new GeoPosition(point.latitude(), point.longitude());
         }
 
         void setWashrooms(List<Washroom> values) {
@@ -562,15 +632,9 @@ public final class MainView extends JPanel {
             }
         }
 
-        /** Keeps each glow approximately the same real-world size as the map zoom changes. */
-        private static int scaledHeatRadius(JXMapViewer map, int baseRadius) {
-            double zoomFactor = Math.pow(2, 3 - map.getZoom());
-            return (int) Math.round(Math.max(24, Math.min(180, baseRadius * zoomFactor)));
-        }
-
         private double averageReportedValue(List<Washroom> washroomsAtLocation, boolean busyness) {
             return washroomsAtLocation.stream()
-                    .map( washroom -> heatmapData.get(washroom.id()))
+                    .map(washroom -> heatmapData.get(washroom.id()))
                     .filter(java.util.Objects::nonNull)
                     .mapToDouble(value -> busyness ? value.busyness() : value.cleanliness())
                     .filter(value -> !Double.isNaN(value))
@@ -584,19 +648,6 @@ public final class MainView extends JPanel {
             Color[] colors = {withAlpha(color, 150), withAlpha(color, 72), withAlpha(color, 0)};
             canvas.setPaint(new RadialGradientPaint((float) point.getX(), (float) point.getY(), radius, stops, colors));
             canvas.fillOval((int) point.getX() - radius, (int) point.getY() - radius, radius * 2, radius * 2);
-        }
-
-        private static Color heatColor(double value) {
-            if (Double.isNaN(value)) return Theme.NO_DATA;
-            double progress = Math.max(0, Math.min(1, (value - 1) / 4));
-            return new Color(
-                    (int) Math.round(MAP_LOW.getRed() + (MAP_HIGH.getRed() - MAP_LOW.getRed()) * progress),
-                    (int) Math.round(MAP_LOW.getGreen() + (MAP_HIGH.getGreen() - MAP_LOW.getGreen()) * progress),
-                    (int) Math.round(MAP_LOW.getBlue() + (MAP_HIGH.getBlue() - MAP_LOW.getBlue()) * progress));
-        }
-
-        private static Color withAlpha(Color color, int alpha) {
-            return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
         }
 
         private void drawRoute(Graphics2D canvas, JXMapViewer map) {
@@ -659,10 +710,6 @@ public final class MainView extends JPanel {
             Set<GeoPosition> positions = new HashSet<>();
             for (GeoPoint point : route) positions.add(toPosition(point));
             viewer.zoomToBestFit(positions, .82);
-        }
-
-        private static GeoPosition toPosition(GeoPoint point) {
-            return new GeoPosition(point.latitude(), point.longitude());
         }
     }
 }

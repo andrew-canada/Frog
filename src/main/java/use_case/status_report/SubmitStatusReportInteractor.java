@@ -1,7 +1,7 @@
 package use_case.status_report;
 
-import entity.StatusReport;
 import data_access.status.StatusReportDataAccessInterface;
+import entity.StatusReport;
 
 import java.time.Clock;
 import java.time.LocalDateTime;

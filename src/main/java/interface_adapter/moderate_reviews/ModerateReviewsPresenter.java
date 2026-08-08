@@ -3,7 +3,9 @@ package interface_adapter.moderate_reviews;
 import use_case.moderate_reviews.ModerateReviewsOutputBoundary;
 import use_case.moderate_reviews.ModerateReviewsOutputData;
 
-/** Presenter for the Moderator Remove Review use case. */
+/**
+ * Presenter for the Moderator Remove Review use case.
+ */
 public final class ModerateReviewsPresenter implements ModerateReviewsOutputBoundary {
 
     private final ModerateReviewsViewModel model;

@@ -1,7 +1,7 @@
 package use_case.account.change_username;
 
-import entity.User;
 import data_access.user.UserDataAccessInterface;
+import entity.User;
 
 public final class ChangeUsernameInteractor implements ChangeUsernameInputBoundary {
 

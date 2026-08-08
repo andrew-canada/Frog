@@ -24,11 +24,13 @@ public final class ReportedReviewsView extends JPanel {
 
     private final ModerateReviewsViewModel model;
     private final JPanel body = new JPanel();
-
-    private String moderatorUsername = "moderator";
-    /** Review ids whose additional-details section is currently expanded. */
+    /**
+     * Review ids whose additional-details section is currently expanded.
+     */
     private final Set<String> expanded = new HashSet<>();
-    private Runnable onBack = () -> { };
+    private String moderatorUsername = "moderator";
+    private Runnable onBack = () -> {
+    };
     private ModerateReviewsController controller;
 
     public ReportedReviewsView(ModerateReviewsViewModel model) {
@@ -48,6 +50,25 @@ public final class ReportedReviewsView extends JPanel {
             render();
         });
         render();
+    }
+
+    private static JComponent left(JComponent component) {
+        component.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return component;
+    }
+
+    private static JLabel bold(JLabel label) {
+        label.setFont(label.getFont().deriveFont(Font.BOLD));
+        return label;
+    }
+
+    private static String stars(double rating) {
+        int filled = Math.max(0, Math.min(MAX_STARS, (int) Math.round(rating)));
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < MAX_STARS; i++) {
+            builder.append(i < filled ? '★' : '☆');
+        }
+        return builder.toString();
     }
 
     private JComponent header() {
@@ -176,25 +197,6 @@ public final class ReportedReviewsView extends JPanel {
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, panel.getPreferredSize().height));
         return panel;
-    }
-
-    private static JComponent left(JComponent component) {
-        component.setAlignmentX(Component.LEFT_ALIGNMENT);
-        return component;
-    }
-
-    private static JLabel bold(JLabel label) {
-        label.setFont(label.getFont().deriveFont(Font.BOLD));
-        return label;
-    }
-
-    private static String stars(double rating) {
-        int filled = Math.max(0, Math.min(MAX_STARS, (int) Math.round(rating)));
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < MAX_STARS; i++) {
-            builder.append(i < filled ? '★' : '☆');
-        }
-        return builder.toString();
     }
 
     public void setOnBack(Runnable onBack) {

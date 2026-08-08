@@ -1,15 +1,10 @@
 package use_case.moderate_reviews;
 
+import data_access.washroom.WashroomDataAccessInterface;
 import entity.Report;
 import entity.Review;
-import use_case.moderate_reviews.ReviewAdminDataAccessInterface;
-import data_access.washroom.WashroomDataAccessInterface;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The interactor for the Moderator Remove Review use case.

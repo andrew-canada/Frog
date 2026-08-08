@@ -3,19 +3,15 @@ package data_access.review;
 import entity.Report;
 import entity.Review;
 import entity.ReviewSummary;
-import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
-import use_case.moderate_reviews.ReviewAdminDataAccessInterface;
 import use_case.moderate_reviews.ReportedReviewsDataAccessInterface;
+import use_case.moderate_reviews.ReviewAdminDataAccessInterface;
 import use_case.report_review.ReviewReportDataAccessInterface;
 
+import data_access.review.ReviewDataAccessInterface;
+import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
+
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public final class InMemoryReviewDataAccessObject implements ReviewDataAccessInterface,
         HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface, ReviewAdminDataAccessInterface, ReportedReviewsDataAccessInterface {

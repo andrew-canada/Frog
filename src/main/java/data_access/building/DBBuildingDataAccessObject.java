@@ -1,30 +1,29 @@
 package data_access.building;
 
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
-import data_access.Condition;
-import data_access.AbstractCondition;
-import data_access.MongoDocuments;
-import data_access.Operator;
-
+import data_access.*;
+import entity.Building;
 import org.bson.Document;
-import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
 
-import entity.Building;
-import data_access.DBDataAccessObject;
-
-import java.io.*;
-import java.util.*;
 import javax.json.*;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DBBuildingDataAccessObject extends DBDataAccessObject {
 
-    static MongoCollection<Document> collection;
     static final List<String> allowedAttributes = List.of(new String[]{
             "buildingCode", "shortName", "longName", "location", "controlInfo"});
+    static MongoCollection<Document> collection;
 
     public DBBuildingDataAccessObject() {
         super();    // initializes the MongoClient and MongoDatabase from
@@ -135,24 +134,6 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
     }
 
     /**
-     * Writes a single Building object to the database. Latitude and Longitude are converted
-     * to a location object for geospatial filtering
-     *
-     * @param building The Building object to be written.
-     * @return the ID for the written object.
-     */
-    public String write(Building building) {
-        Document doc = new Document();
-        doc.append("buildingCode", building.getBuildingCode());
-        doc.append("shortName", building.getBuildingNameShort());
-        doc.append("longName", building.getBuildingNameLong());
-        doc.append("location", createLocation(building));
-        doc.append("controlInfo", building.getControlInfo());
-
-        return collection.insertOne(doc).getInsertedId().toString();
-    }
-
-    /**
      * Parse Latitude and Longitude of a Building into a Document
      *
      * @param building Building object with longitude and latitude
@@ -223,6 +204,71 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
         }
     }
 
+    public static List<Building> loadBuildings(String filename) throws Exception {
+        List<Building> buildings = new ArrayList<>();
+
+        try (Reader reader = new FileReader(filename);
+             JsonReader jsonReader = Json.createReader(reader)) {
+
+            JsonArray jsonArray = jsonReader.readArray();
+
+            for (JsonValue value : jsonArray) {
+                JsonObject obj = (JsonObject) value;
+
+                String id = obj.getString("ID");
+                String name = obj.getString("name");
+
+                // Stored as strings in the JSON
+                double latitude = Double.parseDouble(obj.getString("latitude"));
+                double longitude = Double.parseDouble(obj.getString("longitude"));
+
+                buildings.add(new entity.Building(id, name, latitude, longitude));
+            }
+        }
+
+        return buildings;
+    }
+
+    public static void main(String[] args) throws FileNotFoundException {
+        /**
+         DBBuildingDataAccessObject buildingDAO = new DBBuildingDataAccessObject();
+         Condition condition = new Condition<>("buildingCode", Operator.NE, "00");
+         buildingDAO.delete(condition);
+         try {
+         List<Building> buildingList = loadBuildings("src/main/resources/data/building.json");
+         for (Building building : buildingList) {
+         buildingDAO.write(building);
+         }
+         System.out.println("Success!");
+         } catch (Exception e) {
+         System.out.println("Building entrance failed. ");
+         }
+         */
+        DBBuildingDataAccessObject buildingDAO = new DBBuildingDataAccessObject();
+        Condition condition = new Condition<>("buildingCode", Operator.NE, "00");
+        System.out.println(getMatching(condition));
+
+
+    }
+
+    /**
+     * Writes a single Building object to the database. Latitude and Longitude are converted
+     * to a location object for geospatial filtering
+     *
+     * @param building The Building object to be written.
+     * @return the ID for the written object.
+     */
+    public String write(Building building) {
+        Document doc = new Document();
+        doc.append("buildingCode", building.getBuildingCode());
+        doc.append("shortName", building.getBuildingNameShort());
+        doc.append("longName", building.getBuildingNameLong());
+        doc.append("location", createLocation(building));
+        doc.append("controlInfo", building.getControlInfo());
+
+        return collection.insertOne(doc).getInsertedId().toString();
+    }
+
     /**
      * Deletes every entry in the database that matches the given conditions
      *
@@ -265,55 +311,8 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
                             Updates.setOnInsert("controlInfo", "U of T St. George campus reference location")
                     ), new UpdateOptions().upsert(true));
             List<entity.Building> refreshed = getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
-            if (!refreshed.isEmpty()) persisted.add((entity.Building) refreshed.getFirst());
+            if (!refreshed.isEmpty()) persisted.add(refreshed.getFirst());
         }
         return List.copyOf(persisted);
-    }
-
-    public static List<Building> loadBuildings(String filename) throws Exception {
-        List<Building> buildings = new ArrayList<>();
-
-        try (Reader reader = new FileReader(filename);
-             JsonReader jsonReader = Json.createReader(reader)) {
-
-            JsonArray jsonArray = jsonReader.readArray();
-
-            for (JsonValue value : jsonArray) {
-                JsonObject obj = (JsonObject) value;
-
-                String id = obj.getString("ID");
-                String name = obj.getString("name");
-
-                // Stored as strings in the JSON
-                double latitude = Double.parseDouble(obj.getString("latitude"));
-                double longitude = Double.parseDouble(obj.getString("longitude"));
-
-                buildings.add(new entity.Building(id, name, latitude, longitude));
-            }
-        }
-
-        return buildings;
-    }
-
-    public static void main(String[] args) throws FileNotFoundException {
-        /**
-        DBBuildingDataAccessObject buildingDAO = new DBBuildingDataAccessObject();
-        Condition condition = new Condition<>("buildingCode", Operator.NE, "00");
-        buildingDAO.delete(condition);
-        try {
-            List<Building> buildingList = loadBuildings("src/main/resources/data/building.json");
-            for (Building building : buildingList) {
-                buildingDAO.write(building);
-            }
-            System.out.println("Success!");
-        } catch (Exception e) {
-            System.out.println("Building entrance failed. ");
-        }
-         */
-        DBBuildingDataAccessObject buildingDAO = new DBBuildingDataAccessObject();
-        Condition condition = new Condition<>("buildingCode", Operator.NE, "00");
-        System.out.println(buildingDAO.getMatching(condition));
-
-
     }
 }

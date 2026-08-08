@@ -7,7 +7,7 @@ public record User(String username, String passwordHash, String personalPlan) im
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return username;
     }
 }

@@ -3,7 +3,9 @@ package interface_adapter.report_review;
 import use_case.report_review.ReportReviewOutputBoundary;
 import use_case.report_review.ReportReviewOutputData;
 
-/** Presenter for the Report Review use case. */
+/**
+ * Presenter for the Report Review use case.
+ */
 public final class ReportReviewPresenter implements ReportReviewOutputBoundary {
 
     private final ReportReviewViewModel model;

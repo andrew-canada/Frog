@@ -23,7 +23,7 @@
             <dependency>
                 <groupId>com.google.genai</groupId>
                 <artifactId>google-genai</artifactId>
-                <version>0.1.0</version>
+                <version>1.0.0</version>
             </dependency>
 
             <!-- Database, UI, & Logging Dependencies (from demo) -->

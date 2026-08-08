@@ -5,7 +5,9 @@ import use_case.moderate_reviews.ReportedReview;
 
 import java.util.List;
 
-/** ViewModel for the moderator's Reported Reviews card. */
+/**
+ * ViewModel for the moderator's Reported Reviews card.
+ */
 public final class ModerateReviewsViewModel extends ViewModel<ModerateReviewsViewModel.State> {
 
     public ModerateReviewsViewModel() {

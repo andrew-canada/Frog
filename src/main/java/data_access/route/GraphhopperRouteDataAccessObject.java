@@ -40,27 +40,6 @@ public final class GraphhopperRouteDataAccessObject implements RouteDataAccessIn
         this.apiKey = apiKey;
     }
 
-    @Override
-    public Route getRoute(GeoPoint from, GeoPoint to) {
-        URI requestUri = URI.create(endpoint + "?point=" + point(from) + "&point=" + point(to)
-                + "&profile=foot&locale=en&instructions=false&calc_points=true&points_encoded=false&key="
-                + URLEncoder.encode(apiKey, StandardCharsets.UTF_8));
-        HttpRequest request = HttpRequest.newBuilder(requestUri).timeout(Duration.ofSeconds(20))
-                .header("Accept", "application/json").header("User-Agent", "FlushID/1.0").GET().build();
-        try {
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new IllegalStateException("GraphHopper returned HTTP " + response.statusCode() + ".");
-            }
-            return parseRoute(response.body());
-        } catch (InterruptedException interrupted) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("GraphHopper request was interrupted.", interrupted);
-        } catch (IOException failure) {
-            throw new IllegalStateException("Could not reach the GraphHopper routing service.", failure);
-        }
-    }
-
     private static Route parseRoute(String json) {
         Document root;
         try {
@@ -92,5 +71,26 @@ public final class GraphhopperRouteDataAccessObject implements RouteDataAccessIn
 
     private static String point(GeoPoint point) {
         return String.format(Locale.ROOT, "%.7f,%.7f", point.latitude(), point.longitude());
+    }
+
+    @Override
+    public Route getRoute(GeoPoint from, GeoPoint to) {
+        URI requestUri = URI.create(endpoint + "?point=" + point(from) + "&point=" + point(to)
+                + "&profile=foot&locale=en&instructions=false&calc_points=true&points_encoded=false&key="
+                + URLEncoder.encode(apiKey, StandardCharsets.UTF_8));
+        HttpRequest request = HttpRequest.newBuilder(requestUri).timeout(Duration.ofSeconds(20))
+                .header("Accept", "application/json").header("User-Agent", "FlushID/1.0").GET().build();
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                throw new IllegalStateException("GraphHopper returned HTTP " + response.statusCode() + ".");
+            }
+            return parseRoute(response.body());
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("GraphHopper request was interrupted.", interrupted);
+        } catch (IOException failure) {
+            throw new IllegalStateException("Could not reach the GraphHopper routing service.", failure);
+        }
     }
 }

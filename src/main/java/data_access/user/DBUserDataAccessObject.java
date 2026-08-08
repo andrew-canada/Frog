@@ -1,26 +1,28 @@
 package data_access.user;
 
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
-import data_access.Condition;
 import data_access.AbstractCondition;
+import data_access.Condition;
+import data_access.DBDataAccessObject;
 import data_access.MongoDocuments;
 import entity.user.LoggedInUser;
 import org.bson.Document;
-import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
 
-import data_access.DBDataAccessObject;
-
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.*;
 
 public class DBUserDataAccessObject extends DBDataAccessObject implements UserDataAccessInterface {
 
-    static MongoCollection<Document> collection;
-    private entity.User currentApplicationUser;
     static final List<String> allowedAttributes = List.of(new String[]{
             "username", "passwordHash", "personalPlan"});
+    static MongoCollection<Document> collection;
+    private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
+    private entity.User currentApplicationUser;
 
     public DBUserDataAccessObject() {
         super();    // initializes the MongoClient and MongoDatabase from
@@ -31,36 +33,6 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
     public DBUserDataAccessObject(MongoDatabase database) {
         super(database);
         collection = database.getCollection("Users");
-    }
-
-    /**
-     * Returns all users who satisfy all the given conditions
-     *
-     * @param conditions a list of condition objects that the returned users must satisfy
-     * @return The users that match all the conditions
-     */
-    public List<LoggedInUser> getMatching(Iterable<AbstractCondition<?>> conditions) {
-        return new ArrayList<>(getMatchingIDMap(conditions).values());
-    }
-
-    /**
-     * Returns all users which satisfy all the given conditions, with database IDs
-     *
-     * @param conditions a list of condition objects that the returned users must satisfy
-     * @return The users that match all the conditions mapped to their IDs in the database.
-     */
-    public Map<String, LoggedInUser> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
-        checkAttribute(conditions);
-
-        Bson filter = parseConditions(conditions);
-        List<Document> docs = getAll(filter);
-
-        Map<String, LoggedInUser> users = new HashMap<>();
-        for (Document doc : docs) {
-            LoggedInUser user = createUser(doc);
-            users.put(MongoDocuments.id(doc), user);
-        }
-        return users;
     }
 
     /**
@@ -99,33 +71,6 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
     }
 
     /**
-     * Writes a single LoggedInUser object to the database.
-     *
-     * @param user The LoggedInUser object to be written.
-     */
-    public String write(LoggedInUser user, String washroomID) {
-        Document doc = new Document("username", user.getName()).append("passwordHash", user.getPassword())
-                .append("personalPlan", user.getPersonalPlan());
-        if (washroomID != null && !washroomID.isBlank()) doc.append("washroomID", washroomID);
-        collection.replaceOne(Filters.or(Filters.eq("username", user.getName()), Filters.eq("name", user.getName())),
-                doc, new ReplaceOptions().upsert(true));
-        Document persisted = collection.find(Filters.eq("username", user.getName())).first();
-        return persisted == null ? user.getName() : MongoDocuments.id(persisted);
-    }
-
-    /**
-     * Deletes every entry in the database that matches the given conditions
-     *
-     * @param conditions List of AbstractCondition objects. An object must satisfy
-     *                   all conditions to be deleted
-     */
-    public void delete(Iterable<AbstractCondition<?>> conditions) {
-        checkAttribute(conditions);
-        Bson filter = parseConditions(conditions);
-        collection.deleteMany(filter);
-    }
-
-    /**
      * Checks the condition against the list of allowed attributes, throwing a
      * runtime exception if it's not a valid attribute.
      *
@@ -149,6 +94,75 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
         }
     }
 
+    private static String value(Document document, String fallback, String... fields) {
+        for (String field : fields) {
+            String value = document.getString(field);
+            if (value != null && !value.isBlank()) return value;
+        }
+        return fallback;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        changes.addPropertyChangeListener(l);
+    }
+
+    /**
+     * Returns all users who satisfy all the given conditions
+     *
+     * @param conditions a list of condition objects that the returned users must satisfy
+     * @return The users that match all the conditions
+     */
+    public List<LoggedInUser> getMatching(Iterable<AbstractCondition<?>> conditions) {
+        return new ArrayList<>(getMatchingIDMap(conditions).values());
+    }
+
+    /**
+     * Returns all users which satisfy all the given conditions, with database IDs
+     *
+     * @param conditions a list of condition objects that the returned users must satisfy
+     * @return The users that match all the conditions mapped to their IDs in the database.
+     */
+    public Map<String, LoggedInUser> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
+        checkAttribute(conditions);
+
+        Bson filter = parseConditions(conditions);
+        List<Document> docs = getAll(filter);
+
+        Map<String, LoggedInUser> users = new HashMap<>();
+        for (Document doc : docs) {
+            LoggedInUser user = createUser(doc);
+            users.put(MongoDocuments.id(doc), user);
+        }
+        return users;
+    }
+
+    /**
+     * Writes a single LoggedInUser object to the database.
+     *
+     * @param user The LoggedInUser object to be written.
+     */
+    public String write(LoggedInUser user, String washroomID) {
+        Document doc = new Document("username", user.name()).append("passwordHash", user.getPassword())
+                .append("personalPlan", user.getPersonalPlan());
+        if (washroomID != null && !washroomID.isBlank()) doc.append("washroomID", washroomID);
+        collection.replaceOne(Filters.or(Filters.eq("username", user.name()), Filters.eq("name", user.name())),
+                doc, new ReplaceOptions().upsert(true));
+        Document persisted = collection.find(Filters.eq("username", user.name())).first();
+        return persisted == null ? user.name() : MongoDocuments.id(persisted);
+    }
+
+    /**
+     * Deletes every entry in the database that matches the given conditions
+     *
+     * @param conditions List of AbstractCondition objects. An object must satisfy
+     *                   all conditions to be deleted
+     */
+    public void delete(Iterable<AbstractCondition<?>> conditions) {
+        checkAttribute(conditions);
+        Bson filter = parseConditions(conditions);
+        collection.deleteMany(filter);
+    }
+
     @Override
     public Optional<entity.User> get(String username) {
         List<LoggedInUser> matches = getMatching(List.of(new Condition<>("username", data_access.Operator.EQ, username)));
@@ -156,7 +170,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
             matches = getMatching(List.of(new Condition<>("username", data_access.Operator.EQ, username)));
         if (matches.isEmpty() || matches.getFirst().getPassword().isBlank()) return Optional.empty();
         LoggedInUser user = matches.getFirst();
-        return Optional.of(new entity.User(user.getName(), user.getPassword(), user.getPersonalPlan()));
+        return Optional.of(new entity.User(user.name(), user.getPassword(), user.getPersonalPlan()));
     }
 
     @Override
@@ -170,26 +184,21 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
     }
 
     @Override
-    public void setCurrentUser(entity.User user) {
-        currentApplicationUser = user;
-    }
-
-    @Override
     public Optional<entity.User> getCurrentUser() {
         return Optional.ofNullable(currentApplicationUser);
     }
 
     @Override
-    public void removeUser(String username) {
-        delete(List.of(new Condition<>("username", data_access.Operator.EQ, username)));
-        delete(List.of(new Condition<>("name", data_access.Operator.EQ, username)));
+    public void setCurrentUser(entity.User user) {
+        entity.User prev = currentApplicationUser;
+        currentApplicationUser = user;
+        if (Objects.isNull(prev) || Objects.isNull(user)) {
+            changes.firePropertyChange("state", prev, user);
+        }
     }
 
-    private static String value(Document document, String fallback, String... fields) {
-        for (String field : fields) {
-            String value = document.getString(field);
-            if (value != null && !value.isBlank()) return value;
-        }
-        return fallback;
+    @Override
+    public void removeUser(String username) {
+        delete(List.of(new Condition<>("username", data_access.Operator.EQ, username)));
     }
 }

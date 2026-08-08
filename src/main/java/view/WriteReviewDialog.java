@@ -2,13 +2,16 @@ package view;
 
 import interface_adapter.write_review.WriteReviewController;
 import interface_adapter.write_review.WriteReviewViewModel;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeListener;
 
-/** Small modal editor; persistence and validation remain in the write-review use case. */
+/**
+ * Small modal editor; persistence and validation remain in the write-review use case.
+ */
 public final class WriteReviewDialog extends JDialog {
     public WriteReviewDialog(Window owner, WriteReviewViewModel model, WriteReviewController controller,
                              String washroomId, String washroomName, String username, Runnable onSaved) {
@@ -25,11 +28,14 @@ public final class WriteReviewDialog extends JDialog {
         comment.setLineWrap(true);
         comment.setWrapStyleWord(true);
         JLabel message = Theme.label("", 12, Theme.BERRY);
-        page.add(new JLabel("Overall rating")); page.add(rating);
+        page.add(new JLabel("Overall rating"));
+        page.add(rating);
         page.add(Box.createVerticalStrut(8));
-        page.add(new JLabel("Cleanliness")); page.add(cleanliness);
+        page.add(new JLabel("Cleanliness"));
+        page.add(cleanliness);
         page.add(Box.createVerticalStrut(8));
-        page.add(new JLabel("Your review")); page.add(new JScrollPane(comment));
+        page.add(new JLabel("Your review"));
+        page.add(new JScrollPane(comment));
         page.add(Box.createVerticalStrut(10));
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -39,16 +45,24 @@ public final class WriteReviewDialog extends JDialog {
         cancel.addActionListener(event -> dispose());
         submit.addActionListener(event -> controller.execute(washroomId, username, rating.getValue(),
                 cleanliness.getValue(), comment.getText()));
-        buttons.add(cancel); buttons.add(submit);
-        page.add(buttons); page.add(message);
+        buttons.add(cancel);
+        buttons.add(submit);
+        page.add(buttons);
+        page.add(message);
         PropertyChangeListener resultListener = event -> {
             WriteReviewViewModel.State state = model.getState();
             message.setText(state.message());
-            if (state.success()) { onSaved.run(); dispose(); }
+            if (state.success()) {
+                onSaved.run();
+                dispose();
+            }
         };
         model.addPropertyChangeListener(resultListener);
         addWindowListener(new WindowAdapter() {
-            @Override public void windowClosed(WindowEvent event) { model.removePropertyChangeListener(resultListener); }
+            @Override
+            public void windowClosed(WindowEvent event) {
+                model.removePropertyChangeListener(resultListener);
+            }
         });
         setContentPane(page);
         pack();
