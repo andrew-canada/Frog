@@ -332,7 +332,7 @@ public final class AppBuilder {
         var changeUsernameController = new ChangeUsernameController(new ChangeUsernameInteractor(users, new ChangeUsernamePresenter(accountModel, isLoggedIn)));
         var changePasswordController = new ChangePasswordController(new ChangePasswordInteractor(users, new ChangePasswordPresenter(accountModel)));
         var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel, isLoggedIn)));
-        var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
+        var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, washrooms, new PersonalPlanPresenter(accountModel)));
         var logoutController = new LogoutController(new LogoutInteractor(users,
                 new LogoutPresenter(isLoggedIn, loginModel, loggedInModel)));
         var filterController = new FilterController(new FilterInteractor(washrooms, reviews, reports, users,
