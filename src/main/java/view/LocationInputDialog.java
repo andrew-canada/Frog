@@ -1,22 +1,18 @@
 package view;
 
 import entity.GeoPoint;
-import org.jxmapviewer.input.MapClickListener;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public final class LocationInputDialog extends JDialog {
-    private final JTextField address;
-    private final JTextField latitude;
-    private final JTextField longitude;
+    private final JTextField address = new JTextField(28), latitude = new JTextField("43.6629", 10), longitude = new JTextField("-79.3957", 10);
     private final Function<String, GeoPoint> addressLookup;
     private final BiConsumer<Double, Double> onSave;
 
-    public LocationInputDialog(Window owner, Function<String, GeoPoint> addressLookup, BiConsumer<Double, Double> onSave, Double currLat, Double currLong, MapClicker mapClicker) {
+    public LocationInputDialog(Window owner, Function<String, GeoPoint> addressLookup, BiConsumer<Double, Double> onSave) {
         super(owner, "Set your location", ModalityType.APPLICATION_MODAL);
         this.addressLookup = addressLookup;
         this.onSave = onSave;
@@ -33,21 +29,10 @@ public final class LocationInputDialog extends JDialog {
         c.gridy++;
         p.add(new JLabel("Address"), c);
         c.gridx = 1;
-        address = new JTextField(28);
-        latitude = new JTextField(currLat.toString(), 10);
-        longitude = new JTextField(currLong.toString(), 10);
         p.add(address, c);
-        c.gridx = 0;
-        c.gridy++;
-        c.anchor = GridBagConstraints.WEST;
-        c.fill = GridBagConstraints.NONE;
-        mapClicker.addOnSave(onSave);
-        mapClicker.addFrame(this);
-        JButton clickLocation = Theme.primary("Right click on map to select location");
-        clickLocation.addActionListener(mapClicker);
-        p.add(clickLocation, c);
         JButton useAddress = Theme.primary("Use address");
         c.gridx = 1;
+        c.gridy++;
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.NONE;
         p.add(useAddress, c);

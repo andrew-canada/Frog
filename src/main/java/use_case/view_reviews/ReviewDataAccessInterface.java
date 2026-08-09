@@ -1,4 +1,4 @@
-package data_access.review;
+package use_case.view_reviews;
 
 import entity.Review;
 import entity.ReviewSummary;

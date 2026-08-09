@@ -46,8 +46,6 @@ import interface_adapter.vote_helpful.VoteHelpfulController;
 import interface_adapter.write_review.WriteReviewController;
 import interface_adapter.write_review.WriteReviewPresenter;
 import interface_adapter.write_review.WriteReviewViewModel;
-import interface_adapter.logout.LogoutController;
-import interface_adapter.logout.LogoutPresenter;
 import use_case.account.change_password.ChangePasswordInteractor;
 import use_case.account.change_username.ChangeUsernameInteractor;
 import use_case.account.delete_account.DeleteAccountInteractor;
@@ -56,7 +54,6 @@ import use_case.busyness.BusynessStatsInteractor;
 import use_case.directions.GetDirectionsInteractor;
 import use_case.filter.FilterInteractor;
 import use_case.login.LoginInteractor;
-import use_case.logout.LogoutInteractor;
 import use_case.moderate_reviews.ModerateReviewsInteractor;
 import use_case.report_review.ReportReviewInteractor;
 import use_case.signup.SignupInteractor;
@@ -325,7 +322,6 @@ public final class AppBuilder {
         var changePasswordController = new ChangePasswordController(new ChangePasswordInteractor(users, new ChangePasswordPresenter(accountModel)));
         var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel, isLoggedIn)));
         var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
-        var logoutController = new LogoutController(new LogoutInteractor(users, new LogoutPresenter(isLoggedIn)));
         var filterController = new FilterController(new FilterInteractor(washrooms, reviews, reports, users,
                 new FilterPresenter(filterModel, listModel, mapModel), JSON_WASHROOM_NAMES));
 
@@ -351,7 +347,6 @@ public final class AppBuilder {
 
         AccountView account = new AccountView(
                 accountModel,
-                isLoggedIn,
                 changeUsernameController,
                 changePasswordController,
                 deleteAccountController,
