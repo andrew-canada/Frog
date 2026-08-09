@@ -1,5 +1,13 @@
 package views;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Window;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -13,13 +21,6 @@ import javax.swing.JTextArea;
 
 import interface_adapter.report_review.ReportReviewController;
 import interface_adapter.report_review.ReportReviewViewModel;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Window;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Modal dialog for reporting a review: pick one or more reasons, add optional
@@ -27,9 +28,9 @@ import java.util.List;
  */
 public final class ReportReviewDialog extends JDialog {
 
-    private static final String[] REASONS = {
-        "Spam", "Offensive or profane language", "Harassment",
-        "Off-topic", "False or misleading information", "Other"};
+    private static final String[] REASONS =
+        {"Spam", "Offensive or profane language", "Harassment", "Off-topic", "False or misleading information",
+            "Other"};
 
     public ReportReviewDialog(final Window owner, final ReportReviewController controller,
                               final ReportReviewViewModel model, final String reviewId, final String reporter) {
@@ -72,7 +73,9 @@ public final class ReportReviewDialog extends JDialog {
         buttons.add(submit);
         page.add(buttons);
 
-        cancel.addActionListener(e -> dispose());
+        cancel.addActionListener(e -> {
+            dispose();
+        });
         submit.addActionListener(e -> {
             final List<String> reasons = new ArrayList<>();
             for (final JCheckBox box : boxes) {

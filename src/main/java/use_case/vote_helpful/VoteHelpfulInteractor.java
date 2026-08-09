@@ -19,7 +19,8 @@ public final class VoteHelpfulInteractor implements VoteHelpfulInputBoundary {
     public void toggle(final VoteHelpfulInputData input) {
         if (votes.hasVoted(input.reviewId(), input.username())) {
             votes.removeVote(input.reviewId(), input.username());
-        } else {
+        }
+        else {
             votes.addVote(input.reviewId(), input.username());
         }
     }

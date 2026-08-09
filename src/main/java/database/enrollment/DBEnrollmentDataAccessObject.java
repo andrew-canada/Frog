@@ -1,14 +1,15 @@
 package database.enrollment;
 
+import java.time.DayOfWeek;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bson.Document;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import database.MongoDocuments;
 import entity.EnrollmentMeeting;
-import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.List;
 import use_case.port.EnrollmentScheduleGateway;
 
 /**
@@ -26,11 +27,15 @@ public final class DBEnrollmentDataAccessObject implements EnrollmentScheduleGat
         final List<EnrollmentMeeting> result = new ArrayList<>();
         for (final Document document : meetings.find(new Document("buildingCode", buildingCode))) {
             final String storedDay = MongoDocuments.string(document, "", "dayOfWeek", "day");
-            if (!storedDay.isBlank() && !storedDay.equalsIgnoreCase(dayOfWeek.name())) continue;
+            if (!storedDay.isBlank() && !storedDay.equalsIgnoreCase(dayOfWeek.name())) {
+                continue;
+            }
             final int start = MongoDocuments.integer(document, 0, "startHour");
             final int end = MongoDocuments.integer(document, 0, "endHour");
             final int enrollment = Math.max(0, MongoDocuments.integer(document, 0, "enrollment", "enrolment"));
-            if (start >= 0 && end > start && end <= 24) result.add(new EnrollmentMeeting(start, end, enrollment));
+            if (start >= 0 && end > start && end <= 24) {
+                result.add(new EnrollmentMeeting(start, end, enrollment));
+            }
         }
         return List.copyOf(result);
     }

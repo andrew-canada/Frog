@@ -23,8 +23,9 @@ public class AccountState {
     private String personalPlanMessage;
 
     public AccountState(final String username, final String personalPlan, final boolean changeUsernameSuccess,
-                        final String changeUsernameMessage, final boolean changePasswordSuccess, final String changePasswordMessage,
-                        final boolean deleteAccountSuccess, final String deleteAccountMessage, final boolean personalPlanSuccess,
+                        final String changeUsernameMessage, final boolean changePasswordSuccess,
+                        final String changePasswordMessage, final boolean deleteAccountSuccess,
+                        final String deleteAccountMessage, final boolean personalPlanSuccess,
                         final String personalPlanMessage) {
 
         this.username = username;

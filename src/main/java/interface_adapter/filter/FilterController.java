@@ -1,7 +1,8 @@
 package interface_adapter.filter;
 
-import entity.Washroom;
 import java.util.concurrent.CompletableFuture;
+
+import entity.Washroom;
 import use_case.filter.FilterInputBoundary;
 import use_case.filter.FilterInputData;
 
@@ -12,17 +13,10 @@ public class FilterController {
         this.interactor = interactor;
     }
 
-    public void execute(
-        final int maxBusyness,
-        final int minCleanliness,
-        final boolean accessible,
-        final boolean ownReviews,
-        final boolean selectedBuilding,
-        final boolean personalPlan,
-        final String selectedID,
-        final Washroom.Gender gender,
-        final double latitude,
-        final double longitude) {
+    public void execute(final int maxBusyness, final int minCleanliness, final boolean accessible,
+                        final boolean ownReviews, final boolean selectedBuilding, final boolean personalPlan,
+                        final String selectedID, final Washroom.Gender gender, final double latitude,
+                        final double longitude) {
 
         String inputID = "";
         if (selectedBuilding) {
@@ -36,17 +30,12 @@ public class FilterController {
             case null -> null;
         };
 
-        final FilterInputData inputData = new FilterInputData(
-            (float) maxBusyness,
-            (float) minCleanliness,
-            accessible,
-            inputGender,
-            inputID,
-            ownReviews,
-            personalPlan,
-            latitude,
-            longitude);
+        final FilterInputData inputData =
+            new FilterInputData((float) maxBusyness, (float) minCleanliness, accessible, inputGender, inputID,
+                ownReviews, personalPlan, latitude, longitude);
 
-        CompletableFuture.runAsync(() -> interactor.execute(inputData));
+        CompletableFuture.runAsync(() -> {
+            interactor.execute(inputData);
+        });
     }
 }

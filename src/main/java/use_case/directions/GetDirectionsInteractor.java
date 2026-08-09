@@ -1,9 +1,10 @@
 package use_case.directions;
 
+import java.util.List;
+
 import entity.GeoPoint;
 import entity.Route;
 import entity.Washroom;
-import java.util.List;
 import use_case.port.RouteGateway;
 import use_case.port.WashroomRepository;
 
@@ -29,16 +30,16 @@ public final class GetDirectionsInteractor implements GetDirectionsInputBoundary
             return;
         }
         try {
-            final Route route = routes.getRoute(new GeoPoint(in.originLatitude(), in.originLongitude()),
-                new GeoPoint(w
-                    .building()
-                    .latitude(), w
-                    .building()
-                    .longitude()));
+            final Route route = routes.getRoute(new GeoPoint(in.originLatitude(), in.originLongitude()), new GeoPoint(w
+                .building()
+                .latitude(), w
+                .building()
+                .longitude()));
             presenter.present(
                 new GetDirectionsOutputData(true, route.points(), route.distanceMeters(), route.timeSeconds(),
                     "Route ready"));
-        } catch (final RuntimeException failure) {
+        }
+        catch (final RuntimeException failure) {
             final String message =
                 failure.getMessage() == null ? "Directions are temporarily unavailable" : failure.getMessage();
             presenter.present(new GetDirectionsOutputData(false, List.of(), 0, 0, message));

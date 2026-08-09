@@ -69,6 +69,8 @@ public class DBDataAccessObject implements AutoCloseable {
 
     @Override
     public void close() {
-        if (ownsClient && client != null) client.close();
+        if (ownsClient && client != null) {
+            client.close();
+        }
     }
 }

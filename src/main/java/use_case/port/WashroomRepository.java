@@ -1,10 +1,10 @@
 package use_case.port;
 
-import entity.Washroom;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+
+import entity.Washroom;
 
 /**
  * Read operations shared by washroom use cases.

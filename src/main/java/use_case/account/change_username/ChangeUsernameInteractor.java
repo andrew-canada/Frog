@@ -26,11 +26,13 @@ public final class ChangeUsernameInteractor implements ChangeUsernameInputBounda
 
         if (user == null) {
             presenter.present(new ChangeUsernameOutputData(false, "Not logged in", null));
-        } else if (users
+        }
+        else if (users
             .get(input.newUsername())
             .isPresent()) {
             presenter.present(new ChangeUsernameOutputData(false, "Username already exists", user.username()));
-        } else {
+        }
+        else {
             users.removeUser(user.username());
             final User newUser = new User(input.newUsername(), user.passwordHash(), user.personalPlan());
             users.save(newUser);

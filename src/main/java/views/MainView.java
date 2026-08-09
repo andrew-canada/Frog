@@ -1,5 +1,38 @@
 package views;
 
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
+import java.awt.GridLayout;
+import java.awt.RadialGradientPaint;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -39,38 +72,6 @@ import interface_adapter.logout.LogoutController;
 import interface_adapter.logout.LogoutPresenter;
 import interface_adapter.sort_washrooms.SortWashroomController;
 import interface_adapter.view_reviews.WashroomListViewModel;
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
-import java.awt.GridLayout;
-import java.awt.RadialGradientPaint;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.geom.Path2D;
-import java.awt.geom.Point2D;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import use_case.logout.LogoutInteractor;
 
 public final class MainView extends JPanel {
@@ -105,17 +106,12 @@ public final class MainView extends JPanel {
     };
 
     private Runnable onLogin = () -> {
-    },
-        onReport = () -> {
-        },
-        onBusyness = () -> {
-        },
-        onAccount = () -> {
-        },
-        onModerator = () -> {
-        },
-        onLogout = () -> {
-        };
+    }, onReport = () -> {
+    }, onBusyness = () -> {
+    }, onAccount = () -> {
+    }, onModerator = () -> {
+    }, onLogout = () -> {
+    };
 
     private Function<String, GeoPoint> addressLookup = address -> {
         throw new IllegalStateException("Address search is unavailable.");
@@ -127,11 +123,8 @@ public final class MainView extends JPanel {
      */
     public MainView(final WashroomListViewModel washrooms,
                     final MapViewModel route) { // TODO: why is this still here its being a pain
-        this(washrooms,
-            route,
-            new FilterViewModel(),
-            new IsLoggedInViewModel(),
-            new LogoutController(new LogoutInteractor(new InMemoryUserDataAccessObject(),
+        this(washrooms, route, new FilterViewModel(), new IsLoggedInViewModel(), new LogoutController(
+            new LogoutInteractor(new InMemoryUserDataAccessObject(),
                 new LogoutPresenter(new IsLoggedInViewModel(), new LoginViewModel(), new LoggedInViewModel()))));
     }
 
@@ -141,7 +134,9 @@ public final class MainView extends JPanel {
         this.logoutController = logoutController;
         isLoggedIn
             .getState()
-            .addPropertyChangeListener(e -> render(isLoggedIn.getState()));
+            .addPropertyChangeListener(e -> {
+                render(isLoggedIn.getState());
+            });
         setLayout(new BorderLayout());
         setBackground(Theme.PAPER);
         final JComponent loggedIn = headerLoggedIn();
@@ -155,27 +150,30 @@ public final class MainView extends JPanel {
         content.setContinuousLayout(true);
         add(content, BorderLayout.CENTER);
         map.setOnWashroomSelected(this::selectWashroom);
-        washrooms.addPropertyChangeListener(e -> renderList(washrooms
-            .getState()
-            .items()));
+        washrooms.addPropertyChangeListener(e -> {
+            renderList(washrooms
+                .getState()
+                .items());
+        });
         route.addPropertyChangeListener(e -> {
             final MapViewModel.State s = route.getState();
             if (s.success()) {
 
-                routeLabel.setText("<html><b>" + s.distance() + "</b> · about " + s.duration() +
-                    " walk · live GraphHopper route</html>");
+                routeLabel.setText("<html><b>" + s.distance() + "</b> · about " + s.duration()
+                    + " walk · live GraphHopper route</html>");
                 map.setRoute(s.points());
-            } else {
+            }
+            else {
                 routeLabel.setText(s.message());
                 map.clearRoute();
             }
         });
-        filter.addPropertyChangeListener(e ->
-        {
+        filter.addPropertyChangeListener(e -> {
             final FilterViewModel.State s = filter.getState();
             if (!s.success()) {
                 JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(this), s.message());
-            } else {
+            }
+            else {
                 map.setWashrooms(s.washrooms());
             }
         });
@@ -192,23 +190,30 @@ public final class MainView extends JPanel {
         p.add(brand, BorderLayout.WEST);
         final JPanel nav = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         nav.setOpaque(false);
-        moderatorNav = nav("Moderator", () -> onModerator.run());
+        moderatorNav = nav("Moderator", () -> {
+            onModerator.run();
+        });
         moderatorNav.setVisible(false); // hidden until a moderator logs in
-        for (final JButton b : new JButton[] {nav("Account", () -> onAccount.run()),
-                nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), moderatorNav}) {
+        for (final JButton b : new JButton[] {nav("Account", () -> {
+            onAccount.run();
+        }),
+            nav("Report status", () -> {
+                onReport.run();
+            }), nav("View status", () -> {
+            onBusyness.run();
+        }), moderatorNav}) {
             nav.add(b);
         }
         final JButton logoutButton = Theme.button("Logout");
-        logoutButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(final ActionEvent evt) {
+        logoutButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent evt) {
 
-                    onLogout.run();
-                    logoutController.execute();
+                onLogout.run();
+                logoutController.execute();
 
-                }
             }
-        );
+        });
         nav.add(logoutButton);
         p.add(nav, BorderLayout.EAST);
         return p;
@@ -225,8 +230,14 @@ public final class MainView extends JPanel {
         p.add(brand, BorderLayout.WEST);
         final JPanel nav = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         nav.setOpaque(false);
-        for (final JButton b : new JButton[] {nav("Report status", () -> onReport.run()),
-                nav("View status", () -> onBusyness.run()), nav("Login", () -> onLogin.run())}) {
+        for (final JButton b : new JButton[] {nav("Report status", () -> {
+            onReport.run();
+        }),
+            nav("View status", () -> {
+                onBusyness.run();
+            }), nav("Login", () -> {
+            onLogin.run();
+        })}) {
             nav.add(b);
         }
         p.add(nav, BorderLayout.EAST);
@@ -235,7 +246,9 @@ public final class MainView extends JPanel {
 
     private JButton nav(final String text, final Runnable action) {
         final JButton b = Theme.button(text);
-        b.addActionListener(e -> action.run());
+        b.addActionListener(e -> {
+            action.run();
+        });
         return b;
     }
 
@@ -258,38 +271,40 @@ public final class MainView extends JPanel {
         controls.add(washroomSortDropdownControl);
         washroomSortDropdownControl.addActionListener(e -> {
             final ArrayList<String> washroomIdList = new ArrayList<String>();
-            washroomIdList.addAll(
-                washrooms
-                    .getState()
-                    .items()
-                    .stream()
-                    .map(washroom -> washroom.id())
-                    .toList()
-            );
-            sortWashroomController.execute(
-                washroomSortDropdownControl
-                    .getSelectedItem()
-                    .toString(),
-                washroomIdList,
-                latitude,
-                longitude);
+            washroomIdList.addAll(washrooms
+                .getState()
+                .items()
+                .stream()
+                .map(washroom -> {
+                    return washroom.id();
+                })
+                .toList());
+            sortWashroomController.execute(washroomSortDropdownControl
+                .getSelectedItem()
+                .toString(), washroomIdList, latitude, longitude);
         });
         controls.add(washroomSortDropdownControl);
         p.add(controls, BorderLayout.NORTH);
 
         final MapClicker mapClicker = new MapClicker(map);
         location.addActionListener(
-            e -> new LocationInputDialog(SwingUtilities.getWindowAncestor(this), addressLookup, (lat, lng) -> {
-                latitude = lat;
-                longitude = lng;
-                map.setOrigin(new GeoPoint(lat, lng));
-                routeLabel.setText("Location updated — choose directions");
-            }, latitude, longitude, mapClicker).setVisible(true));
+            e -> {
+                new LocationInputDialog(SwingUtilities.getWindowAncestor(this), addressLookup, (lat, lng) -> {
+                    latitude = lat;
+                    longitude = lng;
+                    map.setOrigin(new GeoPoint(lat, lng));
+                    routeLabel.setText("Location updated — choose directions");
+                }, latitude, longitude, mapClicker).setVisible(true);
+            });
         filters.addActionListener(
-            e -> new FilterView(SwingUtilities.getWindowAncestor(this), "Filter", selectedId(), filterController,
-                latitude, longitude).setVisible(true));
+            e -> {
+                new FilterView(SwingUtilities.getWindowAncestor(this), "Filter", selectedId(), filterController,
+                    latitude, longitude).setVisible(true);
+            });
         clear.addActionListener(
-            e -> filterController.execute(5, 1, false, false, false, false, selectedId(), null, latitude, longitude));
+            e -> {
+                filterController.execute(5, 1, false, false, false, false, selectedId(), null, latitude, longitude);
+            });
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
         list.setBackground(Theme.PAPER);
         final JScrollPane scroll = new JScrollPane(list);
@@ -350,11 +365,13 @@ public final class MainView extends JPanel {
         cleanlinessHeatmap.setText("Cleanliness heatmap" + (cleanlinessHeatmapVisible ? " (On)" : ""));
         if (busynessHeatmapVisible && cleanlinessHeatmapVisible) {
             heatmapLegend.setText(
-                "Heatmap: busyness outer glow · cleanliness inner glow · blue = lower · orange = higher · gray = no " +
-                        "data");
-        } else if (busynessHeatmapVisible) {
+                "Heatmap: busyness outer glow · cleanliness inner glow · blue = lower · orange = higher · gray = no "
+                    + "data");
+        }
+        else if (busynessHeatmapVisible) {
             heatmapLegend.setText("Busyness heatmap: blue = less busy · orange = more busy · gray = no data");
-        } else if (cleanlinessHeatmapVisible) {
+        }
+        else if (cleanlinessHeatmapVisible) {
             heatmapLegend.setText("Cleanliness heatmap: blue = lower · orange = higher · gray = no data");
         }
         heatmapLegend.setVisible(busynessHeatmapVisible || cleanlinessHeatmapVisible);
@@ -366,10 +383,12 @@ public final class MainView extends JPanel {
         list.removeAll();
         cardsByWashroomId.clear();
         if (!selectedId.isBlank() && items
-                .stream()
-                .noneMatch(item -> item
-                        .id()
-                        .equals(selectedId))) {
+            .stream()
+            .noneMatch(item -> {
+                return item
+                    .id()
+                    .equals(selectedId);
+            })) {
             selectedId = "";
         }
         map.setSelectedWashroom(selectedId);
@@ -446,7 +465,9 @@ public final class MainView extends JPanel {
     }
 
     private void selectWashroom(final String id) {
-        if (id == null || id.isBlank() || id.equals(selectedId)) return;
+        if (id == null || id.isBlank() || id.equals(selectedId)) {
+            return;
+        }
         selectedId = id;
         renderList(renderedItems);
         scrollSelectedCardIntoView();
@@ -454,9 +475,12 @@ public final class MainView extends JPanel {
 
     private void scrollSelectedCardIntoView() {
         final JPanel selectedCard = cardsByWashroomId.get(selectedId);
-        if (selectedCard == null) return;
-        SwingUtilities.invokeLater(() -> selectedCard.scrollRectToVisible(
-            new Rectangle(0, 0, selectedCard.getWidth(), selectedCard.getHeight())));
+        if (selectedCard == null) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            selectedCard.scrollRectToVisible(new Rectangle(0, 0, selectedCard.getWidth(), selectedCard.getHeight()));
+        });
     }
 
     public void setWashrooms(final List<Washroom> washrooms) {
@@ -560,7 +584,8 @@ public final class MainView extends JPanel {
 
         if (state.getIsLoggedIn()) {
             buttonsLayout.show(buttonsPanel, "loggedIn");
-        } else {
+        }
+        else {
             buttonsLayout.show(buttonsPanel, "loggedOut");
         }
 
@@ -622,7 +647,9 @@ public final class MainView extends JPanel {
             viewer.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(final MouseEvent event) {
-                    if (!SwingUtilities.isLeftMouseButton(event)) return;
+                    if (!SwingUtilities.isLeftMouseButton(event)) {
+                        return;
+                    }
                     for (final Map.Entry<String, Rectangle> target : markerHitTargets.entrySet()) {
                         if (target
                             .getValue()
@@ -652,10 +679,11 @@ public final class MainView extends JPanel {
         }
 
         private static Color heatColor(final double value) {
-            if (Double.isNaN(value)) return Theme.NO_DATA;
+            if (Double.isNaN(value)) {
+                return Theme.NO_DATA;
+            }
             final double progress = Math.max(0, Math.min(1, (value - 1) / 4));
-            return new Color(
-                (int) Math.round(MAP_LOW.getRed() + (MAP_HIGH.getRed() - MAP_LOW.getRed()) * progress),
+            return new Color((int) Math.round(MAP_LOW.getRed() + (MAP_HIGH.getRed() - MAP_LOW.getRed()) * progress),
                 (int) Math.round(MAP_LOW.getGreen() + (MAP_HIGH.getGreen() - MAP_LOW.getGreen()) * progress),
                 (int) Math.round(MAP_LOW.getBlue() + (MAP_HIGH.getBlue() - MAP_LOW.getBlue()) * progress));
         }
@@ -682,18 +710,24 @@ public final class MainView extends JPanel {
                 byWashroomId.put(value.washroomId(), value);
             }
             heatmapData = Map.copyOf(byWashroomId);
-            if (viewer != null) viewer.repaint();
+            if (viewer != null) {
+                viewer.repaint();
+            }
         }
 
         void setHeatmapVisibility(final boolean busynessVisible, final boolean cleanlinessVisible) {
             showBusynessHeatmap = busynessVisible;
             showCleanlinessHeatmap = cleanlinessVisible;
-            if (viewer != null) viewer.repaint();
+            if (viewer != null) {
+                viewer.repaint();
+            }
         }
 
         void setSelectedWashroom(final String id) {
             selectedWashroomId = id == null ? "" : id;
-            if (viewer != null) viewer.repaint();
+            if (viewer != null) {
+                viewer.repaint();
+            }
         }
 
         void setOnWashroomSelected(final Consumer<String> action) {
@@ -703,7 +737,9 @@ public final class MainView extends JPanel {
 
         void setOrigin(final GeoPoint value) {
             origin = value;
-            if (viewer != null) viewer.repaint();
+            if (viewer != null) {
+                viewer.repaint();
+            }
         }
 
         void setRoute(final List<GeoPoint> points) {
@@ -716,7 +752,9 @@ public final class MainView extends JPanel {
 
         void clearRoute() {
             route = List.of();
-            if (viewer != null) viewer.repaint();
+            if (viewer != null) {
+                viewer.repaint();
+            }
         }
 
         private void paintOverlay(final Graphics2D graphics, final JXMapViewer map, final int width, final int height) {
@@ -733,21 +771,20 @@ public final class MainView extends JPanel {
                 final Washroom representative = washroomsAtLocation.getFirst();
                 final boolean selected = washroomsAtLocation
                     .stream()
-                    .anyMatch(washroom -> washroom
-                        .id()
-                        .equals(selectedWashroomId));
-                drawPoint(canvas, map, viewport,
-                    new GeoPoint(representative
-                        .building()
-                        .latitude(), representative
-                        .building()
-                        .longitude()),
-                    representative
-                        .building()
-                        .name(), selected ? MAP_LOW : MAP_HIGH,
-                    representative
-                        .building()
-                        .code(), representative.id(), selected);
+                    .anyMatch(washroom -> {
+                        return washroom
+                            .id()
+                            .equals(selectedWashroomId);
+                    });
+                drawPoint(canvas, map, viewport, new GeoPoint(representative
+                    .building()
+                    .latitude(), representative
+                    .building()
+                    .longitude()), representative
+                    .building()
+                    .name(), selected ? MAP_LOW : MAP_HIGH, representative
+                    .building()
+                    .code(), representative.id(), selected);
             }
             canvas.dispose();
         }
@@ -761,7 +798,9 @@ public final class MainView extends JPanel {
                     .building()
                     .longitude());
                 values
-                    .computeIfAbsent(location, ignored -> new ArrayList<>())
+                    .computeIfAbsent(location, ignored -> {
+                        return new ArrayList<>();
+                    })
                     .add(washroom);
             }
             return values;
@@ -769,7 +808,9 @@ public final class MainView extends JPanel {
 
         private void drawHeatmaps(final Graphics2D canvas, final JXMapViewer map,
                                   final Map<GeoPoint, List<Washroom>> washroomsByLocation) {
-            if (!showBusynessHeatmap && !showCleanlinessHeatmap) return;
+            if (!showBusynessHeatmap && !showCleanlinessHeatmap) {
+                return;
+            }
             for (final Map.Entry<GeoPoint, List<Washroom>> entry : washroomsByLocation.entrySet()) {
                 final Point2D point = map
                     .getTileFactory()
@@ -788,10 +829,16 @@ public final class MainView extends JPanel {
         private double averageReportedValue(final List<Washroom> washroomsAtLocation, final boolean busyness) {
             return washroomsAtLocation
                 .stream()
-                .map(washroom -> heatmapData.get(washroom.id()))
+                .map(washroom -> {
+                    return heatmapData.get(washroom.id());
+                })
                 .filter(java.util.Objects::nonNull)
-                .mapToDouble(value -> busyness ? value.busyness() : value.cleanliness())
-                .filter(value -> !Double.isNaN(value))
+                .mapToDouble(value -> {
+                    return busyness ? value.busyness() : value.cleanliness();
+                })
+                .filter(value -> {
+                    return !Double.isNaN(value);
+                })
                 .average()
                 .orElse(Double.NaN);
         }
@@ -805,7 +852,9 @@ public final class MainView extends JPanel {
         }
 
         private void drawRoute(final Graphics2D canvas, final JXMapViewer map) {
-            if (route.size() < 2) return;
+            if (route.size() < 2) {
+                return;
+            }
             final Path2D path = new Path2D.Double();
             for (int index = 0; index < route.size(); index++) {
                 final Point2D point = map
@@ -813,7 +862,8 @@ public final class MainView extends JPanel {
                     .geoToPixel(toPosition(route.get(index)), map.getZoom());
                 if (index == 0) {
                     path.moveTo(point.getX(), point.getY());
-                } else {
+                }
+                else {
                     path.lineTo(point.getX(), point.getY());
                 }
             }
@@ -825,8 +875,9 @@ public final class MainView extends JPanel {
             canvas.draw(path);
         }
 
-        private void drawPoint(final Graphics2D canvas, final JXMapViewer map, final Rectangle viewport, final GeoPoint geoPoint,
-                               final String label, final Color color, final String code, final String washroomId, final boolean selected) {
+        private void drawPoint(final Graphics2D canvas, final JXMapViewer map, final Rectangle viewport,
+                               final GeoPoint geoPoint, final String label, final Color color, final String code,
+                               final String washroomId, final boolean selected) {
             final Point2D point = map
                 .getTileFactory()
                 .geoToPixel(toPosition(geoPoint), map.getZoom());
@@ -861,37 +912,44 @@ public final class MainView extends JPanel {
                 canvas.drawString(label, x + 18, y - 7);
             }
             if (!washroomId.isBlank()) {
-                markerHitTargets.put(washroomId, new Rectangle(x - viewport.x - 16, y - viewport.y - 24,
-                    32, 32));
+                markerHitTargets.put(washroomId, new Rectangle(x - viewport.x - 16, y - viewport.y - 24, 32, 32));
             }
         }
 
         private void fitCampus() {
-            if (viewer == null || washrooms.isEmpty() || viewer.getWidth() == 0) return;
+            if (viewer == null || washrooms.isEmpty() || viewer.getWidth() == 0) {
+                return;
+            }
             final Set<GeoPosition> positions = new HashSet<>();
             positions.add(toPosition(origin));
             for (final Washroom washroom : washrooms) {
                 positions.add(new GeoPosition(washroom
-                        .building()
-                        .latitude(), washroom
-                        .building()
-                        .longitude()));
+                    .building()
+                    .latitude(), washroom
+                    .building()
+                    .longitude()));
             }
             viewer.zoomToBestFit(positions, .72);
         }
 
         private void fitRoute() {
-            if (viewer == null || route.isEmpty() || viewer.getWidth() == 0) return;
+            if (viewer == null || route.isEmpty() || viewer.getWidth() == 0) {
+                return;
+            }
             final Set<GeoPosition> positions = new HashSet<>();
-            for (final GeoPoint point : route) positions.add(toPosition(point));
+            for (final GeoPoint point : route) {
+                positions.add(toPosition(point));
+            }
             viewer.zoomToBestFit(positions, .82);
         }
 
+        @Override
         public void addMouseListener(final MouseListener m) {
             System.out.println("added mouselistener");
             viewer.addMouseListener(m);
         }
 
+        @Override
         public void removeMouseListener(final MouseListener m) {
             viewer.removeMouseListener(m);
         }

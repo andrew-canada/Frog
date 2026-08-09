@@ -1,12 +1,12 @@
 package use_case.port;
 
-import entity.StatusReport;
-
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import entity.StatusReport;
 
 public interface StatusReportRepository {
     void save(StatusReport report);
@@ -24,11 +24,15 @@ public interface StatusReportRepository {
         for (final String washroomId : washroomIds) {
             getRecentForWashroom(washroomId, since)
                 .stream()
-                .filter(report -> report
-                    .timestamp()
-                    .getHour() == hour)
+                .filter(report -> {
+                    return report
+                        .timestamp()
+                        .getHour() == hour;
+                })
                 .max(Comparator.comparing(StatusReport::timestamp))
-                .ifPresent(report -> result.put(washroomId, report));
+                .ifPresent(report -> {
+                    result.put(washroomId, report);
+                });
         }
         return Map.copyOf(result);
     }

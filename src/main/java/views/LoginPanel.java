@@ -1,5 +1,9 @@
 package views;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.GridBagLayout;
+
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -11,9 +15,6 @@ import javax.swing.JTextField;
 
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginViewModel;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.GridBagLayout;
 
 public final class LoginPanel extends JPanel {
     private static final String DEFAULT_MESSAGE = "Sign in with an account stored in MongoDB.";
@@ -52,9 +53,15 @@ public final class LoginPanel extends JPanel {
 
         final JButton login = Theme.primary("Log in");
         final JButton signup = Theme.button("Create account");
-        for (final JButton button : new JButton[] {login, signup, back}) button.setAlignmentX(Component.LEFT_ALIGNMENT);
-        login.addActionListener(event -> controller.execute(username.getText(), new String(password.getPassword())));
-        signup.addActionListener(event -> onSignup.run());
+        for (final JButton button : new JButton[] {login, signup, back}) {
+            button.setAlignmentX(Component.LEFT_ALIGNMENT);
+        }
+        login.addActionListener(event -> {
+            controller.execute(username.getText(), new String(password.getPassword()));
+        });
+        signup.addActionListener(event -> {
+            onSignup.run();
+        });
         back.addActionListener(event -> {
             username.setText("");
             password.setText("");
@@ -76,8 +83,7 @@ public final class LoginPanel extends JPanel {
                 .isBlank() ? DEFAULT_MESSAGE : state.message());
             message.setForeground(state
                 .message()
-                .isBlank() ? Theme.MUTED
-                : state.success() ? new Color(37, 125, 80) : Theme.BERRY);
+                .isBlank() ? Theme.MUTED : state.success() ? new Color(37, 125, 80) : Theme.BERRY);
             back.setText(state.success() ? "View map" : "Continue as guest");
         });
     }

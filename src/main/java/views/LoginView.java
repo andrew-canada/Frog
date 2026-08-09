@@ -1,5 +1,12 @@
 package views;
 
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -12,12 +19,6 @@ import javax.swing.JTextField;
 
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginViewModel;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public final class LoginView implements ActionListener {
     private final JPanel panel1, panel2, panel3, panel4;
@@ -96,6 +97,7 @@ public final class LoginView implements ActionListener {
 
     }
 
+    @Override
     public void actionPerformed(final ActionEvent event) {
 
         final String eventName = event.getActionCommand();
@@ -118,10 +120,12 @@ public final class LoginView implements ActionListener {
                 }
 
                  */
-        } else if (eventName.equals("Cancel")) {
+        }
+        else if (eventName.equals("Cancel")) {
             // System.out.println("Cancel pressed. ");
             ((Window) dialog.getParent()).dispose();
-        } else if (eventName.equals("Continue as guest")) {
+        }
+        else if (eventName.equals("Continue as guest")) {
 
         }
 

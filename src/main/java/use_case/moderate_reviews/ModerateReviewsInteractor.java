@@ -1,12 +1,13 @@
 package use_case.moderate_reviews;
 
-import entity.Report;
-import entity.Review;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import entity.Report;
+import entity.Review;
 import use_case.port.WashroomRepository;
 
 /**
@@ -25,8 +26,7 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
     private final ModerateReviewsOutputBoundary presenter;
 
     public ModerateReviewsInteractor(final ReportedReviewsDataAccessInterface reports,
-                                     final ReviewAdminDataAccessInterface reviews,
-                                     final WashroomRepository washrooms,
+                                     final ReviewAdminDataAccessInterface reviews, final WashroomRepository washrooms,
                                      final ModeratorDataAccessInterface moderators,
                                      final ModerateReviewsOutputBoundary presenter) {
         this.reports = reports;
@@ -84,7 +84,9 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
         final Map<String, List<Report>> byReview = new LinkedHashMap<>();
         for (final Report report : reports.getAllReports()) {
             byReview
-                .computeIfAbsent(report.reviewId(), key -> new ArrayList<>())
+                .computeIfAbsent(report.reviewId(), key -> {
+                    return new ArrayList<>();
+                })
                 .add(report);
         }
 
@@ -125,15 +127,18 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
             }
         }
         final List<ReportedReview.ReasonCount> reasonCounts = new ArrayList<>();
-        reasonTotals.forEach((reason, count) ->
-            reasonCounts.add(new ReportedReview.ReasonCount(reason, count)));
+        reasonTotals.forEach((reason, count) -> {
+            reasonCounts.add(new ReportedReview.ReasonCount(reason, count));
+        });
 
         final String washroomName = washrooms
             .getById(review.washroomId())
-            .map(washroom -> washroom.name() + " — " + washroom.floor())
+            .map(washroom -> {
+                return washroom.name() + " — " + washroom.floor();
+            })
             .orElse(review.washroomId());
 
-        return new ReportedReview(review.id(), washroomName, review.authorUsername(),
-            review.createdAt(), review.rating(), review.comment(), reasonCounts, details);
+        return new ReportedReview(review.id(), washroomName, review.authorUsername(), review.createdAt(),
+            review.rating(), review.comment(), reasonCounts, details);
     }
 }

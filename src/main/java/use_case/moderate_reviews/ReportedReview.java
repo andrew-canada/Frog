@@ -6,9 +6,8 @@ import java.util.List;
 /**
  * A review that has outstanding reports, aggregated for the moderator queue.
  */
-public record ReportedReview(String reviewId, String washroomName, String author, LocalDate date,
-                             double rating, String comment, List<ReasonCount> reasonCounts,
-                             List<AdditionalDetail> additionalDetails) {
+public record ReportedReview(String reviewId, String washroomName, String author, LocalDate date, double rating,
+                             String comment, List<ReasonCount> reasonCounts, List<AdditionalDetail> additionalDetails) {
 
     public ReportedReview {
         reasonCounts = List.copyOf(reasonCounts);

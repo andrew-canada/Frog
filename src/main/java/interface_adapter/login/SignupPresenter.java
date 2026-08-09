@@ -15,6 +15,8 @@ public final class SignupPresenter implements SignupOutputBoundary {
     @Override
     public void present(final SignupOutputData d) {
         login.setState(new LoginViewModel.State(d.success(), d.username(), d.message()));
-        if (d.success()) loggedIn.setState(new LoggedInViewModel.State(true, d.username(), false));
+        if (d.success()) {
+            loggedIn.setState(new LoggedInViewModel.State(true, d.username(), false));
+        }
     }
 }

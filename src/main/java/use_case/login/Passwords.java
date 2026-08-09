@@ -1,11 +1,11 @@
 package use_case.login;
 
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 /**
  * JDK-only salted password hashing; MongoDB stores only the encoded PBKDF2 result.
@@ -18,19 +18,22 @@ public final class Passwords {
     }
 
     public static String hash(final String raw) {
-        if (raw == null || raw.isEmpty()) throw new IllegalArgumentException("Password is required");
+        if (raw == null || raw.isEmpty()) {
+            throw new IllegalArgumentException("Password is required");
+        }
         final byte[] salt = new byte[16];
         RANDOM.nextBytes(salt);
         return ITERATIONS + ":" + Base64
             .getEncoder()
-            .encodeToString(salt) + ":"
-            + Base64
+            .encodeToString(salt) + ":" + Base64
             .getEncoder()
             .encodeToString(derive(raw, salt, ITERATIONS));
     }
 
     public static boolean matches(final String raw, final String encoded) {
-        if (raw == null || encoded == null) return false;
+        if (raw == null || encoded == null) {
+            return false;
+        }
         try {
             final String[] parts = encoded.split(":", 3);
             final int rounds = Integer.parseInt(parts[0]);
@@ -41,7 +44,8 @@ public final class Passwords {
                 .getDecoder()
                 .decode(parts[2]);
             return MessageDigest.isEqual(expected, derive(raw, salt, rounds));
-        } catch (final RuntimeException malformed) {
+        }
+        catch (final RuntimeException malformed) {
             return false;
         }
     }
@@ -53,9 +57,11 @@ public final class Passwords {
                 .getInstance("PBKDF2WithHmacSHA256")
                 .generateSecret(spec)
                 .getEncoded();
-        } catch (final Exception unavailable) {
+        }
+        catch (final Exception unavailable) {
             throw new IllegalStateException("PBKDF2 is unavailable", unavailable);
-        } finally {
+        }
+        finally {
             spec.clearPassword();
         }
     }

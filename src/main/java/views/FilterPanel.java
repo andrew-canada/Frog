@@ -1,5 +1,9 @@
 package views;
 
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.event.WindowEvent;
+
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -11,9 +15,6 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 
 import entity.Washroom;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.event.WindowEvent;
 
 public final class FilterPanel extends JPanel {
     private final JFrame frame;
@@ -69,9 +70,15 @@ public final class FilterPanel extends JPanel {
         final JPanel buttonPanel = new JPanel();
         final JButton cancel = Theme.button("Cancel");
         final JButton confirm = Theme.primary("Filter");
-        for (final JButton button : new JButton[] {cancel, confirm}) button.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cancel.addActionListener(e -> frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING)));
-        confirm.addActionListener(e -> onFilter.run());
+        for (final JButton button : new JButton[] {cancel, confirm}) {
+            button.setAlignmentX(Component.LEFT_ALIGNMENT);
+        }
+        cancel.addActionListener(e -> {
+            frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+        });
+        confirm.addActionListener(e -> {
+            onFilter.run();
+        });
         buttonPanel.add(cancel);
         buttonPanel.add(confirm);
         add(buttonPanel);

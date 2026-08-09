@@ -1,5 +1,11 @@
 package views;
 
+import java.awt.FlowLayout;
+import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeListener;
+
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -12,18 +18,14 @@ import javax.swing.JTextArea;
 
 import interface_adapter.write_review.WriteReviewController;
 import interface_adapter.write_review.WriteReviewViewModel;
-import java.awt.FlowLayout;
-import java.awt.Window;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * Small modal editor; persistence and validation remain in the write-review use case.
  */
 public final class WriteReviewDialog extends JDialog {
-    public WriteReviewDialog(final Window owner, final WriteReviewViewModel model, final WriteReviewController controller,
-                             final String washroomId, final String washroomName, final String username, final Runnable onSaved) {
+    public WriteReviewDialog(final Window owner, final WriteReviewViewModel model,
+                             final WriteReviewController controller, final String washroomId, final String washroomName,
+                             final String username, final Runnable onSaved) {
         super(owner, "Write a review", ModalityType.APPLICATION_MODAL);
         final JPanel page = Theme.page();
         page.setLayout(new BoxLayout(page, BoxLayout.Y_AXIS));
@@ -51,9 +53,13 @@ public final class WriteReviewDialog extends JDialog {
         buttons.setOpaque(false);
         final JButton cancel = Theme.button("Cancel");
         final JButton submit = Theme.primary("Post review");
-        cancel.addActionListener(event -> dispose());
-        submit.addActionListener(event -> controller.execute(washroomId, username, rating.getValue(),
-            cleanliness.getValue(), comment.getText()));
+        cancel.addActionListener(event -> {
+            dispose();
+        });
+        submit.addActionListener(
+            event -> {
+                controller.execute(washroomId, username, rating.getValue(), cleanliness.getValue(), comment.getText());
+            });
         buttons.add(cancel);
         buttons.add(submit);
         page.add(buttons);

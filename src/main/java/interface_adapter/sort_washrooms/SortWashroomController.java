@@ -2,6 +2,7 @@ package interface_adapter.sort_washrooms;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
 import use_case.sort_washrooms.SortWashroomInputData;
 import use_case.sort_washrooms.SortWashroomsInputBoundary;
 import use_case.sort_washrooms.WashroomSortOrder;
@@ -13,8 +14,12 @@ public final class SortWashroomController {
         this.interactor = interactor;
     }
 
-    public void execute(final String sortBy, final List<String> washroomIdList, final double latitude, final double longitude) {
-        CompletableFuture.runAsync(() -> interactor.execute(new SortWashroomInputData(
-            WashroomSortOrder.fromDisplayLabel(sortBy), washroomIdList, latitude, longitude)));
+    public void execute(final String sortBy, final List<String> washroomIdList, final double latitude,
+                        final double longitude) {
+        CompletableFuture.runAsync(() -> {
+            interactor.execute(
+                new SortWashroomInputData(WashroomSortOrder.fromDisplayLabel(sortBy), washroomIdList, latitude,
+                    longitude));
+        });
     }
 }

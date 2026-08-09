@@ -1,5 +1,15 @@
 package views;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -11,15 +21,6 @@ import javax.swing.JScrollPane;
 
 import interface_adapter.moderate_reviews.ModerateReviewsController;
 import interface_adapter.moderate_reviews.ModerateReviewsViewModel;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import use_case.moderate_reviews.ReportedReview;
 
 /**
@@ -92,7 +93,9 @@ public final class ReportedReviewsView extends JPanel {
         outer.setBorder(Theme.pad(18, 24, 8, 24));
         outer.add(Theme.title("Reported Reviews"), BorderLayout.WEST);
         final JButton back = Theme.button("← Back to map");
-        back.addActionListener(e -> onBack.run());
+        back.addActionListener(e -> {
+            onBack.run();
+        });
         final JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         right.setOpaque(false);
         right.add(back);
@@ -119,8 +122,8 @@ public final class ReportedReviewsView extends JPanel {
             return;
         }
 
-        final String count = reviews.size() == 1 ? "1 review awaiting moderation"
-            : reviews.size() + " reviews awaiting moderation";
+        final String count =
+            reviews.size() == 1 ? "1 review awaiting moderation" : reviews.size() + " reviews awaiting moderation";
         body.add(left(Theme.label(count, 13, Theme.MUTED)));
         body.add(Box.createVerticalStrut(10));
 
@@ -139,16 +142,15 @@ public final class ReportedReviewsView extends JPanel {
         final JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBackground(Theme.PAPER);
-        card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Theme.LINE), Theme.pad(14, 16, 14, 16)));
+        card.setBorder(
+            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(14, 16, 14, 16)));
 
         card.add(row(bold(Theme.label(review.washroomName(), 15, Theme.INK)),
             Theme.label(review.totalReports() + " reports", 13, Theme.MUTED)));
         card.add(Box.createVerticalStrut(8));
-        card.add(row(Theme.label("Author: " + review.author(), 13, Theme.INK),
-            Theme.label("Posted: " + review
-                .date()
-                .format(DATE), 13, Theme.MUTED)));
+        card.add(row(Theme.label("Author: " + review.author(), 13, Theme.INK), Theme.label("Posted: " + review
+            .date()
+            .format(DATE), 13, Theme.MUTED)));
         card.add(left(
             Theme.label(String.format("Rating: %.1f %s", review.rating(), stars(review.rating())), 13, Theme.INK)));
         card.add(Box.createVerticalStrut(8));
@@ -165,9 +167,8 @@ public final class ReportedReviewsView extends JPanel {
         if (detailsCount > 0) {
             final boolean open = expanded.contains(review.reviewId());
             card.add(Box.createVerticalStrut(8));
-            final JButton toggle = Theme.button(open
-                ? "Hide Additional Details ▲"
-                : "View Additional Details (" + detailsCount + ") ▼");
+            final JButton toggle =
+                Theme.button(open ? "Hide Additional Details ▲" : "View Additional Details (" + detailsCount + ") ▼");
             toggle.addActionListener(e -> {
                 if (!expanded.remove(review.reviewId())) {
                     expanded.add(review.reviewId());

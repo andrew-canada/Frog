@@ -1,7 +1,8 @@
 package interface_adapter.busyness;
 
-import interface_adapter.common.ViewModel;
 import java.util.List;
+
+import interface_adapter.common.ViewModel;
 import use_case.busyness.BusynessStatsOutputData;
 
 public final class BusynessViewModel extends ViewModel<BusynessViewModel.State> {

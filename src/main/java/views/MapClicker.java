@@ -1,7 +1,5 @@
 package views;
 
-import org.jxmapviewer.viewer.GeoPosition;
-
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Window;
@@ -11,6 +9,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.util.function.BiConsumer;
+
+import org.jxmapviewer.viewer.GeoPosition;
 
 public class MapClicker implements ActionListener {
     MainView.CampusMapPanel map;

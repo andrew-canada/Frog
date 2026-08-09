@@ -1,11 +1,12 @@
 package use_case.busyness;
 
-import entity.EnrollmentMeeting;
-import entity.StatusReport;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+
+import entity.EnrollmentMeeting;
+import entity.StatusReport;
 import use_case.port.EnrollmentScheduleGateway;
 import use_case.port.StatusReportRepository;
 
@@ -32,16 +33,20 @@ public final class BusynessStatsInteractor implements BusynessStatsInputBoundary
             final int h = hour;
             final StatusReport latestReport = observations
                 .stream()
-                .filter(r -> r
-                    .timestamp()
-                    .getHour() == h)
+                .filter(r -> {
+                    return r
+                        .timestamp()
+                        .getHour() == h;
+                })
                 .max(Comparator.comparing(StatusReport::timestamp))
                 .orElse(null);
             final double crowd = latestReport == null ? Double.NaN : latestReport.busyness();
             final double cleanliness = latestReport == null ? 0 : latestReport.cleanliness();
             final int students = meetings
                 .stream()
-                .filter(m -> h >= m.startHour() && h < m.endHour())
+                .filter(m -> {
+                    return h >= m.startHour() && h < m.endHour();
+                })
                 .mapToInt(EnrollmentMeeting::enrollment)
                 .sum();
             final boolean hasTimetable = !meetings.isEmpty();
@@ -51,8 +56,9 @@ public final class BusynessStatsInteractor implements BusynessStatsInputBoundary
             buckets.add(new BusynessStatsOutputData.HourBucket(hour, Math.max(0, Math.min(5, level)), cleanliness,
                 hasCrowd ? "latest report" : hasTimetable ? "enrollment" : "no data"));
         }
-        final String note = observations.isEmpty() && meetings.isEmpty() ? "No status or enrollment data is stored yet"
-            : "MongoDB status reports blended with stored timetable enrollment";
+        final String note =
+            observations.isEmpty() && meetings.isEmpty() ? "No status or enrollment data is stored yet" :
+                "MongoDB status reports blended with stored timetable enrollment";
         presenter.present(new BusynessStatsOutputData(buckets, note));
     }
 }

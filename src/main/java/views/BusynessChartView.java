@@ -1,12 +1,5 @@
 package views;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import interface_adapter.busyness.BusynessViewModel;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -19,6 +12,14 @@ import java.awt.RenderingHints;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.function.ToDoubleFunction;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import interface_adapter.busyness.BusynessViewModel;
 import use_case.busyness.BusynessStatsOutputData;
 
 public final class BusynessChartView extends JPanel {
@@ -45,7 +46,9 @@ public final class BusynessChartView extends JPanel {
         text.add(currentHourHint);
         header.add(text);
         final JButton back = Theme.button("← Back to map");
-        back.addActionListener(e -> onBack.run());
+        back.addActionListener(e -> {
+            onBack.run();
+        });
         header.add(back, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
         final JPanel charts = new JPanel(new GridLayout(2, 1, 0, 16));
@@ -136,8 +139,8 @@ public final class BusynessChartView extends JPanel {
                     x.fillRoundRect(px - 4, top - 8, w + 8, bottom - top + 34, 10, 10);
                     x.setColor(Theme.BRIGHT_GREEN);
                     final int markerX = px + w / 2;
-                    x.fillPolygon(new int[] {markerX - 4, markerX + 4, markerX},
-                        new int[] {top - 8, top - 8, top - 2}, 3);
+                    x.fillPolygon(new int[] {markerX - 4, markerX + 4, markerX}, new int[] {top - 8, top - 8, top - 2},
+                        3);
                 }
                 final float t = (float) Math.max(0, Math.min(1, (level - 1) / 4));
                 x.setColor(blend(Theme.COLORBLIND_BLUE, Theme.COLORBLIND_ORANGE, t));
@@ -159,8 +162,7 @@ public final class BusynessChartView extends JPanel {
                     .getFont()
                     .deriveFont(Font.PLAIN, 11f));
                 x.setColor(Theme.MUTED);
-                x.drawString(String.format("%.1f", level), px - (isCurrentHour ? 2 : 0),
-                    py - (isCurrentHour ? 14 : 6));
+                x.drawString(String.format("%.1f", level), px - (isCurrentHour ? 2 : 0), py - (isCurrentHour ? 14 : 6));
             }
             x.dispose();
         }

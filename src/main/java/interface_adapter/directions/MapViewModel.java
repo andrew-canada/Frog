@@ -1,9 +1,9 @@
 package interface_adapter.directions;
 
+import java.util.List;
+
 import entity.GeoPoint;
 import interface_adapter.common.ViewModel;
-
-import java.util.List;
 
 public final class MapViewModel extends ViewModel<MapViewModel.State> {
     public MapViewModel() {

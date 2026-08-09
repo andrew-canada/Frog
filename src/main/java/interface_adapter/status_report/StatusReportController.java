@@ -11,7 +11,8 @@ public final class StatusReportController {
         interactor = i;
     }
 
-    public void execute(final String id, final int busy, final int clean, final MaintenanceIssue issue, final String user) {
+    public void execute(final String id, final int busy, final int clean, final MaintenanceIssue issue,
+                        final String user) {
         interactor.execute(new SubmitStatusReportInputData(id, busy, clean, issue, user));
     }
 }

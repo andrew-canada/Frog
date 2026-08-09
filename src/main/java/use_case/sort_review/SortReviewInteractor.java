@@ -1,14 +1,15 @@
 package use_case.sort_review;
 
-import entity.Review;
-import entity.ReviewSummary;
-import entity.Washroom;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+
+import entity.Review;
+import entity.ReviewSummary;
+import entity.Washroom;
 import use_case.port.CurrentUserSession;
 import use_case.port.ReviewRepository;
 import use_case.port.WashroomRepository;
@@ -26,8 +27,7 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
     private final ReviewReportDataAccessInterface reportDAO;
     private final ViewReviewsOutputBoundary presenter;
 
-    public SortReviewInteractor(final ReviewRepository reviewDAO,
-                                final CurrentUserSession session,
+    public SortReviewInteractor(final ReviewRepository reviewDAO, final CurrentUserSession session,
                                 final WashroomRepository washroomDAO,
                                 final HelpfulVoteDataAccessInterface helpfulVoteDAO,
                                 final ReviewReportDataAccessInterface reportDAO,
@@ -69,7 +69,8 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
             return;
         }
 
-        final ReviewSortOrder sortOrder = inputData.sortOrder() == null ? ReviewSortOrder.RELEVANCE : inputData.sortOrder();
+        final ReviewSortOrder sortOrder =
+            inputData.sortOrder() == null ? ReviewSortOrder.RELEVANCE : inputData.sortOrder();
         final Comparator<entity.Review> comparator = switch (sortOrder) {
             case RELEVANCE -> Comparator
                 .comparing(SortReviewInteractor::score)
@@ -86,13 +87,18 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
                 .reversed();
             case VOTED_BY_ME -> session
                 .currentUser()
-                .map(user -> Comparator
-                    .comparing(
-                        (entity.Review review) -> review
-                            .authorUsername()
-                            .equals(user.name()))
-                    .reversed())
-                .orElseGet(() -> Comparator.comparing(entity.Review::getHelpfuls));
+                .map(user -> {
+                    return Comparator
+                        .comparing((Review review) -> {
+                            return review
+                                .authorUsername()
+                                .equals(user.name());
+                        })
+                        .reversed();
+                })
+                .orElseGet(() -> {
+                    return Comparator.comparing(Review::getHelpfuls);
+                });
         };
         final ArrayList<Review> sortedReviews = new ArrayList<>(reviewDAO.getReviewsForWashroom(washroom.id()));
         sortedReviews.sort(comparator);
@@ -109,21 +115,14 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
         final Set<String> reportedReviewIds = reportDAO.reportedReviewIds(reviewIds, username);
         final List<ViewReviewsOutputData.ReviewDisplay> display = sortedReviews
             .stream()
-            .map(r -> new ViewReviewsOutputData.ReviewDisplay(
-                r.id(),
-                r.rating(),
-                r.comment(),
-                r.helpfulCount(),
-                r.createdAt(),
-                r.authorUsername(),
-                votedReviewIds.contains(r.id()),
-                reportedReviewIds.contains(r.id())
-            ))
+            .map(r -> {
+                return new ViewReviewsOutputData.ReviewDisplay(r.id(), r.rating(), r.comment(), r.helpfulCount(), r.createdAt(), r.authorUsername(), votedReviewIds.contains(r.id()),
+                    reportedReviewIds.contains(r.id()));
+            })
             .toList();
         presenter.present(new ViewReviewsOutputData(washroom.id(), washroom
             .building()
-            .name(), displayDescription(washroom),
-            summary.averageRating(), summary.averageCleanliness(), summary.reviewCount(),
-            washroom.numToilets(), washroom.numSinks(), display));
+            .name(), displayDescription(washroom), summary.averageRating(), summary.averageCleanliness(),
+            summary.reviewCount(), washroom.numToilets(), washroom.numSinks(), display));
     }
 }

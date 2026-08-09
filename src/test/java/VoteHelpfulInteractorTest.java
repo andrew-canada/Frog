@@ -21,14 +21,17 @@ final class VoteHelpfulInteractorTest {
     private static void voteTogglesThroughGateway() {
         final Set<String> voted = new HashSet<>();
         final HelpfulVoteDataAccessInterface votes = new HelpfulVoteDataAccessInterface() {
+            @Override
             public boolean hasVoted(final String r, final String u) {
                 return voted.contains(r + "|" + u);
             }
 
+            @Override
             public void addVote(final String r, final String u) {
                 voted.add(r + "|" + u);
             }
 
+            @Override
             public void removeVote(final String r, final String u) {
                 voted.remove(r + "|" + u);
             }

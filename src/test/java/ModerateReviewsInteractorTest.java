@@ -37,7 +37,9 @@ final class ModerateReviewsInteractorTest {
         final ModerateReviewsOutputData[] out = new ModerateReviewsOutputData[1];
         final ModerateReviewsInputBoundary moderator =
             new ModerateReviewsInteractor(reportStore(reports), reviewStore, noWashrooms(), moderators(true),
-                d -> out[0] = d);
+                d -> {
+                    out[0] = d;
+                });
 
         moderator.loadReportedReviews();
         TestSupport.check(out[0]
@@ -65,7 +67,9 @@ final class ModerateReviewsInteractorTest {
         final ModerateReviewsOutputData[] out = new ModerateReviewsOutputData[1];
         final ModerateReviewsInputBoundary moderator =
             new ModerateReviewsInteractor(reportStore(reports), reviewStore(deletedReviews), noWashrooms(),
-                moderators(true), d -> out[0] = d);
+                moderators(true), d -> {
+                out[0] = d;
+            });
 
         moderator.dismissReports(new ModerateReviewsInputData("r1", "moderator"));
         TestSupport.check(reports.isEmpty(), "reports cleared on dismiss");
@@ -82,30 +86,37 @@ final class ModerateReviewsInteractorTest {
             report("r1", "user3", List.of("Harassment"), ""),
             report("r2", "user4", List.of("Off-topic"), "")));
         final ReviewAdminDataAccessInterface reviewStore = new ReviewAdminDataAccessInterface() {
+            @Override
             public Optional<Review> getById(final String id) {
                 return Optional.of(review(id));
             }
 
+            @Override
             public void deleteReview(final String id) {
             }
         };
         final Washroom w = TestSupport.washroom(); // "Test washroom", floor "2nd"
         final WashroomRepository washrooms = new WashroomRepository() {
+            @Override
             public Optional<Washroom> getById(final String id) {
                 return Optional.of(w);
             }
 
+            @Override
             public List<Washroom> getNearby(final double a, final double b, final double c) {
                 return List.of(w);
             }
 
+            @Override
             public List<Washroom> getAll() {
                 return List.of(w);
             }
         };
         final ModerateReviewsOutputData[] out = new ModerateReviewsOutputData[1];
         new ModerateReviewsInteractor(reportStore(reports), reviewStore, washrooms, moderators(true),
-            d -> out[0] = d).loadReportedReviews();
+            d -> {
+                out[0] = d;
+            }).loadReportedReviews();
 
         final List<ReportedReview> queue = out[0].reportedReviews();
         TestSupport.check(queue.size() == 2, "both reported reviews shown at once");
@@ -128,16 +139,20 @@ final class ModerateReviewsInteractorTest {
     private static void moderatorQueueSkipsReportsForMissingReview() {
         final List<Report> reports = new ArrayList<>(List.of(report("gone", "user2", List.of("Spam"), "")));
         final ReviewAdminDataAccessInterface reviewStore = new ReviewAdminDataAccessInterface() {
+            @Override
             public Optional<Review> getById(final String id) {
                 return Optional.empty();
             } // review no longer exists
 
+            @Override
             public void deleteReview(final String id) {
             }
         };
         final ModerateReviewsOutputData[] out = new ModerateReviewsOutputData[1];
         new ModerateReviewsInteractor(reportStore(reports), reviewStore, noWashrooms(), moderators(true),
-            d -> out[0] = d).loadReportedReviews();
+            d -> {
+                out[0] = d;
+            }).loadReportedReviews();
         TestSupport.check(out[0]
             .reportedReviews()
             .isEmpty(), "reports for a missing review are skipped");
@@ -150,7 +165,9 @@ final class ModerateReviewsInteractorTest {
         // moderators(false): the acting user is NOT a moderator.
         final ModerateReviewsInputBoundary actor =
             new ModerateReviewsInteractor(reportStore(reports), reviewStore(deletedReviews), noWashrooms(),
-                moderators(false), d -> out[0] = d);
+                moderators(false), d -> {
+                out[0] = d;
+            });
 
         actor.removeReview(new ModerateReviewsInputData("r1", "not_a_mod"));
         TestSupport.check(!deletedReviews.contains("r1"), "review NOT removed by a non-moderator");
@@ -179,14 +196,18 @@ final class ModerateReviewsInteractorTest {
      */
     private static ReportedReviewsDataAccessInterface reportStore(final List<Report> reports) {
         return new ReportedReviewsDataAccessInterface() {
+            @Override
             public List<Report> getAllReports() {
                 return new ArrayList<>(reports);
             }
 
+            @Override
             public void deleteReportsForReview(final String reviewId) {
-                reports.removeIf(r -> r
-                    .reviewId()
-                    .equals(reviewId));
+                reports.removeIf(r -> {
+                    return r
+                        .reviewId()
+                        .equals(reviewId);
+                });
             }
         };
     }
@@ -196,10 +217,12 @@ final class ModerateReviewsInteractorTest {
      */
     private static ReviewAdminDataAccessInterface reviewStore(final Set<String> deleted) {
         return new ReviewAdminDataAccessInterface() {
+            @Override
             public Optional<Review> getById(final String id) {
                 return deleted.contains(id) ? Optional.empty() : Optional.of(review(id));
             }
 
+            @Override
             public void deleteReview(final String id) {
                 deleted.add(id);
             }
@@ -210,19 +233,24 @@ final class ModerateReviewsInteractorTest {
      * A moderator-authorization gateway that grants or denies everyone uniformly.
      */
     private static ModeratorDataAccessInterface moderators(final boolean allowed) {
-        return username -> allowed;
+        return username -> {
+            return allowed;
+        };
     }
 
     private static WashroomRepository noWashrooms() {
         return new WashroomRepository() {
+            @Override
             public Optional<Washroom> getById(final String id) {
                 return Optional.empty();
             }
 
+            @Override
             public List<Washroom> getNearby(final double a, final double b, final double c) {
                 return List.of();
             }
 
+            @Override
             public List<Washroom> getAll() {
                 return List.of();
             }

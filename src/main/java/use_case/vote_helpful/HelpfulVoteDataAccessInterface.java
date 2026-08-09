@@ -21,7 +21,9 @@ public interface HelpfulVoteDataAccessInterface {
     default Set<String> votedReviewIds(final Collection<String> reviewIds, final String username) {
         return reviewIds
             .stream()
-            .filter(reviewId -> hasVoted(reviewId, username))
+            .filter(reviewId -> {
+                return hasVoted(reviewId, username);
+            })
             .collect(Collectors.toUnmodifiableSet());
     }
 

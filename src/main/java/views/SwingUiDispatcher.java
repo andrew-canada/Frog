@@ -12,7 +12,8 @@ public final class SwingUiDispatcher implements UiDispatcher {
     public void dispatch(final Runnable update) {
         if (SwingUtilities.isEventDispatchThread()) {
             update.run();
-        } else {
+        }
+        else {
             SwingUtilities.invokeLater(update);
         }
     }

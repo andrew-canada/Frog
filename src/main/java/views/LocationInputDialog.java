@@ -1,5 +1,12 @@
 package views;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Window;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -10,12 +17,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
 import entity.GeoPoint;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Window;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 public final class LocationInputDialog extends JDialog {
     private final JTextField address;
@@ -82,8 +83,12 @@ public final class LocationInputDialog extends JDialog {
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.NONE;
         p.add(useCoordinates, c);
-        useCoordinates.addActionListener(e -> useCoordinates());
-        useAddress.addActionListener(e -> useAddress(useAddress));
+        useCoordinates.addActionListener(e -> {
+            useCoordinates();
+        });
+        useAddress.addActionListener(e -> {
+            useAddress(useAddress);
+        });
         setContentPane(p);
         pack();
         setLocationRelativeTo(owner);
@@ -97,7 +102,8 @@ public final class LocationInputDialog extends JDialog {
                 .getText()
                 .trim()));
             dispose();
-        } catch (final NumberFormatException ex) {
+        }
+        catch (final NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Enter numeric coordinates.", "Invalid coordinates",
                 JOptionPane.WARNING_MESSAGE);
         }
@@ -126,7 +132,8 @@ public final class LocationInputDialog extends JDialog {
                     final GeoPoint point = get();
                     onSave.accept(point.latitude(), point.longitude());
                     dispose();
-                } catch (final Exception failure) {
+                }
+                catch (final Exception failure) {
                     final Throwable cause = failure.getCause() == null ? failure : failure.getCause();
                     JOptionPane.showMessageDialog(LocationInputDialog.this,
                         cause.getMessage() == null ? "Address search failed." : cause.getMessage(), "Address search",

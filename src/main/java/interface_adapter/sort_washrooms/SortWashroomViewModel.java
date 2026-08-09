@@ -1,9 +1,9 @@
 package interface_adapter.sort_washrooms;
 
+import java.util.List;
+
 import entity.Washroom;
 import interface_adapter.common.ViewModel;
-
-import java.util.List;
 
 public final class SortWashroomViewModel extends ViewModel<SortWashroomViewModel.State> {
     public SortWashroomViewModel() {

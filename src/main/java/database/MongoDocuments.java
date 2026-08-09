@@ -1,15 +1,16 @@
 package database;
 
-import org.bson.Document;
-import org.bson.types.ObjectId;
-
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+
+import org.bson.Document;
+import org.bson.types.ObjectId;
+
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 
 /**
  * Tolerant BSON helpers for reading both the original and current FlushID schemas.
@@ -24,7 +25,9 @@ public final class MongoDocuments {
     }
 
     public static Document findById(final MongoCollection<Document> collection, final String id) {
-        if (id == null || id.isBlank()) return null;
+        if (id == null || id.isBlank()) {
+            return null;
+        }
         if (ObjectId.isValid(id)) {
             return collection
                 .find(Filters.or(Filters.eq("_id", new ObjectId(id)), Filters.eq("_id", id)))
@@ -36,7 +39,9 @@ public final class MongoDocuments {
     }
 
     public static boolean referenceMatches(final Object stored, final String expected) {
-        if (stored == null || expected == null) return false;
+        if (stored == null || expected == null) {
+            return false;
+        }
         final String actual = stored instanceof final ObjectId objectId ? objectId.toHexString() : stored.toString();
         return actual.equals(expected) || actual.contains(expected) || expected.contains(actual);
     }
@@ -45,8 +50,8 @@ public final class MongoDocuments {
         for (final String key : keys) {
             final Object value = document.get(key);
             if (value != null && !value
-                    .toString()
-                    .isBlank()) {
+                .toString()
+                .isBlank()) {
                 return value.toString();
             }
         }
@@ -56,11 +61,14 @@ public final class MongoDocuments {
     public static double number(final Document document, final double fallback, final String... keys) {
         for (final String key : keys) {
             final Object value = document.get(key);
-            if (value instanceof final Number number) return number.doubleValue();
+            if (value instanceof final Number number) {
+                return number.doubleValue();
+            }
             if (value != null) {
                 try {
                     return Double.parseDouble(value.toString());
-                } catch (final NumberFormatException ignored) {
+                }
+                catch (final NumberFormatException ignored) {
                 }
             }
         }
@@ -74,8 +82,12 @@ public final class MongoDocuments {
     public static boolean bool(final Document document, final boolean fallback, final String... keys) {
         for (final String key : keys) {
             final Object value = document.get(key);
-            if (value instanceof final Boolean bool) return bool;
-            if (value != null) return Boolean.parseBoolean(value.toString());
+            if (value instanceof final Boolean bool) {
+                return bool;
+            }
+            if (value != null) {
+                return Boolean.parseBoolean(value.toString());
+            }
         }
         return fallback;
     }
@@ -83,12 +95,17 @@ public final class MongoDocuments {
     public static LocalDateTime dateTime(final Document document, final LocalDateTime fallback, final String... keys) {
         for (final String key : keys) {
             final Object value = document.get(key);
-            if (value instanceof final Date date) return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
-            if (value instanceof final LocalDateTime dateTime) return dateTime;
+            if (value instanceof final Date date) {
+                return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+            }
+            if (value instanceof final LocalDateTime dateTime) {
+                return dateTime;
+            }
             if (value instanceof final String text) {
                 try {
                     return LocalDateTime.parse(text);
-                } catch (final RuntimeException ignored) {
+                }
+                catch (final RuntimeException ignored) {
                 }
             }
         }

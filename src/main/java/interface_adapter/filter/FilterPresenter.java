@@ -1,9 +1,10 @@
 package interface_adapter.filter;
 
-import interface_adapter.common.UiDispatcher;
-import interface_adapter.view_reviews.WashroomListViewModel;
 import java.util.ArrayList;
 import java.util.List;
+
+import interface_adapter.common.UiDispatcher;
+import interface_adapter.view_reviews.WashroomListViewModel;
 import use_case.filter.FilterOutputBoundary;
 import use_case.filter.FilterOutputData;
 
@@ -12,7 +13,8 @@ public class FilterPresenter implements FilterOutputBoundary {
     private final FilterViewModel filterModel;
     private final UiDispatcher ui;
 
-    public FilterPresenter(final FilterViewModel filterViewModel, final WashroomListViewModel listModel, final UiDispatcher ui) {
+    public FilterPresenter(final FilterViewModel filterViewModel, final WashroomListViewModel listModel,
+                           final UiDispatcher ui) {
 
         this.filterModel = filterViewModel;
         this.listModel = listModel;
@@ -42,26 +44,17 @@ public class FilterPresenter implements FilterOutputBoundary {
         final List<WashroomListViewModel.Item> items = outputData
             .washrooms()
             .stream()
-            .map(
-                washroom -> new WashroomListViewModel.Item(
-                    washroom.id(),
-                    washroom
-                        .building()
-                        .name(),
-                    listDescription(washroom.name()),
-                    washroom
-                        .reviewSummary()
-                        .averageRating(),
-                    (int) Math.round(distance(
-                        outputData.latitude(),
-                        outputData.longitude(),
-                        washroom
-                            .building()
-                            .latitude(),
-                        washroom
-                            .building()
-                            .longitude())),
-                    washroom.accessible()))
+            .map(washroom -> {
+                return new WashroomListViewModel.Item(washroom.id(), washroom
+                    .building()
+                    .name(), listDescription(washroom.name()), washroom
+                    .reviewSummary()
+                    .averageRating(), (int) Math.round(distance(outputData.latitude(), outputData.longitude(), washroom
+                    .building()
+                    .latitude(), washroom
+                    .building()
+                    .longitude())), washroom.accessible());
+            })
             .toList();
         final Runnable update = () -> {
             listModel.setState(new WashroomListViewModel.State(items, null, "Sort by: Nearest", false));
@@ -73,7 +66,10 @@ public class FilterPresenter implements FilterOutputBoundary {
 
     @Override
     public void presentError(final String message) {
-        final Runnable update = () -> filterModel.setState(new FilterViewModel.State(false, new ArrayList<>(), message));
+        final Runnable update =
+            () -> {
+                filterModel.setState(new FilterViewModel.State(false, new ArrayList<>(), message));
+            };
         ui.dispatch(update);
     }
 }

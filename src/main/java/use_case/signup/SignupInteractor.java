@@ -11,8 +11,8 @@ public final class SignupInteractor implements SignupInputBoundary {
     private final CurrentUserSession session;
     private final SignupOutputBoundary presenter;
 
-    public SignupInteractor(final UserRepository users, final CurrentUserSession session, final PasswordHasher passwords,
-                            final SignupOutputBoundary presenter) {
+    public SignupInteractor(final UserRepository users, final CurrentUserSession session,
+                            final PasswordHasher passwords, final SignupOutputBoundary presenter) {
         this.users = users;
         this.session = session;
         this.passwords = passwords;
@@ -22,8 +22,8 @@ public final class SignupInteractor implements SignupInputBoundary {
     @Override
     public void execute(final SignupInputData input) {
         final String name = input.username() == null ? "" : input
-                                                      .username()
-                                                      .trim();
+                                                            .username()
+                                                            .trim();
         if (name.length() < 3 || input.password() == null || input
             .password()
             .length() < 4) {

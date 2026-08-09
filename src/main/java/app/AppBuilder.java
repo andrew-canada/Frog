@@ -1,5 +1,19 @@
 package app;
 
+import java.awt.CardLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.time.DayOfWeek;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -66,19 +80,6 @@ import interface_adapter.vote_helpful.VoteHelpfulController;
 import interface_adapter.write_review.WriteReviewController;
 import interface_adapter.write_review.WriteReviewPresenter;
 import interface_adapter.write_review.WriteReviewViewModel;
-import java.awt.CardLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.time.DayOfWeek;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import use_case.account.change_password.ChangePasswordInteractor;
 import use_case.account.change_username.ChangeUsernameInteractor;
 import use_case.account.delete_account.DeleteAccountInteractor;
@@ -123,32 +124,40 @@ public final class AppBuilder {
         frame.setVisible(true);
     }
 
-    private static void requestDirections(final MainView main, final DirectionsController controller, final String washroomId) {
+    private static void requestDirections(final MainView main, final DirectionsController controller,
+                                          final String washroomId) {
         main.showRouting();
-        CompletableFuture.runAsync(() -> controller.execute(main.latitude(), main.longitude(), washroomId));
+        CompletableFuture.runAsync(() -> {
+            controller.execute(main.latitude(), main.longitude(), washroomId);
+        });
     }
 
-    private static void loadMainDataAsync(final DBWashroomDataAccessObject washrooms, final DBReviewDataAccessObject reviews,
+    private static void loadMainDataAsync(final DBWashroomDataAccessObject washrooms,
+                                          final DBReviewDataAccessObject reviews,
                                           final DBStatusReportDataAccessObject reports, final boolean seedData,
-                                          final Runnable loadModerator,
-                                          final MainView main, final WashroomListViewModel listModel,
+                                          final Runnable loadModerator, final MainView main,
+                                          final WashroomListViewModel listModel,
                                           final AtomicReference<List<Washroom>> displayedWashrooms,
                                           final double originLat, final double originLng, final Runnable onLoaded) {
         final Thread loader = new Thread(() -> {
             MainData data = null;
             Throwable failure = null;
             try {
-                if (seedData) seedInitialData(washrooms, reviews, reports);
+                if (seedData) {
+                    seedInitialData(washrooms, reviews, reports);
+                }
                 final List<Washroom> availableWashrooms = jsonWashrooms(washrooms);
                 final List<MainView.HeatmapData> heatmapData = heatmapData(availableWashrooms, reports);
                 try {
                     loadModerator.run();
-                } catch (final RuntimeException moderatorFailure) {
+                }
+                catch (final RuntimeException moderatorFailure) {
                     // A malformed moderation record must not prevent the main map from opening.
                     System.err.println("Moderator queue did not load: " + moderatorFailure.getMessage());
                 }
                 data = new MainData(availableWashrooms, heatmapData);
-            } catch (final Throwable exception) {
+            }
+            catch (final Throwable exception) {
                 failure = exception;
             }
             final MainData completedData = data;
@@ -160,8 +169,8 @@ public final class AppBuilder {
                     listModel.setState(new WashroomListViewModel.State(List.of(), "", "Alphabetical", false));
                     onLoaded.run();
                     JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(main),
-                        "Could not load the washroom map. Check the database connection and try again.",
-                        "FlushID", JOptionPane.ERROR_MESSAGE);
+                        "Could not load the washroom map. Check the database connection and try again.", "FlushID",
+                        JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 displayedWashrooms.set(loaded.washrooms());
@@ -177,28 +186,29 @@ public final class AppBuilder {
     /**
      * Runs the optional baseline-data maintenance away from Swing's event thread.
      */
-    private static void seedInitialData(final DBWashroomDataAccessObject washrooms, final DBReviewDataAccessObject reviews,
+    private static void seedInitialData(final DBWashroomDataAccessObject washrooms,
+                                        final DBReviewDataAccessObject reviews,
                                         final DBStatusReportDataAccessObject reports) {
         CampusStartup.seedInitialData(washrooms, reviews, reports, JSON_WASHROOM_NAMES);
     }
 
     private static void refreshMainWashrooms(final List<Washroom> availableWashrooms, final MainView main,
-                                             final WashroomListViewModel listModel, final double originLat, final double originLng) {
+                                             final WashroomListViewModel listModel, final double originLat,
+                                             final double originLng) {
         main.setWashrooms(availableWashrooms);
         final List<WashroomListViewModel.Item> items = availableWashrooms
             .stream()
-            .map(w ->
-                new WashroomListViewModel.Item(w.id(), w
+            .map(w -> {
+                return new WashroomListViewModel.Item(w.id(), w
                     .building()
                     .name(), listDescription(w), w
                     .reviewSummary()
-                    .averageRating(),
-                    (int) Math.round(distance(originLat, originLng, w
-                        .building()
-                        .latitude(), w
-                        .building()
-                        .longitude())),
-                    w.accessible()))
+                    .averageRating(), (int) Math.round(distance(originLat, originLng, w
+                    .building()
+                    .latitude(), w
+                    .building()
+                    .longitude())), w.accessible());
+            })
             .toList();
         final String selectedId = main
             .selectedId()
@@ -214,8 +224,14 @@ public final class AppBuilder {
     private static void refreshHeatmapAsync(final List<Washroom> washrooms,
                                             final DBStatusReportDataAccessObject reports, final MainView main) {
         CompletableFuture
-            .supplyAsync(() -> CampusStartup.heatmapData(washrooms, reports))
-            .thenAccept(data -> SwingUtilities.invokeLater(() -> main.setHeatmapData(data)));
+            .supplyAsync(() -> {
+                return CampusStartup.heatmapData(washrooms, reports);
+            })
+            .thenAccept(data -> {
+                SwingUtilities.invokeLater(() -> {
+                    main.setHeatmapData(data);
+                });
+            });
     }
 
     /**
@@ -237,15 +253,15 @@ public final class AppBuilder {
         final List<WashroomListViewModel.Item> updated = current
             .items()
             .stream()
-            .map(item -> item
-                .id()
-                .equals(washroomId)
-                ? new WashroomListViewModel.Item(item.id(), item.name(), item.description(), rating,
-                item.distanceMeters(), item.accessible())
-                : item)
+            .map(item -> {
+                return item
+                    .id()
+                    .equals(washroomId) ?
+                    new WashroomListViewModel.Item(item.id(), item.name(), item.description(), rating, item.distanceMeters(), item.accessible()) : item;
+            })
             .toList();
-        listModel.setState(new WashroomListViewModel.State(updated, current.selectedId(),
-            current.sortLabel(), current.routeVisible()));
+        listModel.setState(new WashroomListViewModel.State(updated, current.selectedId(), current.sortLabel(),
+            current.routeVisible()));
     }
 
     private static Optional<Washroom> selected(final DBWashroomDataAccessObject washrooms, final MainView main) {
@@ -353,36 +369,40 @@ public final class AppBuilder {
         final var moderateController = new ModerateReviewsController(
             new ModerateReviewsInteractor(reviews, reviews, washrooms, users,
                 new ModerateReviewsPresenter(moderateModel)));
-        final Supplier<String> currentUser = () -> loggedInModel
-            .getState()
-            .username();
+        final Supplier<String> currentUser = () -> {
+            return loggedInModel
+                .getState()
+                .username();
+        };
         final var passwordHasher = new BCryptPasswordHasher();
         final var loginController = new LoginController(new LoginInteractor(users, users, passwordHasher,
             new LoginPresenter(loginModel, loggedInModel, isLoggedIn)));
-        final var signupController = new SignupController(new SignupInteractor(users, users, passwordHasher,
-            new SignupPresenter(loginModel, loggedInModel)));
+        final var signupController = new SignupController(
+            new SignupInteractor(users, users, passwordHasher, new SignupPresenter(loginModel, loggedInModel)));
         final var statusController = new StatusReportController(
             new SubmitStatusReportInteractor(reports, new StatusReportPresenter(statusModel)));
         final var busynessController = new BusynessController(
             new BusynessStatsInteractor(reports, enrollment, new BusynessPresenter(busynessModel)));
         final var ui = new SwingUiDispatcher();
-        final var directionsController = new DirectionsController(new GetDirectionsInteractor(washrooms, routes,
-            new DirectionsPresenter(mapModel, ui)));
-        final var changeUsernameController = new ChangeUsernameController(new ChangeUsernameInteractor(users, users,
-            new ChangeUsernamePresenter(accountModel, isLoggedIn)));
-        final var changePasswordController =
-            new ChangePasswordController(new ChangePasswordInteractor(users, users, passwordHasher,
-                new ChangePasswordPresenter(accountModel)));
-        final var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, users,
-            new DeleteAccountPresenter(accountModel, isLoggedIn)));
-        final var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, users, washrooms,
-            new FileCalendarContentReader(), new GeminiPersonalPlanGenerator(
-            () -> System.getenv(GeminiPersonalPlanGenerator.API_KEY_ENV)),
-            new PersonalPlanPresenter(accountModel)));
-        final var logoutController = new LogoutController(new LogoutInteractor(users,
-            new LogoutPresenter(isLoggedIn, loginModel, loggedInModel)));
-        final var filterController = new FilterController(new FilterInteractor(washrooms, reviews, reports, users,
-            new FilterPresenter(filterModel, listModel, ui), JSON_WASHROOM_NAMES));
+        final var directionsController = new DirectionsController(
+            new GetDirectionsInteractor(washrooms, routes, new DirectionsPresenter(mapModel, ui)));
+        final var changeUsernameController = new ChangeUsernameController(
+            new ChangeUsernameInteractor(users, users, new ChangeUsernamePresenter(accountModel, isLoggedIn)));
+        final var changePasswordController = new ChangePasswordController(
+            new ChangePasswordInteractor(users, users, passwordHasher, new ChangePasswordPresenter(accountModel)));
+        final var deleteAccountController = new DeleteAccountController(
+            new DeleteAccountInteractor(users, users, new DeleteAccountPresenter(accountModel, isLoggedIn)));
+        final var personalPlanController = new PersonalPlanController(
+            new PersonalPlanInteractor(users, users, washrooms, new FileCalendarContentReader(),
+                new GeminiPersonalPlanGenerator(() -> {
+                    return System.getenv(GeminiPersonalPlanGenerator.API_KEY_ENV);
+                }),
+                new PersonalPlanPresenter(accountModel)));
+        final var logoutController = new LogoutController(
+            new LogoutInteractor(users, new LogoutPresenter(isLoggedIn, loginModel, loggedInModel)));
+        final var filterController = new FilterController(
+            new FilterInteractor(washrooms, reviews, reports, users, new FilterPresenter(filterModel, listModel, ui),
+                JSON_WASHROOM_NAMES));
         final var sortWashroomController = new SortWashroomController(
             new SortWashroomInteractor(washrooms, new SortWashroomPresenter(listModel, sortWashroomModel, ui)));
         final var sortReviewsController = new SortReviewsController(
@@ -409,14 +429,9 @@ public final class AppBuilder {
         final ReadReviewsView readReviews = new ReadReviewsView(reviewsModel);
         final LoginPanel login = new LoginPanel(loginModel, loginController);
 
-        final AccountView account = new AccountView(
-            accountModel,
-            isLoggedIn,
-            changeUsernameController,
-            changePasswordController,
-            deleteAccountController,
-            personalPlanController
-        );
+        final AccountView account =
+            new AccountView(accountModel, isLoggedIn, changeUsernameController, changePasswordController,
+                deleteAccountController, personalPlanController);
         final StatusReportView status = new StatusReportView(statusModel);
         final BusynessChartView busyness = new BusynessChartView(busynessModel);
         final ReportedReviewsView moderate = new ReportedReviewsView(moderateModel);
@@ -430,7 +445,9 @@ public final class AppBuilder {
         frame.setContentPane(cards);
         layout.show(cards, LOGIN);
 
-        final Runnable showMain = () -> layout.show(cards, MAIN);
+        final Runnable showMain = () -> {
+            layout.show(cards, MAIN);
+        };
         main.setOnReviews(id -> {
             reviewController.execute(id, currentUser.get());
             layout.show(cards, REVIEWS);
@@ -440,21 +457,30 @@ public final class AppBuilder {
             moderateController.load();
             layout.show(cards, MODERATE);
         });
-        main.setOnDirections(id -> requestDirections(main, directionsController, id));
-        main.setOnLogin(() -> layout.show(cards, LOGIN));
-        main.setOnLogout(() -> layout.show(cards, LOGIN));
-        main.setOnAccount(() -> layout.show(cards, ACCOUNT));
+        main.setOnDirections(id -> {
+            requestDirections(main, directionsController, id);
+        });
+        main.setOnLogin(() -> {
+            layout.show(cards, LOGIN);
+        });
+        main.setOnLogout(() -> {
+            layout.show(cards, LOGIN);
+        });
+        main.setOnAccount(() -> {
+            layout.show(cards, ACCOUNT);
+        });
 
-        main.setOnReport(() -> selected(washrooms, main).ifPresentOrElse(
-            w -> {
+        main.setOnReport(() -> {
+            selected(washrooms, main).ifPresentOrElse(w -> {
                 status.setWashroomName(w.name());
                 layout.show(cards, STATUS);
-            },
-            () -> noWashroom(frame)
-        ));
+            }, () -> {
+                noWashroom(frame);
+            });
+        });
 
-        main.setOnBusyness(() -> selected(washrooms, main).ifPresentOrElse(
-            w -> {
+        main.setOnBusyness(() -> {
+            selected(washrooms, main).ifPresentOrElse(w -> {
                 busyness.setLocationName(w
                     .building()
                     .name());
@@ -462,29 +488,31 @@ public final class AppBuilder {
                     .building()
                     .code(), DayOfWeek.from(java.time.LocalDate.now()));
                 layout.show(cards, BUSYNESS);
-            },
-            () -> noWashroom(frame)
-        ));
+            }, () -> {
+                noWashroom(frame);
+            });
+        });
         main.setFilterController(filterController);
         main.setSortWashroomController(sortWashroomController);
 
         readReviews.setOnBack(showMain);
 
-        readReviews.setOnWrite(() -> selected(washrooms, main).ifPresentOrElse(
-            w -> new WriteReviewDialog(frame, writeReviewModel, writeReviewController, w.id(), w.name(),
-                loggedInModel
-                    .getState()
-                    .loggedIn() ? loggedInModel
-                                  .getState()
-                                  .username() : "Anonymous",
-                () -> {
-                    reviewController.execute(w.id(), currentUser.get());
-                    updateWashroomListRating(listModel, w.id(), reviewsModel
+        readReviews.setOnWrite(() -> {
+            selected(washrooms, main).ifPresentOrElse(w -> {
+                    new WriteReviewDialog(frame, writeReviewModel, writeReviewController, w.id(), w.name(), loggedInModel
                         .getState()
-                        .rating());
-                }).setVisible(true),
-            () -> noWashroom(frame)
-        ));
+                        .loggedIn() ? loggedInModel
+                                      .getState()
+                                      .username() : "Anonymous", () -> {
+                        reviewController.execute(w.id(), currentUser.get());
+                        updateWashroomListRating(listModel, w.id(), reviewsModel
+                            .getState()
+                            .rating());
+                    }).setVisible(true);
+                }, () -> {
+                    noWashroom(frame);
+                });
+        });
         readReviews.setOnHelpful(id -> {
             voteController.toggle(id, currentUser.get());
             reviewsModel.toggleHelpfulVote(id);
@@ -506,24 +534,30 @@ public final class AppBuilder {
         // updated on load and after every remove/dismiss, so this listener covers those; load once now
         // for the initial badge.
         moderateModel.addPropertyChangeListener(e -> {
-            final Runnable update = () -> main.setModeratorReportCount(moderateModel
-                .getState()
-                .reportedReviews()
-                .size());
+            final Runnable update = () -> {
+                main.setModeratorReportCount(moderateModel
+                    .getState()
+                    .reportedReviews()
+                    .size());
+            };
             if (SwingUtilities.isEventDispatchThread()) {
                 update.run();
-            } else {
+            }
+            else {
                 SwingUtilities.invokeLater(update);
             }
         });
 
         // Gate the Moderator nav entry on the logged-in user's moderator status (hidden by default).
-        loggedInModel.addPropertyChangeListener(e ->
+        loggedInModel.addPropertyChangeListener(e -> {
             main.setModerator(loggedInModel
                 .getState()
-                .moderator()));
+                .moderator());
+        });
         login.setOnBack(showMain);
-        login.setOnSignup(() -> new SignupDialog(frame, signupController).setVisible(true));
+        login.setOnSignup(() -> {
+            new SignupDialog(frame, signupController).setVisible(true);
+        });
         status.setOnCancel(showMain);
         status.setOnSubmit(() -> {
             if (!main
@@ -546,10 +580,14 @@ public final class AppBuilder {
         });
         busyness.setOnBack(showMain);
         account.setOnBack(showMain);
-        account.setOnViewPlan(plan -> new PersonalPlanView(frame, plan));
+        account.setOnViewPlan(plan -> {
+            new PersonalPlanView(frame, plan);
+        });
 
-        loadMainDataAsync(washrooms, reviews, reports, seedData, moderateController::load,
-            main, listModel, displayedWashrooms, originLat, originLng, () -> onLoaded.accept(frame));
+        loadMainDataAsync(washrooms, reviews, reports, seedData, moderateController::load, main, listModel,
+            displayedWashrooms, originLat, originLng, () -> {
+                onLoaded.accept(frame);
+            });
         return frame;
     }
 

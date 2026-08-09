@@ -66,8 +66,8 @@ final class PersonalPlanInteractorTest {
                 semester = selectedSemester;
                 TestSupport.check(tripsPerDay == 2 && availableWashrooms.equals(List.of(washroom)),
                     "generator should receive the selected recommendations context");
-                return "[{\"Day of week\":\"Mon\",\"Time (nearest hour) of washroom break\":\"10:00\",\"Washroom " +
-                    "id\":\"w1\"}]";
+                return "[{\"Day of week\":\"Mon\",\"Time (nearest hour) of washroom break\":\"10:00\",\"Washroom " 
+                    + "id\":\"w1\"}]";
             }
         }
         final Users users = new Users();
@@ -89,8 +89,12 @@ final class PersonalPlanInteractorTest {
             }
         };
         final PersonalPlanOutputData[] result = new PersonalPlanOutputData[1];
-        final PersonalPlanOutputBoundary presenter = output -> result[0] = output;
-        final CalendarContentReader calendar = path -> "calendar";
+        final PersonalPlanOutputBoundary presenter = output -> {
+            result[0] = output;
+        };
+        final CalendarContentReader calendar = path -> {
+            return "calendar";
+        };
 
         new PersonalPlanInteractor(users, users, washrooms, calendar, generator, presenter)
             .execute(new PersonalPlanInputData("schedule.ics", "2", "Winter"));
