@@ -7,7 +7,7 @@ import entity.Building;
 /**
  * Stable reference locations shown on the St. George campus map.
  */
-public final class UofTCampusLocations {
+final class UofTCampusLocations {
     private UofTCampusLocations() {
     }
 

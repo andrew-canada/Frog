@@ -21,9 +21,15 @@ public final class SignupInteractor implements SignupInputBoundary {
 
     @Override
     public void execute(final SignupInputData input) {
-        final String name = input.username() == null ? "" : input
-                                                            .username()
-                                                            .trim();
+        final String name;
+        if (input.username() == null) {
+            name = "";
+        }
+        else {
+            name = input
+                .username()
+                .trim();
+        }
         if (name.length() < 3 || input.password() == null || input
             .password()
             .length() < 4) {

@@ -56,8 +56,20 @@ public final class GraphhopperGeocodingDataAccessObject implements AddressLookup
         final Document point = hits
             .getFirst()
             .get("point", Document.class);
-        final Number latitude = point == null ? null : point.get("lat", Number.class);
-        final Number longitude = point == null ? null : point.get("lng", Number.class);
+        final Number latitude;
+        if (point == null) {
+            latitude = null;
+        }
+        else {
+            latitude = point.get("lat", Number.class);
+        }
+        final Number longitude;
+        if (point == null) {
+            longitude = null;
+        }
+        else {
+            longitude = point.get("lng", Number.class);
+        }
         if (latitude == null || longitude == null) {
             throw new IllegalStateException("GraphHopper returned incomplete address data.");
         }

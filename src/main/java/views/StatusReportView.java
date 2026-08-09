@@ -60,9 +60,18 @@ public final class StatusReportView extends JPanel {
         add(card);
         model.addPropertyChangeListener(e -> {
             final var s = model.getState();
-            message.setText(
-                s.success() ? s.message() + String.format(" · current %.1f/5", s.currentBusyness()) : s.message());
-            message.setForeground(s.success() ? new Color(37, 125, 80) : Theme.BERRY);
+            if (s.success()) {
+                message.setText(s.message() + String.format(" · current %.1f/5", s.currentBusyness()));
+            }
+            else {
+                message.setText(s.message());
+            }
+            if (s.success()) {
+                message.setForeground(new Color(37, 125, 80));
+            }
+            else {
+                message.setForeground(Theme.BERRY);
+            }
         });
     }
 

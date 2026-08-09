@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -42,16 +43,18 @@ import use_case.filter.WashroomFilterRepository;
 
 public class DBWashroomDataAccessObject extends DBDataAccessObject implements WashroomFilterRepository {
 
-    static final List<String> allowedAttributes = List.of(
+    private static final List<String> allowedAttributes = List.of(
         new String[] {"buildingID", "buildingCode", "seedKey", "name", "floor", "gender", "accessible", "numToilets",
             "numSinks", "locationDescription"});
     private final MongoCollection<Document> collection;
     private final MongoCollection<Document> buildings;
     private final MongoCollection<Document> reviews;
 
-    public DBWashroomDataAccessObject() {
-        super();    // initializes the MongoClient and MongoDatabase from
-        // the set URI
+    private DBWashroomDataAccessObject() {
+        // initializes the MongoClient and MongoDatabase from
+        super();
+       // the set URI
+
         collection = database.getCollection("Washrooms");
         buildings = database.getCollection("Buildings");
         reviews = database.getCollection("Reviews");
@@ -75,7 +78,10 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
         conditions.forEach((condition) -> {
             filters.add(condition.getFilter());
         });
-        return filters.isEmpty() ? new Document() : Filters.and(filters);
+        if (filters.isEmpty()) {
+            return new Document();
+        }
+        return Filters.and(filters);
     }
 
     /**
@@ -180,7 +186,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @param conditions List of AbstractCondition objects. An object must satisfy
      *                   all conditions to be deleted
      */
-    public void delete(final Iterable<AbstractCondition<?>> conditions) {
+    private void delete(final Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
         final Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);
@@ -211,14 +217,27 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
 
     private static entity.Building toApplicationBuilding(final Document document) {
         final Document location = document.get("location", Document.class);
-        final List<?> coordinates =
-            location == null ? List.of() : location.getList("coordinates", Object.class, List.of());
-        final double longitude =
-            coordinates.size() > 0 && coordinates.get(0) instanceof final Number number ? number.doubleValue() :
-                MongoDocuments.number(document, 0, "longitude", "lng");
-        final double latitude =
-            coordinates.size() > 1 && coordinates.get(1) instanceof final Number number ? number.doubleValue() :
-                MongoDocuments.number(document, 0, "latitude", "lat");
+        final List<?> coordinates;
+        if (location == null) {
+            coordinates = List.of();
+        }
+        else {
+            coordinates = location.getList("coordinates", Object.class, List.of());
+        }
+        final double longitude;
+        if (coordinates.size() > 0 && coordinates.get(0) instanceof final Number number) {
+            longitude = number.doubleValue();
+        }
+        else {
+            longitude = MongoDocuments.number(document, 0, "longitude", "lng");
+        }
+        final double latitude;
+        if (coordinates.size() > 1 && coordinates.get(1) instanceof final Number number) {
+            latitude = number.doubleValue();
+        }
+        else {
+            latitude = MongoDocuments.number(document, 0, "latitude", "lat");
+        }
         final String code = MongoDocuments.string(document, MongoDocuments.id(document), "buildingCode", "code");
         final String name = MongoDocuments.string(document, code, "longName", "shortName", "name");
         return new entity.Building(code, name, latitude, longitude);
@@ -248,7 +267,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
         return Math.sqrt(x * x + y * y) * 6_371_000;
     }
 
-    public static List<entity.Washroom> loadWashrooms(final String filename) throws Exception {
+    private static List<entity.Washroom> loadWashrooms(final String filename) throws Exception {
         final List<entity.Washroom> washroomList = new ArrayList<>();
         try (final Reader reader = new FileReader(filename); final JsonReader jsonReader = Json.createReader(reader)) {
 
@@ -295,7 +314,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      *
      * @param washroom The Washroom object to be written.
      */
-    public String write(final Washroom washroom, final String buildingID) {
+    private String write(final Washroom washroom, final String buildingID) {
         if (washroom instanceof final entity.Washroom applicationWashroom) {
             final Document doc = new Document();
             doc.append("buildingID", buildingID);
@@ -359,7 +378,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @param conditions a list of condition objects that the returned washrooms must satisfy
      * @return The washrooms that match all the conditions
      */
-    public List<entity.Washroom> getMatching(final Iterable<AbstractCondition<?>> conditions) {
+    private List<entity.Washroom> getMatching(final Iterable<AbstractCondition<?>> conditions) {
         return new ArrayList<>(getMatchingIDMap(conditions).values());
 
     }
@@ -412,7 +431,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @param conditions a list of condition objects that the returned washrooms must satisfy
      * @return The washrooms that match all the conditions mapped to their IDs in the database.
      */
-    public Map<String, Washroom> getMatchingIDMap(final Iterable<AbstractCondition<?>> conditions) {
+    private Map<String, Washroom> getMatchingIDMap(final Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
 
         final Bson filter = parseConditions(conditions);
@@ -455,7 +474,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      *
      * @param condition A AbstractCondition object that the object must satisfy.
      */
-    public void delete(final AbstractCondition<?> condition) {
+    private void delete(final AbstractCondition<?> condition) {
         final List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         delete(conditions);
@@ -465,7 +484,10 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
     @Override
     public Optional<entity.Washroom> getById(final String id) {
         final Document document = MongoDocuments.findById(collection, id);
-        return document == null ? Optional.empty() : Optional.of(createWashroom(document));
+        if (document == null) {
+            return Optional.empty();
+        }
+        return Optional.of(createWashroom(document));
     }
 
     @Override
@@ -477,7 +499,10 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
                 return !id.isBlank();
             })
             .flatMap(id -> {
-                return ObjectId.isValid(id) ? java.util.stream.Stream.<Object>of(id, new ObjectId(id)) : java.util.stream.Stream.<Object>of(id);
+                if (ObjectId.isValid(id)) {
+                    return Stream.<Object>of(id, new ObjectId(id));
+                }
+                return Stream.<Object>of(id);
             })
             .distinct()
             .toList();

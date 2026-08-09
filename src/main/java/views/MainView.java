@@ -122,7 +122,8 @@ public final class MainView extends JPanel {
      * Retained for callers that do not provide filtering controls.
      */
     public MainView(final WashroomListViewModel washrooms,
-                    final MapViewModel route) { // TODO: why is this still here its being a pain
+                    // TODO: why is this still here its being a pain
+                    final MapViewModel route) {
         this(washrooms, route, new FilterViewModel(), new IsLoggedInViewModel(), new LogoutController(
             new LogoutInteractor(new InMemoryUserDataAccessObject(),
                 new LogoutPresenter(new IsLoggedInViewModel(), new LoginViewModel(), new LoggedInViewModel()))));
@@ -193,7 +194,8 @@ public final class MainView extends JPanel {
         moderatorNav = nav("Moderator", () -> {
             onModerator.run();
         });
-        moderatorNav.setVisible(false); // hidden until a moderator logs in
+        // hidden until a moderator logs in
+        moderatorNav.setVisible(false);
         for (final JButton b : new JButton[] {nav("Account", () -> {
             onAccount.run();
         }),
@@ -361,8 +363,18 @@ public final class MainView extends JPanel {
     }
 
     private void updateHeatmapControls() {
-        busynessHeatmap.setText("Busyness heatmap" + (busynessHeatmapVisible ? " (On)" : ""));
-        cleanlinessHeatmap.setText("Cleanliness heatmap" + (cleanlinessHeatmapVisible ? " (On)" : ""));
+        if (busynessHeatmapVisible) {
+            busynessHeatmap.setText("Busyness heatmap" + " (On)");
+        }
+        else {
+            busynessHeatmap.setText("Busyness heatmap" + "");
+        }
+        if (cleanlinessHeatmapVisible) {
+            cleanlinessHeatmap.setText("Cleanliness heatmap" + " (On)");
+        }
+        else {
+            cleanlinessHeatmap.setText("Cleanliness heatmap" + "");
+        }
         if (busynessHeatmapVisible && cleanlinessHeatmapVisible) {
             heatmapLegend.setText(
                 "Heatmap: busyness outer glow · cleanliness inner glow · blue = lower · orange = higher · gray = no "
@@ -378,7 +390,7 @@ public final class MainView extends JPanel {
         map.setHeatmapVisibility(busynessHeatmapVisible, cleanlinessHeatmapVisible);
     }
 
-    public void renderList(final List<WashroomListViewModel.Item> items) {
+    private void renderList(final List<WashroomListViewModel.Item> items) {
         renderedItems = List.copyOf(items);
         list.removeAll();
         cardsByWashroomId.clear();
@@ -395,15 +407,33 @@ public final class MainView extends JPanel {
         for (final var item : items) {
             final JPanel card = new JPanel(new BorderLayout(4, 4));
             card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 124));
-            card.setBackground(item
+            if (item
                 .id()
-                .equals(selectedId) ? Theme.PALE_BLUE : Theme.PAPER);
-            card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(item
+                .equals(selectedId)) {
+                card.setBackground(Theme.PALE_BLUE);
+            }
+            else {
+                card.setBackground(Theme.PAPER);
+            }
+            if (item
                 .id()
-                .equals(selectedId) ? Theme.BLUE : Theme.LINE), Theme.pad(10, 10, 10, 10)));
-            final JLabel name = Theme.label(item.name(), 14, item
+                .equals(selectedId)) {
+                card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.BLUE),
+                    Theme.pad(10, 10, 10, 10)));
+            }
+            else {
+                card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE),
+                    Theme.pad(10, 10, 10, 10)));
+            }
+            final JLabel name;
+            if (item
                 .id()
-                .equals(selectedId) ? Theme.BLUE : Theme.INK);
+                .equals(selectedId)) {
+                name = Theme.label(item.name(), 14, Theme.BLUE);
+            }
+            else {
+                name = Theme.label(item.name(), 14, Theme.INK);
+            }
             name.setFont(name
                 .getFont()
                 .deriveFont(Font.BOLD));
@@ -495,9 +525,14 @@ public final class MainView extends JPanel {
     }
 
     public void setAddressLookup(final Function<String, GeoPoint> lookup) {
-        addressLookup = lookup == null ? address -> {
-            throw new IllegalStateException("Address search is unavailable.");
-        } : lookup;
+        if (lookup == null) {
+            addressLookup = address -> {
+                throw new IllegalStateException("Address search is unavailable.");
+            };
+        }
+        else {
+            addressLookup = lookup;
+        }
     }
 
     public void setOnReviews(final Consumer<String> c) {
@@ -557,11 +592,28 @@ public final class MainView extends JPanel {
         if (moderatorNav == null) {
             return;
         }
-        moderatorNav.setText(n > 0 ? "Moderator (" + n + ")" : "Moderator");
-        moderatorNav.setForeground(n > 0 ? Theme.BERRY : Color.BLACK);
-        moderatorNav.setFont(moderatorNav
-            .getFont()
-            .deriveFont(n > 0 ? Font.BOLD : Font.PLAIN));
+        if (n > 0) {
+            moderatorNav.setText("Moderator (" + n + ")");
+        }
+        else {
+            moderatorNav.setText("Moderator");
+        }
+        if (n > 0) {
+            moderatorNav.setForeground(Theme.BERRY);
+        }
+        else {
+            moderatorNav.setForeground(Color.BLACK);
+        }
+        if (n > 0) {
+            moderatorNav.setFont(moderatorNav
+                .getFont()
+                .deriveFont(Font.BOLD));
+        }
+        else {
+            moderatorNav.setFont(moderatorNav
+                .getFont()
+                .deriveFont(Font.PLAIN));
+        }
     }
 
     public void showRouting() {
@@ -614,7 +666,7 @@ public final class MainView extends JPanel {
         };
         private GeoPoint origin = new GeoPoint(43.6629, -79.3957);
 
-        public CampusMapPanel() {
+        CampusMapPanel() {
             setLayout(new BorderLayout());
             setBorder(BorderFactory.createLineBorder(Theme.LINE));
             if (GraphicsEnvironment.isHeadless()) {
@@ -724,15 +776,25 @@ public final class MainView extends JPanel {
         }
 
         void setSelectedWashroom(final String id) {
-            selectedWashroomId = id == null ? "" : id;
+            if (id == null) {
+                selectedWashroomId = "";
+            }
+            else {
+                selectedWashroomId = id;
+            }
             if (viewer != null) {
                 viewer.repaint();
             }
         }
 
         void setOnWashroomSelected(final Consumer<String> action) {
-            onWashroomSelected = action == null ? id -> {
-            } : action;
+            if (action == null) {
+                onWashroomSelected = id -> {
+                };
+            }
+            else {
+                onWashroomSelected = action;
+            }
         }
 
         void setOrigin(final GeoPoint value) {
@@ -776,15 +838,28 @@ public final class MainView extends JPanel {
                             .id()
                             .equals(selectedWashroomId);
                     });
-                drawPoint(canvas, map, viewport, new GeoPoint(representative
-                    .building()
-                    .latitude(), representative
-                    .building()
-                    .longitude()), representative
-                    .building()
-                    .name(), selected ? MAP_LOW : MAP_HIGH, representative
-                    .building()
-                    .code(), representative.id(), selected);
+                if (selected) {
+                    drawPoint(canvas, map, viewport, new GeoPoint(representative
+                        .building()
+                        .latitude(), representative
+                        .building()
+                        .longitude()), representative
+                        .building()
+                        .name(), MAP_LOW, representative
+                        .building()
+                        .code(), representative.id(), selected);
+                }
+                else {
+                    drawPoint(canvas, map, viewport, new GeoPoint(representative
+                        .building()
+                        .latitude(), representative
+                        .building()
+                        .longitude()), representative
+                        .building()
+                        .name(), MAP_HIGH, representative
+                        .building()
+                        .code(), representative.id(), selected);
+                }
             }
             canvas.dispose();
         }
@@ -816,12 +891,24 @@ public final class MainView extends JPanel {
                     .getTileFactory()
                     .geoToPixel(toPosition(entry.getKey()), map.getZoom());
                 if (showBusynessHeatmap) {
-                    drawHeat(canvas, point, averageReportedValue(entry.getValue(), true),
-                        scaledHeatRadius(map, showCleanlinessHeatmap ? 86 : 70));
+                    if (showCleanlinessHeatmap) {
+                        drawHeat(canvas, point, averageReportedValue(entry.getValue(), true),
+                            scaledHeatRadius(map, 86));
+                    }
+                    else {
+                        drawHeat(canvas, point, averageReportedValue(entry.getValue(), true),
+                            scaledHeatRadius(map, 70));
+                    }
                 }
                 if (showCleanlinessHeatmap) {
-                    drawHeat(canvas, point, averageReportedValue(entry.getValue(), false),
-                        scaledHeatRadius(map, showBusynessHeatmap ? 54 : 70));
+                    if (showBusynessHeatmap) {
+                        drawHeat(canvas, point, averageReportedValue(entry.getValue(), false),
+                            scaledHeatRadius(map, 54));
+                    }
+                    else {
+                        drawHeat(canvas, point, averageReportedValue(entry.getValue(), false),
+                            scaledHeatRadius(map, 70));
+                    }
                 }
             }
         }
@@ -834,7 +921,10 @@ public final class MainView extends JPanel {
                 })
                 .filter(java.util.Objects::nonNull)
                 .mapToDouble(value -> {
-                    return busyness ? value.busyness() : value.cleanliness();
+                    if (busyness) {
+                        return value.busyness();
+                    }
+                    return value.cleanliness();
                 })
                 .filter(value -> {
                     return !Double.isNaN(value);
@@ -888,7 +978,13 @@ public final class MainView extends JPanel {
                 canvas.fillOval(x - 14, y - 14, 28, 28);
             }
             canvas.setColor(color);
-            final int radius = selected ? 11 : 10;
+            final int radius;
+            if (selected) {
+                radius = 11;
+            }
+            else {
+                radius = 10;
+            }
             canvas.fillOval(x - radius, y - radius, radius * 2, radius * 2);
             if (!code.isBlank()) {
                 canvas.setColor(Color.WHITE);

@@ -24,8 +24,8 @@ public final class ReportReviewInteractor implements ReportReviewInputBoundary {
         this(reports, presenter, Clock.systemDefaultZone());
     }
 
-    public ReportReviewInteractor(final ReviewReportDataAccessInterface reports,
-                                  final ReportReviewOutputBoundary presenter, final Clock clock) {
+    private ReportReviewInteractor(final ReviewReportDataAccessInterface reports,
+                                   final ReportReviewOutputBoundary presenter, final Clock clock) {
         this.reports = reports;
         this.presenter = presenter;
         this.clock = clock;

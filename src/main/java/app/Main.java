@@ -12,7 +12,7 @@ import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-public final class Main {
+final class Main {
     private Main() {
     }
 

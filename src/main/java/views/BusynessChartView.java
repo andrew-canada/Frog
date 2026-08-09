@@ -152,17 +152,34 @@ public final class BusynessChartView extends JPanel {
                 }
                 x.setColor(Theme.MUTED);
                 if (i % 2 == 0 || isCurrentHour) {
-                    x.setFont(x
-                        .getFont()
-                        .deriveFont(isCurrentHour ? Font.BOLD : Font.PLAIN, 11f));
-                    x.setColor(isCurrentHour ? Theme.BRIGHT_GREEN : Theme.MUTED);
+                    if (isCurrentHour) {
+                        x.setFont(x
+                            .getFont()
+                            .deriveFont(Font.BOLD, 11f));
+                    }
+                    else {
+                        x.setFont(x
+                            .getFont()
+                            .deriveFont(Font.PLAIN, 11f));
+                    }
+                    if (isCurrentHour) {
+                        x.setColor(Theme.BRIGHT_GREEN);
+                    }
+                    else {
+                        x.setColor(Theme.MUTED);
+                    }
                     x.drawString(String.format("%d", b.hour()), px, bottom + 16);
                 }
                 x.setFont(x
                     .getFont()
                     .deriveFont(Font.PLAIN, 11f));
                 x.setColor(Theme.MUTED);
-                x.drawString(String.format("%.1f", level), px - (isCurrentHour ? 2 : 0), py - (isCurrentHour ? 14 : 6));
+                if (isCurrentHour) {
+                    x.drawString(String.format("%.1f", level), px - (isCurrentHour ? 2 : 0), py - 14);
+                }
+                else {
+                    x.drawString(String.format("%.1f", level), px - (isCurrentHour ? 2 : 0), py - 6);
+                }
             }
             x.dispose();
         }

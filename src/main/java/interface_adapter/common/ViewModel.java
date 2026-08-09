@@ -16,9 +16,10 @@ public abstract class ViewModel<S> {
     }
 
     public void setState(final S next) {
-        state = next;
         // Fire with a null old value so PropertyChangeSupport never suppresses the event when the
-        // new state equals the previous one.
+        state = next;
+       // new state equals the previous one.
+
         changes.firePropertyChange("state", null, next);
     }
 

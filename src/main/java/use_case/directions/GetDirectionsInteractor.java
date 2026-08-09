@@ -40,8 +40,13 @@ public final class GetDirectionsInteractor implements GetDirectionsInputBoundary
                     "Route ready"));
         }
         catch (final RuntimeException failure) {
-            final String message =
-                failure.getMessage() == null ? "Directions are temporarily unavailable" : failure.getMessage();
+            final String message;
+            if (failure.getMessage() == null) {
+                message = "Directions are temporarily unavailable";
+            }
+            else {
+                message = failure.getMessage();
+            }
             presenter.present(new GetDirectionsOutputData(false, List.of(), 0, 0, message));
         }
     }

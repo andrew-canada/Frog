@@ -29,14 +29,16 @@ import use_case.port.UserRepository;
 public class DBUserDataAccessObject extends DBDataAccessObject
     implements UserRepository, CurrentUserSession, ModeratorDataAccessInterface {
 
-    static final List<String> allowedAttributes = List.of(new String[] {"username", "passwordHash", "personalPlan"});
+    private static final List<String> allowedAttributes = List.of(new String[] {"username", "passwordHash", "personalPlan"});
     private final MongoCollection<Document> collection;
     private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
     private entity.User currentApplicationUser;
 
     public DBUserDataAccessObject() {
-        super();    // initializes the MongoClient and MongoDatabase from
-        // the set URI
+        // initializes the MongoClient and MongoDatabase from
+        super();
+       // the set URI
+
         collection = database.getCollection("Users");
     }
 
@@ -56,7 +58,10 @@ public class DBUserDataAccessObject extends DBDataAccessObject
         conditions.forEach((condition) -> {
             filters.add(condition.getFilter());
         });
-        return filters.isEmpty() ? new Document() : Filters.and(filters);
+        if (filters.isEmpty()) {
+            return new Document();
+        }
+        return Filters.and(filters);
     }
 
     /**
@@ -127,7 +132,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      * @param conditions a list of condition objects that the returned users must satisfy
      * @return The users that match all the conditions
      */
-    public List<User> getMatching(final Iterable<AbstractCondition<?>> conditions) {
+    private List<User> getMatching(final Iterable<AbstractCondition<?>> conditions) {
         return new ArrayList<>(getMatchingIDMap(conditions).values());
     }
 
@@ -137,7 +142,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      * @param conditions a list of condition objects that the returned users must satisfy
      * @return The users that match all the conditions mapped to their IDs in the database.
      */
-    public Map<String, User> getMatchingIDMap(final Iterable<AbstractCondition<?>> conditions) {
+    private Map<String, User> getMatchingIDMap(final Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
 
         final Bson filter = parseConditions(conditions);
@@ -156,7 +161,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      *
      * @param user The user object to be written.
      */
-    public String write(final User user, final String washroomID) {
+    private String write(final User user, final String washroomID) {
         final Document doc = new Document("username", user.username())
             .append("passwordHash", user.passwordHash())
             .append("personalPlan", user.personalPlan())
@@ -169,7 +174,10 @@ public class DBUserDataAccessObject extends DBDataAccessObject
         final Document persisted = collection
             .find(Filters.eq("username", user.username()))
             .first();
-        return persisted == null ? user.username() : MongoDocuments.id(persisted);
+        if (persisted == null) {
+            return user.username();
+        }
+        return MongoDocuments.id(persisted);
     }
 
     /**
@@ -178,7 +186,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      * @param conditions List of AbstractCondition objects. An object must satisfy
      *                   all conditions to be deleted
      */
-    public void delete(final Iterable<AbstractCondition<?>> conditions) {
+    private void delete(final Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
         final Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);

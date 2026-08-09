@@ -12,10 +12,10 @@ import java.util.function.BiConsumer;
 
 import org.jxmapviewer.viewer.GeoPosition;
 
-public class MapClicker implements ActionListener {
-    MainView.CampusMapPanel map;
-    BiConsumer<Double, Double> onSave;
-    Window frame;
+class MapClicker implements ActionListener {
+    private MainView.CampusMapPanel map;
+    private BiConsumer<Double, Double> onSave;
+    private Window frame;
 
     public MapClicker(final MainView.CampusMapPanel map) {
         this.map = map;
@@ -28,7 +28,7 @@ public class MapClicker implements ActionListener {
             final MainView.CampusMapPanel map;
             final BiConsumer<Double, Double> onSave;
 
-            public MapClickListener(final MainView.CampusMapPanel map, final BiConsumer<Double, Double> onSave) {
+            MapClickListener(final MainView.CampusMapPanel map, final BiConsumer<Double, Double> onSave) {
                 this.map = map;
                 this.onSave = onSave;
             }

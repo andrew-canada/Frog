@@ -40,8 +40,20 @@ public final class BusynessStatsInteractor implements BusynessStatsInputBoundary
                 })
                 .max(Comparator.comparing(StatusReport::timestamp))
                 .orElse(null);
-            final double crowd = latestReport == null ? Double.NaN : latestReport.busyness();
-            final double cleanliness = latestReport == null ? 0 : latestReport.cleanliness();
+            final double crowd;
+            if (latestReport == null) {
+                crowd = Double.NaN;
+            }
+            else {
+                crowd = latestReport.busyness();
+            }
+            final double cleanliness;
+            if (latestReport == null) {
+                cleanliness = 0;
+            }
+            else {
+                cleanliness = latestReport.cleanliness();
+            }
             final int students = meetings
                 .stream()
                 .filter(m -> {
@@ -50,15 +62,42 @@ public final class BusynessStatsInteractor implements BusynessStatsInputBoundary
                 .mapToInt(EnrollmentMeeting::enrollment)
                 .sum();
             final boolean hasTimetable = !meetings.isEmpty();
-            final double predicted = hasTimetable ? Math.min(5, 1 + students / 100.0) : Double.NaN;
+            final double predicted;
+            if (hasTimetable) {
+                predicted = Math.min(5, 1 + students / 100.0);
+            }
+            else {
+                predicted = Double.NaN;
+            }
             final boolean hasCrowd = !Double.isNaN(crowd);
-            final double level = hasCrowd ? crowd : hasTimetable ? predicted : 0;
-            buckets.add(new BusynessStatsOutputData.HourBucket(hour, Math.max(0, Math.min(5, level)), cleanliness,
-                hasCrowd ? "latest report" : hasTimetable ? "enrollment" : "no data"));
+            final double level;
+            if (hasCrowd) {
+                level = crowd;
+            }
+            else {
+                if (hasTimetable) {
+                    level = predicted;
+                }
+                else {
+                    level = 0;
+                }
+            }
+            if (hasCrowd) {
+                buckets.add(new BusynessStatsOutputData.HourBucket(hour, Math.max(0, Math.min(5, level)), cleanliness,
+                    "latest report"));
+            }
+            else {
+                buckets.add(new BusynessStatsOutputData.HourBucket(hour, Math.max(0, Math.min(5, level)), cleanliness,
+                    hasTimetable ? "enrollment" : "no data"));
+            }
         }
-        final String note =
-            observations.isEmpty() && meetings.isEmpty() ? "No status or enrollment data is stored yet" :
-                "MongoDB status reports blended with stored timetable enrollment";
+        final String note;
+        if (observations.isEmpty() && meetings.isEmpty()) {
+            note = "No status or enrollment data is stored yet";
+        }
+        else {
+            note = "MongoDB status reports blended with stored timetable enrollment";
+        }
         presenter.present(new BusynessStatsOutputData(buckets, note));
     }
 }

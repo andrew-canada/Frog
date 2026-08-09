@@ -20,11 +20,11 @@ import use_case.port.ReviewRepository;
 import use_case.port.StatusReportRepository;
 
 public class FilterInteractor implements FilterInputBoundary {
-    WashroomFilterRepository washroomDAO;
-    ReviewRepository reviewDAO;
-    StatusReportRepository statusReports;
-    CurrentUserSession session;
-    FilterOutputBoundary presenter;
+    private WashroomFilterRepository washroomDAO;
+    private ReviewRepository reviewDAO;
+    private StatusReportRepository statusReports;
+    private CurrentUserSession session;
+    private FilterOutputBoundary presenter;
     private final Set<String> permittedWashroomNames;
 
     public FilterInteractor(final WashroomFilterRepository washroomDAO, final ReviewRepository reviewDAO,

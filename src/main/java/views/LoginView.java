@@ -20,7 +20,7 @@ import javax.swing.JTextField;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginViewModel;
 
-public final class LoginView implements ActionListener {
+final class LoginView implements ActionListener {
     private final JPanel panel1, panel2, panel3, panel4;
     private final JLabel usernameLabel, passwordLabel;
     private final JTextField usernameField;
@@ -34,8 +34,9 @@ public final class LoginView implements ActionListener {
 
     public LoginView(final LoginViewModel loginViewModel) {
 
-        this.loginViewModel = loginViewModel;
         // this.loginViewModel.addPropertyChangeListener(this);
+
+        this.loginViewModel = loginViewModel;
 
 
         dialog = new JDialog(windowFrame, "Entry - FlushID", true);
@@ -102,27 +103,30 @@ public final class LoginView implements ActionListener {
 
         final String eventName = event.getActionCommand();
         if (eventName.equals("OK")) {
+            // int errorCode = Utilities.requestEntry(usernameField.getText(), passwordField.getText());
             // LoginController.execute()
-
-            //int errorCode = Utilities.requestEntry(usernameField.getText(), passwordField.getText());
                 /*if(errorCode == Globals.PROCESS_OK) {
                     Globals.entryGranted = true;
                     ((Window) dialog.getParent()).dispose();
+                // System.out.println("Username/Password error. ");
                 } else if(errorCode == Globals.PROCESS_ERROR) {
-                    // System.out.println("Username/Password error. ");
-                    // ((Window) dialog.getParent()).dispose();
+                   // ((Window) dialog.getParent()).dispose();
+
+                // System.out.println("Network error. ");
                 } else if(errorCode == Globals.NET_SEND_ERROR) {
-                    // System.out.println("Network error. ");
-                    // ((Window) dialog.getParent()).dispose();
+                   // ((Window) dialog.getParent()).dispose();
+
+                // System.out.println("Username/Password error. ");
                 } else {
-                    // System.out.println("Username/Password error. ");
-                    // ((Window) dialog.getParent()).dispose();
+                   // ((Window) dialog.getParent()).dispose();
+
                 }
 
                  */
         }
         else if (eventName.equals("Cancel")) {
-            // System.out.println("Cancel pressed. ");
+           // System.out.println("Cancel pressed. ");
+
             ((Window) dialog.getParent()).dispose();
         }
         else if (eventName.equals("Continue as guest")) {

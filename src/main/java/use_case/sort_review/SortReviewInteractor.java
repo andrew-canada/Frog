@@ -44,7 +44,13 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
     private static String displayDescription(final Washroom washroom) {
         final String name = washroom.name();
         final int separator = name.indexOf('|');
-        final String description = separator >= 0 ? name.substring(separator + 1) : name;
+        final String description;
+        if (separator >= 0) {
+            description = name.substring(separator + 1);
+        }
+        else {
+            description = name;
+        }
         return description
             .replaceAll("(?i)\\bwashrooms?\\b", "")
             .replaceAll("\\s{2,}", " ")
@@ -69,8 +75,13 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
             return;
         }
 
-        final ReviewSortOrder sortOrder =
-            inputData.sortOrder() == null ? ReviewSortOrder.RELEVANCE : inputData.sortOrder();
+        final ReviewSortOrder sortOrder;
+        if (inputData.sortOrder() == null) {
+            sortOrder = ReviewSortOrder.RELEVANCE;
+        }
+        else {
+            sortOrder = inputData.sortOrder();
+        }
         final Comparator<entity.Review> comparator = switch (sortOrder) {
             case RELEVANCE -> Comparator
                 .comparing(SortReviewInteractor::score)

@@ -10,11 +10,11 @@ import com.mongodb.client.MongoDatabase;
  * Owns the application's single MongoDB client and exposes its configured database.
  */
 public class DBDataAccessObject implements AutoCloseable {
-    public static final String URI_ENV = "MONGODB_URI";
-    public static final String DATABASE_ENV = "MONGODB_DATABASE";
+    private static final String URI_ENV = "MONGODB_URI";
+    private static final String DATABASE_ENV = "MONGODB_DATABASE";
 
-    public final MongoClient client;
-    public final MongoDatabase database;
+    private final MongoClient client;
+    protected final MongoDatabase database;
     private final boolean ownsClient;
 
     /**
@@ -53,7 +53,10 @@ public class DBDataAccessObject implements AutoCloseable {
 
     private static String configuredDatabaseName() {
         final String name = System.getenv(DATABASE_ENV);
-        return name == null || name.isBlank() ? "FlushID" : name;
+        if (name == null || name.isBlank()) {
+            return "FlushID";
+        }
+        return name;
     }
 
     public MongoDatabase database() {

@@ -31,8 +31,8 @@ public final class LoginPanel extends JPanel {
         setLayout(new GridBagLayout());
         setBackground(Theme.CREAM);
         final JPanel card = Theme.page();
+        // card.setPreferredSize(new Dimension(430, 440));
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        //card.setPreferredSize(new Dimension(430, 440));
 
         final java.net.URL logoUrl = getClass().getResource("/images/FlushIDLogoPhoto.png");
         if (logoUrl != null) {
@@ -78,13 +78,28 @@ public final class LoginPanel extends JPanel {
 
         model.addPropertyChangeListener(event -> {
             final LoginViewModel.State state = model.getState();
-            message.setText(state
+            if (state
                 .message()
-                .isBlank() ? DEFAULT_MESSAGE : state.message());
-            message.setForeground(state
+                .isBlank()) {
+                message.setText(DEFAULT_MESSAGE);
+            }
+            else {
+                message.setText(state.message());
+            }
+            if (state
                 .message()
-                .isBlank() ? Theme.MUTED : state.success() ? new Color(37, 125, 80) : Theme.BERRY);
-            back.setText(state.success() ? "View map" : "Continue as guest");
+                .isBlank()) {
+                message.setForeground(Theme.MUTED);
+            }
+            else {
+                message.setForeground(state.success() ? new Color(37, 125, 80) : Theme.BERRY);
+            }
+            if (state.success()) {
+                back.setText("View map");
+            }
+            else {
+                back.setText("Continue as guest");
+            }
         });
     }
 

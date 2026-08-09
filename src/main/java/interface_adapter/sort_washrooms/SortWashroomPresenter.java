@@ -31,7 +31,13 @@ public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
      */
     private static String listDescription(final String washroomName) {
         final int separator = washroomName.indexOf('|');
-        final String description = separator >= 0 ? washroomName.substring(separator + 1) : washroomName;
+        final String description;
+        if (separator >= 0) {
+            description = washroomName.substring(separator + 1);
+        }
+        else {
+            description = washroomName;
+        }
         return description
             .replaceAll("(?i)\\bwashrooms?\\b", "")
             .replaceAll("\\s{2,}", " ")

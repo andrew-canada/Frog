@@ -95,7 +95,7 @@ public final class ReadReviewsView extends JPanel {
         return outer;
     }
 
-    public void render(final ReviewsViewModel.State s) {
+    private void render(final ReviewsViewModel.State s) {
         title.setText(s.name());
         subtitle.setText(s.subtitle());
         summary.setText(String.format("★ %.1f  ·  Based on %d reviews", s.rating(), s.reviewCount()));
@@ -105,7 +105,7 @@ public final class ReadReviewsView extends JPanel {
         reviews.repaint();
     }
 
-    public void renderReviews(final List<ViewReviewsOutputData.ReviewDisplay> s) {
+    private void renderReviews(final List<ViewReviewsOutputData.ReviewDisplay> s) {
         for (final ViewReviewsOutputData.ReviewDisplay r : s) {
             final JPanel card = new JPanel(new BorderLayout(10, 10));
             card.setBackground(Theme.PAPER);
@@ -133,9 +133,10 @@ public final class ReadReviewsView extends JPanel {
                 .format(DateTimeFormatter.ofPattern("MMM d, yyyy")), 12, Theme.MUTED));
             meta.add(Box.createVerticalStrut(12));
             final JButton helpful = Theme.button("Helpful · " + r.helpfulCount());
+            // Turn off the look-and-feel's own button-face painting so our green background
             if (r.votedByCurrentUser()) {
-                // Turn off the look-and-feel's own button-face painting so our green background
-                // actually shows; otherwise the L&F paints its grey face over setBackground().
+               // actually shows; otherwise the L&F paints its grey face over setBackground().
+
                 helpful.setContentAreaFilled(false);
                 helpful.setOpaque(true);
                 helpful.setBackground(HELPFUL_GREEN);
@@ -146,10 +147,17 @@ public final class ReadReviewsView extends JPanel {
             });
             meta.add(helpful);
             meta.add(Box.createVerticalStrut(6));
-            final JButton report = Theme.button(r.reportedByCurrentUser() ? "Reported" : "Report");
+            final JButton report;
             if (r.reportedByCurrentUser()) {
-                // Inert "reported" chip: no action listener (so it can't report again), but kept
-                // enabled so the accent colors render - a disabled button greys its text.
+                report = Theme.button("Reported");
+            }
+            else {
+                report = Theme.button("Report");
+            }
+            // Inert "reported" chip: no action listener (so it can't report again), but kept
+            if (r.reportedByCurrentUser()) {
+               // enabled so the accent colors render - a disabled button greys its text.
+
                 report.setContentAreaFilled(false);
                 report.setOpaque(true);
                 report.setBackground(Theme.BERRY);

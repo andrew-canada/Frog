@@ -78,8 +78,14 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
         }
         final Number distance = path.get("distance", Number.class);
         final Number time = path.get("time", Number.class);
-        return new Route(points, distance == null ? 0 : (int) Math.round(distance.doubleValue()),
-            time == null ? 0 : (int) Math.round(time.doubleValue() / 1000.0));
+        if (time == null) {
+            return new Route(points, distance == null ? 0 : (int) Math.round(distance.doubleValue()), 0);
+        }
+        if (distance == null) {
+            return new Route(points, 0, (int) Math.round(time.doubleValue() / 1000.0));
+        }
+        return new Route(points, (int) Math.round(distance.doubleValue()),
+            (int) Math.round(time.doubleValue() / 1000.0));
     }
 
     private static String point(final GeoPoint point) {

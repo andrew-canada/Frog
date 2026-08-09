@@ -41,9 +41,8 @@ public final class InMemoryReviewDataAccessObject
 
     public InMemoryReviewDataAccessObject(final List<Review> seed) {
         reviews.addAll(seed);
-    }
-
     // --- View Reviews ----------------------------------------------------------
+    }
     @Override
     public List<Review> getReviewsForWashroom(final String id) {
         return reviews
@@ -86,9 +85,8 @@ public final class InMemoryReviewDataAccessObject
     @Override
     public void save(final Review review) {
         reviews.add(review);
-    }
-
     // --- Helpful votes ---------------------------------------------------------
+    }
     @Override
     public boolean hasVoted(final String reviewId, final String username) {
         return votesByReview
@@ -139,9 +137,8 @@ public final class InMemoryReviewDataAccessObject
                 return;
             }
         }
-    }
-
     // --- Reports ---------------------------------------------------------------
+    }
     @Override
     public void save(final Report report) {
         reports.add(report);
@@ -184,9 +181,8 @@ public final class InMemoryReviewDataAccessObject
                 .reviewId()
                 .equals(reviewId);
         });
-    }
-
     // --- Review admin ----------------------------------------------------------
+    }
     @Override
     public Optional<Review> getById(final String reviewId) {
         return reviews

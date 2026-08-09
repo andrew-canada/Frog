@@ -36,7 +36,13 @@ public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
     private static String displayDescription(final Washroom washroom) {
         final String name = washroom.name();
         final int separator = name.indexOf('|');
-        final String description = separator >= 0 ? name.substring(separator + 1) : name;
+        final String description;
+        if (separator >= 0) {
+            description = name.substring(separator + 1);
+        }
+        else {
+            description = name;
+        }
         return description
             .replaceAll("(?i)\\bwashrooms?\\b", "")
             .replaceAll("\\s{2,}", " ")

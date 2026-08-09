@@ -79,8 +79,9 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
         presenter.present(new ModerateReviewsOutputData(buildQueue(), message));
     }
 
+    // Group reports by the review they target, preserving first-seen order.
+
     private List<ReportedReview> buildQueue() {
-        // Group reports by the review they target, preserving first-seen order.
         final Map<String, List<Report>> byReview = new LinkedHashMap<>();
         for (final Report report : reports.getAllReports()) {
             byReview
@@ -99,16 +100,17 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
                 continue;
             }
             queue.add(toReportedReview(review, entry.getValue()));
-        }
         // Most-reported first so the worst offenders are at the top of the moderator queue.
+        }
         queue.sort(Comparator
             .comparingInt(ReportedReview::totalReports)
             .reversed());
         return queue;
     }
 
+    // Count how many reports cited each reason, preserving first-seen order.
+
     private ReportedReview toReportedReview(final Review review, final List<Report> reviewReports) {
-        // Count how many reports cited each reason, preserving first-seen order.
         final Map<String, Integer> reasonTotals = new LinkedHashMap<>();
         final List<ReportedReview.AdditionalDetail> details = new ArrayList<>();
         for (final Report report : reviewReports) {
@@ -118,11 +120,17 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
             if (report.details() != null && !report
                 .details()
                 .isBlank()) {
-                final String reason = report
+                final String reason;
+                if (report
                     .reasons()
-                    .isEmpty() ? "Other" : report
-                                           .reasons()
-                                           .get(0);
+                    .isEmpty()) {
+                    reason = "Other";
+                }
+                else {
+                    reason = report
+                        .reasons()
+                        .get(0);
+                }
                 details.add(new ReportedReview.AdditionalDetail(reason, report.details()));
             }
         }

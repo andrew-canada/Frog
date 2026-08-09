@@ -35,7 +35,7 @@ public final class InMemoryWashroomDataAccessObject implements WashroomFilterRep
         return Math.sqrt(x * x + y * y) * 6_371_000;
     }
 
-    public void add(final Washroom washroom) {
+    private void add(final Washroom washroom) {
         washrooms.put(washroom.id(), washroom);
         final List<Washroom> ordered = washrooms
             .values()

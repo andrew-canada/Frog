@@ -24,8 +24,13 @@ public class SortWashroomInteractor implements SortWashroomsInputBoundary {
     @Override
     public void execute(final SortWashroomInputData inputData) {
         final Comparator<entity.Washroom> comparator;
-        final WashroomSortOrder sortOrder =
-            inputData.sortOrder() == null ? WashroomSortOrder.ALPHABETICAL : inputData.sortOrder();
+        final WashroomSortOrder sortOrder;
+        if (inputData.sortOrder() == null) {
+            sortOrder = WashroomSortOrder.ALPHABETICAL;
+        }
+        else {
+            sortOrder = inputData.sortOrder();
+        }
         comparator = switch (sortOrder) {
             case HIGHEST_RATED -> Comparator
                 .comparing((entity.Washroom washroom) -> {

@@ -20,11 +20,21 @@ public final class ReviewsViewModel extends ViewModel<ReviewsViewModel.State> {
             .reviews()
             .stream()
             .map(review -> {
-                return review
+                if (review
                     .reviewId()
-                    .equals(reviewId) ?
-                    new ViewReviewsOutputData.ReviewDisplay(review.reviewId(), review.rating(), review.comment(), Math.max(0, review.helpfulCount() + (review.votedByCurrentUser() ? -1 : 1)), review.date(),
-                        review.author(), !review.votedByCurrentUser(), review.reportedByCurrentUser()) : review;
+                    .equals(reviewId)) {
+                    if (review.votedByCurrentUser()) {
+                        return new ViewReviewsOutputData.ReviewDisplay(review.reviewId(), review.rating(),
+                            review.comment(), Math.max(0, review.helpfulCount() + -1), review.date(), review.author(),
+                            !review.votedByCurrentUser(), review.reportedByCurrentUser());
+                    }
+                    return new ViewReviewsOutputData.ReviewDisplay(review.reviewId(), review.rating(), review.comment(),
+                        Math.max(0, review.helpfulCount() + 1), review.date(), review.author(),
+                        !review.votedByCurrentUser(), review.reportedByCurrentUser());
+                }
+                else {
+                    return review;
+                }
             })
             .toList();
         setState(

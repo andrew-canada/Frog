@@ -613,7 +613,7 @@ public final class AccountView extends JPanel {
     /**
      * JSON view model for the Gemini response; parsing is kept in the UI layer.
      */
-    public static final class WashroomPlan {
+    static final class WashroomPlan {
         @JsonProperty("Day of week")
         public String day;
         @JsonProperty("Time (nearest hour) of washroom break")

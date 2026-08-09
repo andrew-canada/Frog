@@ -79,8 +79,9 @@ final class ModerateReviewsInteractorTest {
             .isEmpty(), "queue empty after dismiss");
     }
 
+    // r1 gets two reports, r2 gets one -> r1 should sort ahead of r2.
+
     private static void moderatorQueueSortsByReportsAndResolvesWashroomName() {
-        // r1 gets two reports, r2 gets one -> r1 should sort ahead of r2.
         final List<Report> reports = new ArrayList<>(List.of(
             report("r1", "user2", List.of("Spam"), ""),
             report("r1", "user3", List.of("Harassment"), ""),
@@ -95,7 +96,8 @@ final class ModerateReviewsInteractorTest {
             public void deleteReview(final String id) {
             }
         };
-        final Washroom w = TestSupport.washroom(); // "Test washroom", floor "2nd"
+        // "Test washroom", floor "2nd"
+        final Washroom w = TestSupport.washroom();
         final WashroomRepository washrooms = new WashroomRepository() {
             @Override
             public Optional<Washroom> getById(final String id) {
@@ -142,7 +144,8 @@ final class ModerateReviewsInteractorTest {
             @Override
             public Optional<Review> getById(final String id) {
                 return Optional.empty();
-            } // review no longer exists
+            // review no longer exists
+            }
 
             @Override
             public void deleteReview(final String id) {
@@ -161,8 +164,8 @@ final class ModerateReviewsInteractorTest {
     private static void moderatorActionRequiresModeratorPrivilege() {
         final List<Report> reports = new ArrayList<>(List.of(report("r1", "user2", List.of("Spam"), "")));
         final Set<String> deletedReviews = new HashSet<>();
-        final ModerateReviewsOutputData[] out = new ModerateReviewsOutputData[1];
         // moderators(false): the acting user is NOT a moderator.
+        final ModerateReviewsOutputData[] out = new ModerateReviewsOutputData[1];
         final ModerateReviewsInputBoundary actor =
             new ModerateReviewsInteractor(reportStore(reports), reviewStore(deletedReviews), noWashrooms(),
                 moderators(false), d -> {
@@ -179,9 +182,8 @@ final class ModerateReviewsInteractorTest {
 
         actor.dismissReports(new ModerateReviewsInputData("r1", "not_a_mod"));
         TestSupport.check(!reports.isEmpty(), "dismiss also blocked for a non-moderator");
-    }
-
     // --- fake helpers -----------------------------------------------------
+    }
 
     private static Report report(final String reviewId, final String user, final List<String> reasons, final String details) {
         return new Report("id-" + user + "-" + reviewId, reviewId, user, reasons, details, LocalDateTime.now());
@@ -219,7 +221,10 @@ final class ModerateReviewsInteractorTest {
         return new ReviewAdminDataAccessInterface() {
             @Override
             public Optional<Review> getById(final String id) {
-                return deleted.contains(id) ? Optional.empty() : Optional.of(review(id));
+                if (deleted.contains(id)) {
+                    return Optional.empty();
+                }
+                return Optional.of(review(id));
             }
 
             @Override

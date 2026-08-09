@@ -82,7 +82,12 @@ public final class ReportedReviewsView extends JPanel {
         final int filled = Math.max(0, Math.min(MAX_STARS, (int) Math.round(rating)));
         final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < MAX_STARS; i++) {
-            builder.append(i < filled ? '★' : '☆');
+            if (i < filled) {
+                builder.append('★');
+            }
+            else {
+                builder.append('☆');
+            }
         }
         return builder.toString();
     }
@@ -122,8 +127,13 @@ public final class ReportedReviewsView extends JPanel {
             return;
         }
 
-        final String count =
-            reviews.size() == 1 ? "1 review awaiting moderation" : reviews.size() + " reviews awaiting moderation";
+        final String count;
+        if (reviews.size() == 1) {
+            count = "1 review awaiting moderation";
+        }
+        else {
+            count = reviews.size() + " reviews awaiting moderation";
+        }
         body.add(left(Theme.label(count, 13, Theme.MUTED)));
         body.add(Box.createVerticalStrut(10));
 
@@ -167,8 +177,13 @@ public final class ReportedReviewsView extends JPanel {
         if (detailsCount > 0) {
             final boolean open = expanded.contains(review.reviewId());
             card.add(Box.createVerticalStrut(8));
-            final JButton toggle =
-                Theme.button(open ? "Hide Additional Details ▲" : "View Additional Details (" + detailsCount + ") ▼");
+            final JButton toggle;
+            if (open) {
+                toggle = Theme.button("Hide Additional Details ▲");
+            }
+            else {
+                toggle = Theme.button("View Additional Details (" + detailsCount + ") ▼");
+            }
             toggle.addActionListener(e -> {
                 if (!expanded.remove(review.reviewId())) {
                     expanded.add(review.reviewId());

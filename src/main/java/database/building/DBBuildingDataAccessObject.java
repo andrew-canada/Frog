@@ -31,13 +31,15 @@ import entity.Building;
 
 public class DBBuildingDataAccessObject extends DBDataAccessObject {
 
-    static final List<String> allowedAttributes =
+    private static final List<String> allowedAttributes =
         List.of(new String[] {"buildingCode", "shortName", "longName", "location", "controlInfo"});
     private final MongoCollection<Document> collection;
 
     public DBBuildingDataAccessObject() {
-        super();    // initializes the MongoClient and MongoDatabase from
-        // the set URI
+        // initializes the MongoClient and MongoDatabase from
+        super();
+       // the set URI
+
         collection = database.getCollection("Buildings");
     }
 
@@ -52,7 +54,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param conditions a list of condition objects that the returned buildings must satisfy
      * @return The buildings that match all the conditions
      */
-    public List<entity.Building> getMatching(final Iterable<AbstractCondition<?>> conditions) {
+    private List<entity.Building> getMatching(final Iterable<AbstractCondition<?>> conditions) {
         return new ArrayList<>(getMatchingIDMap(conditions).values());
 
     }
@@ -77,7 +79,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param conditions a list of condition objects that the returned buildings must satisfy
      * @return The buildings that match all the conditions mapped to their IDs in the database.
      */
-    public Map<String, entity.Building> getMatchingIDMap(final Iterable<AbstractCondition<?>> conditions) {
+    private Map<String, entity.Building> getMatchingIDMap(final Iterable<AbstractCondition<?>> conditions) {
 
         checkAttribute(conditions);
 
@@ -118,7 +120,10 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
         conditions.forEach((condition) -> {
             filters.add(condition.getFilter());
         });
-        return filters.isEmpty() ? new Document() : Filters.and(filters);
+        if (filters.isEmpty()) {
+            return new Document();
+        }
+        return Filters.and(filters);
     }
 
     /**
@@ -172,10 +177,17 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      */
     private static double getLongitude(final Document doc) {
         final Document location = doc.get("location", Document.class);
-        final List<?> coordinates =
-            location == null ? List.of() : location.getList("coordinates", Object.class, List.of());
-        return coordinates.size() > 0 && coordinates.get(0) instanceof final Number coordinate ?
-            coordinate.doubleValue() : MongoDocuments.number(doc, 0, "longitude", "lng");
+        final List<?> coordinates;
+        if (location == null) {
+            coordinates = List.of();
+        }
+        else {
+            coordinates = location.getList("coordinates", Object.class, List.of());
+        }
+        if (coordinates.size() > 0 && coordinates.get(0) instanceof final Number coordinate) {
+            return coordinate.doubleValue();
+        }
+        return MongoDocuments.number(doc, 0, "longitude", "lng");
     }
 
     /**
@@ -189,10 +201,17 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      */
     private static double getLatitude(final Document doc) {
         final Document location = doc.get("location", Document.class);
-        final List<?> coordinates =
-            location == null ? List.of() : location.getList("coordinates", Object.class, List.of());
-        return coordinates.size() > 1 && coordinates.get(1) instanceof final Number coordinate ?
-            coordinate.doubleValue() : MongoDocuments.number(doc, 0, "latitude", "lat");
+        final List<?> coordinates;
+        if (location == null) {
+            coordinates = List.of();
+        }
+        else {
+            coordinates = location.getList("coordinates", Object.class, List.of());
+        }
+        if (coordinates.size() > 1 && coordinates.get(1) instanceof final Number coordinate) {
+            return coordinate.doubleValue();
+        }
+        return MongoDocuments.number(doc, 0, "latitude", "lat");
     }
 
     /**
@@ -232,7 +251,9 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
                 final String id = obj.getString("ID");
                 final String name = obj.getString("name");
 
-                // Stored as strings in the JSON
+               // Stored as strings in the JSON
+
+
                 final double latitude = Double.parseDouble(obj.getString("latitude"));
                 final double longitude = Double.parseDouble(obj.getString("longitude"));
 
@@ -272,7 +293,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param building The Building object to be written.
      * @return the ID for the written object.
      */
-    public String write(final Building building) {
+    private String write(final Building building) {
         final Document doc = new Document();
         doc.append("buildingCode", building.getBuildingCode());
         doc.append("shortName", building.getBuildingNameShort());
@@ -292,7 +313,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param conditions List of AbstractCondition objects. An object must satisfy
      *                   all conditions to be deleted
      */
-    public void delete(final Iterable<AbstractCondition<?>> conditions) {
+    private void delete(final Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
 
         final Bson filter = parseConditions(conditions);

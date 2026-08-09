@@ -19,8 +19,8 @@ public final class WriteReviewInteractor implements WriteReviewInputBoundary {
         this(reviews, presenter, Clock.systemDefaultZone());
     }
 
-    public WriteReviewInteractor(final ReviewRepository reviews, final WriteReviewOutputBoundary presenter,
-                                 final Clock clock) {
+    private WriteReviewInteractor(final ReviewRepository reviews, final WriteReviewOutputBoundary presenter,
+                                  final Clock clock) {
         this.reviews = reviews;
         this.presenter = presenter;
         this.clock = clock;
@@ -38,16 +38,28 @@ public final class WriteReviewInteractor implements WriteReviewInputBoundary {
             presenter.present(new WriteReviewOutputData(false, "Ratings must be between 1 and 5."));
             return;
         }
-        final String comment = input.comment() == null ? "" : input
-                                                              .comment()
-                                                              .trim();
+        final String comment;
+        if (input.comment() == null) {
+            comment = "";
+        }
+        else {
+            comment = input
+                .comment()
+                .trim();
+        }
         if (comment.isBlank()) {
             presenter.present(new WriteReviewOutputData(false, "Write a short review before submitting."));
             return;
         }
-        final String username = input.username() == null || input
+        final String username;
+        if (input.username() == null || input
             .username()
-            .isBlank() ? "Anonymous" : input.username();
+            .isBlank()) {
+            username = "Anonymous";
+        }
+        else {
+            username = input.username();
+        }
         reviews.save(new Review(UUID
             .randomUUID()
             .toString(), input.washroomId(), username, input.rating(), input.cleanliness(), comment, 0,

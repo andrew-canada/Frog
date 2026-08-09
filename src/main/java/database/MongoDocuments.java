@@ -21,7 +21,10 @@ public final class MongoDocuments {
 
     public static String id(final Document document) {
         final Object value = document.get("_id");
-        return value instanceof final ObjectId objectId ? objectId.toHexString() : String.valueOf(value);
+        if (value instanceof final ObjectId objectId) {
+            return objectId.toHexString();
+        }
+        return String.valueOf(value);
     }
 
     public static Document findById(final MongoCollection<Document> collection, final String id) {
@@ -42,7 +45,13 @@ public final class MongoDocuments {
         if (stored == null || expected == null) {
             return false;
         }
-        final String actual = stored instanceof final ObjectId objectId ? objectId.toHexString() : stored.toString();
+        final String actual;
+        if (stored instanceof final ObjectId objectId) {
+            actual = objectId.toHexString();
+        }
+        else {
+            actual = stored.toString();
+        }
         return actual.equals(expected) || actual.contains(expected) || expected.contains(actual);
     }
 

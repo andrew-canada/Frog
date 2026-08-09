@@ -114,7 +114,7 @@ import views.WriteReviewDialog;
 /**
  * Composition root: the only class that selects concrete database and external-service adapters.
  */
-public final class AppBuilder {
+final class AppBuilder {
     private static final String MAIN = "main", REVIEWS = "reviews", LOGIN = "login", STATUS = "status", BUSYNESS =
         "busyness", ACCOUNT = "account", MODERATE = "moderate";
     private static final Set<String> JSON_WASHROOM_NAMES = CampusStartup.loadWashroomNames();
@@ -151,8 +151,8 @@ public final class AppBuilder {
                 try {
                     loadModerator.run();
                 }
+                // A malformed moderation record must not prevent the main map from opening.
                 catch (final RuntimeException moderatorFailure) {
-                    // A malformed moderation record must not prevent the main map from opening.
                     System.err.println("Moderator queue did not load: " + moderatorFailure.getMessage());
                 }
                 data = new MainData(availableWashrooms, heatmapData);
@@ -210,11 +210,17 @@ public final class AppBuilder {
                     .longitude())), w.accessible());
             })
             .toList();
-        final String selectedId = main
+        final String selectedId;
+        if (main
             .selectedId()
-            .isBlank() && !items.isEmpty() ? items
-                                             .getFirst()
-                                             .id() : main.selectedId();
+            .isBlank() && !items.isEmpty()) {
+            selectedId = items
+                .getFirst()
+                .id();
+        }
+        else {
+            selectedId = main.selectedId();
+        }
         listModel.setState(new WashroomListViewModel.State(items, selectedId, "Sort by: Nearest", false));
     }
 
@@ -254,10 +260,13 @@ public final class AppBuilder {
             .items()
             .stream()
             .map(item -> {
-                return item
+                if (item
                     .id()
-                    .equals(washroomId) ?
-                    new WashroomListViewModel.Item(item.id(), item.name(), item.description(), rating, item.distanceMeters(), item.accessible()) : item;
+                    .equals(washroomId)) {
+                    return new WashroomListViewModel.Item(item.id(), item.name(), item.description(), rating,
+                        item.distanceMeters(), item.accessible());
+                }
+                return item;
             })
             .toList();
         listModel.setState(new WashroomListViewModel.State(updated, current.selectedId(), current.sortLabel(),
@@ -265,9 +274,12 @@ public final class AppBuilder {
     }
 
     private static Optional<Washroom> selected(final DBWashroomDataAccessObject washrooms, final MainView main) {
-        return main
+        if (main
             .selectedId()
-            .isBlank() ? Optional.empty() : washrooms.getById(main.selectedId());
+            .isBlank()) {
+            return Optional.empty();
+        }
+        return washrooms.getById(main.selectedId());
     }
 
     private static void noWashroom(final Component parent) {
@@ -278,7 +290,13 @@ public final class AppBuilder {
     private static String listDescription(final Washroom washroom) {
         final String name = washroom.name();
         final int separator = name.indexOf('|');
-        final String description = separator >= 0 ? name.substring(separator + 1) : name;
+        final String description;
+        if (separator >= 0) {
+            description = name.substring(separator + 1);
+        }
+        else {
+            description = name;
+        }
         return description
             .replaceAll("(?i)\\bwashrooms?\\b", "")
             .replaceAll("\\s{2,}", " ")
@@ -325,7 +343,10 @@ public final class AppBuilder {
      * Invokes {@code onLoaded} on Swing's event thread once the initial screen is ready to show.
      */
     public JFrame buildAndSeed(final Consumer<JFrame> onLoaded) {
-        return build(true, onLoaded == null ? AppBuilder::showLoadedFrame : onLoaded);
+        if (onLoaded == null) {
+            return build(true, AppBuilder::showLoadedFrame);
+        }
+        return build(true, onLoaded);
     }
 
     private JFrame build(final boolean seedData, final Consumer<JFrame> onLoaded) {
@@ -499,16 +520,28 @@ public final class AppBuilder {
 
         readReviews.setOnWrite(() -> {
             selected(washrooms, main).ifPresentOrElse(w -> {
-                    new WriteReviewDialog(frame, writeReviewModel, writeReviewController, w.id(), w.name(), loggedInModel
-                        .getState()
-                        .loggedIn() ? loggedInModel
-                                      .getState()
-                                      .username() : "Anonymous", () -> {
+                if (loggedInModel
+                    .getState()
+                    .loggedIn()) {
+                    new WriteReviewDialog(frame, writeReviewModel, writeReviewController, w.id(), w.name(),
+                        loggedInModel
+                            .getState()
+                            .username(), () -> {
                         reviewController.execute(w.id(), currentUser.get());
                         updateWashroomListRating(listModel, w.id(), reviewsModel
                             .getState()
                             .rating());
                     }).setVisible(true);
+                }
+                else {
+                    new WriteReviewDialog(frame, writeReviewModel, writeReviewController, w.id(), w.name(), "Anonymous",
+                        () -> {
+                            reviewController.execute(w.id(), currentUser.get());
+                            updateWashroomListRating(listModel, w.id(), reviewsModel
+                                .getState()
+                                .rating());
+                        }).setVisible(true);
+                }
                 }, () -> {
                     noWashroom(frame);
                 });
@@ -517,9 +550,10 @@ public final class AppBuilder {
             voteController.toggle(id, currentUser.get());
             reviewsModel.toggleHelpfulVote(id);
         });
+        // Modal dialog: setVisible blocks until it closes, then refresh the review list (so the
         readReviews.setOnReport(id -> {
-            // Modal dialog: setVisible blocks until it closes, then refresh the review list (so the
-            // button flips to "Reported") and the moderator queue count if a report was filed.
+           // button flips to "Reported") and the moderator queue count if a report was filed.
+
             new ReportReviewDialog(frame, reportController, reportReviewModel, id, currentUser.get()).setVisible(true);
             reviewController.execute(reviewsModel
                 .getState()
@@ -528,11 +562,10 @@ public final class AppBuilder {
         });
         readReviews.setSortReviewsController(sortReviewsController);
         moderate.setOnBack(showMain);
-        moderate.setController(moderateController);
-
         // Keep the Moderator nav button's reported-review count in sync with the queue: the model is
-        // updated on load and after every remove/dismiss, so this listener covers those; load once now
+        moderate.setController(moderateController);
         // for the initial badge.
+        // updated on load and after every remove/dismiss, so this listener covers those; load once now
         moderateModel.addPropertyChangeListener(e -> {
             final Runnable update = () -> {
                 main.setModeratorReportCount(moderateModel
@@ -546,9 +579,8 @@ public final class AppBuilder {
             else {
                 SwingUtilities.invokeLater(update);
             }
-        });
-
         // Gate the Moderator nav entry on the logged-in user's moderator status (hidden by default).
+        });
         loggedInModel.addPropertyChangeListener(e -> {
             main.setModerator(loggedInModel
                 .getState()
@@ -563,12 +595,18 @@ public final class AppBuilder {
             if (!main
                 .selectedId()
                 .isBlank()) {
-                statusController.execute(main.selectedId(), status.busyness(), status.cleanliness(), status.issue(),
-                    loggedInModel
-                        .getState()
-                        .loggedIn() ? loggedInModel
-                                      .getState()
-                                      .username() : null);
+                if (loggedInModel
+                    .getState()
+                    .loggedIn()) {
+                    statusController.execute(main.selectedId(), status.busyness(), status.cleanliness(), status.issue(),
+                        loggedInModel
+                            .getState()
+                            .username());
+                }
+                else {
+                    statusController.execute(main.selectedId(), status.busyness(), status.cleanliness(), status.issue(),
+                        null);
+                }
             }
         });
         statusModel.addPropertyChangeListener(e -> {

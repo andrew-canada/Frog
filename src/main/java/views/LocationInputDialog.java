@@ -18,7 +18,7 @@ import javax.swing.SwingWorker;
 
 import entity.GeoPoint;
 
-public final class LocationInputDialog extends JDialog {
+final class LocationInputDialog extends JDialog {
     private final JTextField address;
     private final JTextField latitude;
     private final JTextField longitude;
@@ -134,10 +134,21 @@ public final class LocationInputDialog extends JDialog {
                     dispose();
                 }
                 catch (final Exception failure) {
-                    final Throwable cause = failure.getCause() == null ? failure : failure.getCause();
-                    JOptionPane.showMessageDialog(LocationInputDialog.this,
-                        cause.getMessage() == null ? "Address search failed." : cause.getMessage(), "Address search",
-                        JOptionPane.WARNING_MESSAGE);
+                    final Throwable cause;
+                    if (failure.getCause() == null) {
+                        cause = failure;
+                    }
+                    else {
+                        cause = failure.getCause();
+                    }
+                    if (cause.getMessage() == null) {
+                        JOptionPane.showMessageDialog(LocationInputDialog.this, "Address search failed.",
+                            "Address search", JOptionPane.WARNING_MESSAGE);
+                    }
+                    else {
+                        JOptionPane.showMessageDialog(LocationInputDialog.this, cause.getMessage(), "Address search",
+                            JOptionPane.WARNING_MESSAGE);
+                    }
                     button.setEnabled(true);
                     button.setText("Use address");
                 }
