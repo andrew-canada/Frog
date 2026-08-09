@@ -15,10 +15,14 @@ public interface HelpfulVoteDataAccessInterface {
      */
     boolean hasVoted(String reviewId, String username);
 
-    /** Returns the requested reviews already voted by the user, preferably in one query. */
-    default Set<String> votedReviewIds(Collection<String> reviewIds, String username) {
-        return reviewIds.stream().filter(reviewId -> hasVoted(reviewId, username))
-                .collect(Collectors.toUnmodifiableSet());
+    /**
+     * Returns the requested reviews already voted by the user, preferably in one query.
+     */
+    default Set<String> votedReviewIds(final Collection<String> reviewIds, final String username) {
+        return reviewIds
+            .stream()
+            .filter(reviewId -> hasVoted(reviewId, username))
+            .collect(Collectors.toUnmodifiableSet());
     }
 
     /**

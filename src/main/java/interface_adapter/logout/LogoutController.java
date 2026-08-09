@@ -5,7 +5,7 @@ import use_case.logout.LogoutInputBoundary;
 public final class LogoutController {
     private final LogoutInputBoundary interactor;
 
-    public LogoutController(LogoutInputBoundary interactor) {
+    public LogoutController(final LogoutInputBoundary interactor) {
         this.interactor = interactor;
     }
 

@@ -19,7 +19,10 @@ public record ReportedReview(String reviewId, String washroomName, String author
      * @return total number of reports (sum of the reason counts).
      */
     public int totalReports() {
-        return reasonCounts.stream().mapToInt(ReasonCount::count).sum();
+        return reasonCounts
+            .stream()
+            .mapToInt(ReasonCount::count)
+            .sum();
     }
 
     /**

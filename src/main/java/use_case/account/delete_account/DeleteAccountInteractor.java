@@ -1,8 +1,8 @@
 package use_case.account.delete_account;
 
-import use_case.port.UserRepository;
-import use_case.port.CurrentUserSession;
 import entity.User;
+import use_case.port.CurrentUserSession;
+import use_case.port.UserRepository;
 
 public final class DeleteAccountInteractor implements DeleteAccountInputBoundary {
 
@@ -10,8 +10,8 @@ public final class DeleteAccountInteractor implements DeleteAccountInputBoundary
     private final CurrentUserSession session;
     private final DeleteAccountOutputBoundary presenter;
 
-    public DeleteAccountInteractor(UserRepository users, CurrentUserSession session,
-                                   DeleteAccountOutputBoundary presenter) {
+    public DeleteAccountInteractor(final UserRepository users, final CurrentUserSession session,
+                                   final DeleteAccountOutputBoundary presenter) {
         this.users = users;
         this.session = session;
         this.presenter = presenter;
@@ -20,7 +20,9 @@ public final class DeleteAccountInteractor implements DeleteAccountInputBoundary
     @Override
     public void execute() {
 
-        User user = session.currentUser().orElse(null);
+        final User user = session
+            .currentUser()
+            .orElse(null);
 
         if (user == null) {
             presenter.present(new DeleteAccountOutputData(false, "You are not logged in"));

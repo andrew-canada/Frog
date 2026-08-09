@@ -1,9 +1,18 @@
 package views;
 
-import entity.Washroom;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
 
-import javax.swing.*;
-import java.awt.*;
+import entity.Washroom;
+import java.awt.Component;
+import java.awt.Font;
 import java.awt.event.WindowEvent;
 
 public final class FilterPanel extends JPanel {
@@ -12,17 +21,19 @@ public final class FilterPanel extends JPanel {
     private final JSlider cleanliness = new JSlider(1, 5, 1);
     private final JCheckBox accessible = new JCheckBox("Accessible only");
     private final JCheckBox ownReviews = new JCheckBox("Only washrooms that you've reviewed");
-    private final JComboBox<String> gender = new JComboBox<>(new String[]{"Any gender", "All-gender", "Women", "Men"});
+    private final JComboBox<String> gender = new JComboBox<>(new String[] {"Any gender", "All-gender", "Women", "Men"});
     private final JCheckBox filterSelectedBuilding = new JCheckBox("Filter to currently selected building");
     private final JCheckBox personalPlan = new JCheckBox("Only washrooms in your personal plan");
 
-    public FilterPanel(JFrame frame, String selected, Runnable onFilter) {
+    public FilterPanel(final JFrame frame, final String selected, final Runnable onFilter) {
         this.frame = frame;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(Theme.PAPER);
         setBorder(Theme.pad(12, 12, 12, 12));
-        JLabel heading = Theme.label("Filters", 16, Theme.INK);
-        heading.setFont(heading.getFont().deriveFont(Font.BOLD));
+        final JLabel heading = Theme.label("Filters", 16, Theme.INK);
+        heading.setFont(heading
+            .getFont()
+            .deriveFont(Font.BOLD));
         add(heading);
         add(Box.createVerticalStrut(10));
 
@@ -37,14 +48,14 @@ public final class FilterPanel extends JPanel {
         cleanliness.setPaintTicks(true);
         add(cleanliness);
 
-        JPanel checkboxes = new JPanel();
+        final JPanel checkboxes = new JPanel();
         accessible.setBackground(Theme.PAPER);
         checkboxes.add(accessible);
         ownReviews.setBackground(Theme.PAPER);
         checkboxes.add(ownReviews);
         add(checkboxes);
 
-        JPanel checkboxes2 = new JPanel();
+        final JPanel checkboxes2 = new JPanel();
         filterSelectedBuilding.setBackground(Theme.PAPER);
         checkboxes2.add(filterSelectedBuilding);
         personalPlan.setBackground(Theme.PAPER);
@@ -55,10 +66,10 @@ public final class FilterPanel extends JPanel {
         add(Theme.label("Washroom type", 12, Theme.MUTED));
         add(gender);
 
-        JPanel buttonPanel = new JPanel();
-        JButton cancel = Theme.button("Cancel");
-        JButton confirm = Theme.primary("Filter");
-        for (JButton button : new JButton[]{cancel, confirm}) button.setAlignmentX(Component.LEFT_ALIGNMENT);
+        final JPanel buttonPanel = new JPanel();
+        final JButton cancel = Theme.button("Cancel");
+        final JButton confirm = Theme.primary("Filter");
+        for (final JButton button : new JButton[] {cancel, confirm}) button.setAlignmentX(Component.LEFT_ALIGNMENT);
         cancel.addActionListener(e -> frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING)));
         confirm.addActionListener(e -> onFilter.run());
         buttonPanel.add(cancel);
@@ -86,7 +97,9 @@ public final class FilterPanel extends JPanel {
         return filterSelectedBuilding.isSelected();
     }
 
-    public boolean personalPlan() { return personalPlan.isSelected(); }
+    public boolean personalPlan() {
+        return personalPlan.isSelected();
+    }
 
     public Washroom.Gender gender() {
         return switch (gender.getSelectedIndex()) {

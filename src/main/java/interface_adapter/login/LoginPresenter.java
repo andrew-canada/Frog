@@ -9,19 +9,23 @@ public final class LoginPresenter implements LoginOutputBoundary {
     private final LoggedInViewModel loggedIn;
     private final IsLoggedInViewModel isLoggedIn;
 
-    public LoginPresenter(LoginViewModel login, LoggedInViewModel loggedIn, IsLoggedInViewModel isLoggedIn) {
+    public LoginPresenter(final LoginViewModel login, final LoggedInViewModel loggedIn, final IsLoggedInViewModel isLoggedIn) {
         this.login = login;
         this.loggedIn = loggedIn;
         this.isLoggedIn = isLoggedIn;
     }
 
     @Override
-    public void present(LoginOutputData d) {
+    public void present(final LoginOutputData d) {
         login.setState(new LoginViewModel.State(d.success(), d.username(), d.message()));
         if (d.success()) loggedIn.setState(new LoggedInViewModel.State(true, d.username(), d.moderator()));
         if (d.success()) {
-            isLoggedIn.getState().setIsLoggedIn(true);
-            isLoggedIn.getState().setUsername(d.username());
+            isLoggedIn
+                .getState()
+                .setIsLoggedIn(true);
+            isLoggedIn
+                .getState()
+                .setUsername(d.username());
         }
     }
 }

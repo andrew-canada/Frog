@@ -1,7 +1,8 @@
 package database;
 
-import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
+
+import com.mongodb.client.model.Filters;
 
 /**
  * Class representing a condition to be fed into the DatabaseAccessObject methods
@@ -18,7 +19,7 @@ public class Condition<T extends Comparable<? super T>> extends AbstractConditio
     private final Operator operator;
     private final T value;
 
-    public Condition(String fieldName, Operator operator, T value) {
+    public Condition(final String fieldName, final Operator operator, final T value) {
         if (operator == Operator.EQ) {
             filter = Filters.eq(fieldName, value);
         } else if (operator == Operator.NE) {

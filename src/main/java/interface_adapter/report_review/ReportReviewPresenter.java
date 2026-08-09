@@ -10,12 +10,12 @@ public final class ReportReviewPresenter implements ReportReviewOutputBoundary {
 
     private final ReportReviewViewModel model;
 
-    public ReportReviewPresenter(ReportReviewViewModel model) {
+    public ReportReviewPresenter(final ReportReviewViewModel model) {
         this.model = model;
     }
 
     @Override
-    public void present(ReportReviewOutputData output) {
+    public void present(final ReportReviewOutputData output) {
         model.setState(new ReportReviewViewModel.State(output.message(), output.success(), true));
     }
 }

@@ -13,8 +13,8 @@ public final class ReviewScorer {
     private ReviewScorer() {
     }
 
-    public static double score(int helpfulVotes, long ageInDays) {
+    public static double score(final int helpfulVotes, final long ageInDays) {
         return Math.log(1 + helpfulVotes)
-                + RECENCY_WEIGHT * Math.exp(-ageInDays / RECENCY_HALF_LIFE_DAYS);
+            + RECENCY_WEIGHT * Math.exp(-ageInDays / RECENCY_HALF_LIFE_DAYS);
     }
 }

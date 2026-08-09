@@ -12,18 +12,18 @@ public final class ChangeUsernamePresenter implements ChangeUsernameOutputBounda
     private final AccountViewModel viewModel;
     private final IsLoggedInViewModel isLoggedInViewModel;
 
-    public ChangeUsernamePresenter(AccountViewModel viewModel, IsLoggedInViewModel isLoggedInViewModel) {
+    public ChangeUsernamePresenter(final AccountViewModel viewModel, final IsLoggedInViewModel isLoggedInViewModel) {
         this.viewModel = viewModel;
         this.isLoggedInViewModel = isLoggedInViewModel;
     }
 
-    public void present(ChangeUsernameOutputData outputData) {
+    public void present(final ChangeUsernameOutputData outputData) {
 
-        AccountState state = viewModel.getState();
+        final AccountState state = viewModel.getState();
         state.setChangeUsernameMessage(outputData.message());
         state.setChangeUsernameSuccess(outputData.success());
         state.setUsername(outputData.username());
-        IsLoggedInState loggedInState = isLoggedInViewModel.getState();
+        final IsLoggedInState loggedInState = isLoggedInViewModel.getState();
         loggedInState.setUsername(outputData.username());
 
     }

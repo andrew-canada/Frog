@@ -13,7 +13,9 @@ public final class WashroomListViewModel extends ViewModel<WashroomListViewModel
     public record Item(String id, String name, String description, double rating, int distanceMeters,
                        boolean accessible) {
         public static final Comparator<Item> BY_DISTANCE = Comparator.comparing(Item::distanceMeters);
-        public static final Comparator<Item> BY_RATING = Comparator.comparing(Item::rating).reversed();
+        public static final Comparator<Item> BY_RATING = Comparator
+            .comparing(Item::rating)
+            .reversed();
         public static final Comparator<Item> BY_ALPHABETICAL = Comparator.comparing(Item::name);
     }
 

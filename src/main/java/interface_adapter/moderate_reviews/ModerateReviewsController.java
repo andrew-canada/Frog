@@ -10,7 +10,7 @@ public final class ModerateReviewsController {
 
     private final ModerateReviewsInputBoundary interactor;
 
-    public ModerateReviewsController(ModerateReviewsInputBoundary interactor) {
+    public ModerateReviewsController(final ModerateReviewsInputBoundary interactor) {
         this.interactor = interactor;
     }
 
@@ -18,11 +18,11 @@ public final class ModerateReviewsController {
         interactor.loadReportedReviews();
     }
 
-    public void remove(String reviewId, String moderatorUsername) {
+    public void remove(final String reviewId, final String moderatorUsername) {
         interactor.removeReview(new ModerateReviewsInputData(reviewId, moderatorUsername));
     }
 
-    public void dismiss(String reviewId, String moderatorUsername) {
+    public void dismiss(final String reviewId, final String moderatorUsername) {
         interactor.dismissReports(new ModerateReviewsInputData(reviewId, moderatorUsername));
     }
 }

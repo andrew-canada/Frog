@@ -1,9 +1,10 @@
 package database;
 
+import org.bson.Document;
+
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
 
 /**
  * Owns the application's single MongoDB client and exposes its configured database.
@@ -23,7 +24,7 @@ public class DBDataAccessObject implements AutoCloseable {
         this(requiredUri(), configuredDatabaseName());
     }
 
-    private DBDataAccessObject(String uri, String databaseName) {
+    private DBDataAccessObject(final String uri, final String databaseName) {
         client = MongoClients.create(uri);
         database = client.getDatabase(databaseName);
         ownsClient = true;
@@ -32,7 +33,7 @@ public class DBDataAccessObject implements AutoCloseable {
     /**
      * Allows additive adapters/subclasses to share a client owned by the composition root.
      */
-    protected DBDataAccessObject(MongoDatabase database) {
+    protected DBDataAccessObject(final MongoDatabase database) {
         this.client = null;
         this.database = database;
         this.ownsClient = false;
@@ -43,7 +44,7 @@ public class DBDataAccessObject implements AutoCloseable {
     }
 
     private static String requiredUri() {
-        String uri = System.getenv(URI_ENV);
+        final String uri = System.getenv(URI_ENV);
         if (uri == null || uri.isBlank()) {
             throw new IllegalStateException("Set the " + URI_ENV + " environment variable before starting FlushID.");
         }
@@ -51,7 +52,7 @@ public class DBDataAccessObject implements AutoCloseable {
     }
 
     private static String configuredDatabaseName() {
-        String name = System.getenv(DATABASE_ENV);
+        final String name = System.getenv(DATABASE_ENV);
         return name == null || name.isBlank() ? "FlushID" : name;
     }
 

@@ -1,16 +1,25 @@
 package database.building;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
+
+import org.bson.Document;
+import org.bson.conversions.Bson;
+
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
-import database.*;
+import database.AbstractCondition;
+import database.Condition;
+import database.DBDataAccessObject;
+import database.MongoDocuments;
+import database.Operator;
 import entity.Building;
-import org.bson.Document;
-import org.bson.conversions.Bson;
-
-import javax.json.*;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
@@ -21,8 +30,8 @@ import java.util.Map;
 
 public class DBBuildingDataAccessObject extends DBDataAccessObject {
 
-    static final List<String> allowedAttributes = List.of(new String[]{
-            "buildingCode", "shortName", "longName", "location", "controlInfo"});
+    static final List<String> allowedAttributes = List.of(new String[] {
+        "buildingCode", "shortName", "longName", "location", "controlInfo"});
     private final MongoCollection<Document> collection;
 
     public DBBuildingDataAccessObject() {
@@ -31,7 +40,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
         collection = database.getCollection("Buildings");
     }
 
-    public DBBuildingDataAccessObject(MongoDatabase database) {
+    public DBBuildingDataAccessObject(final MongoDatabase database) {
         super(database);
         collection = database.getCollection("Buildings");
     }
@@ -42,7 +51,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param conditions a list of condition objects that the returned buildings must satisfy
      * @return The buildings that match all the conditions
      */
-    public List<entity.Building> getMatching(Iterable<AbstractCondition<?>> conditions) {
+    public List<entity.Building> getMatching(final Iterable<AbstractCondition<?>> conditions) {
         return new ArrayList<>(getMatchingIDMap(conditions).values());
 
     }
@@ -53,9 +62,9 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the conditions
      */
-    public List<entity.Building> getMatching(AbstractCondition<?> condition) {
+    public List<entity.Building> getMatching(final AbstractCondition<?> condition) {
 
-        List<AbstractCondition<?>> conditions = new ArrayList<>();
+        final List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         return getMatching(conditions);
 
@@ -67,16 +76,16 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param conditions a list of condition objects that the returned buildings must satisfy
      * @return The buildings that match all the conditions mapped to their IDs in the database.
      */
-    public Map<String, entity.Building> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
+    public Map<String, entity.Building> getMatchingIDMap(final Iterable<AbstractCondition<?>> conditions) {
 
         checkAttribute(conditions);
 
-        Bson filter = parseConditions(conditions);
-        List<Document> docs = getAll(filter);
+        final Bson filter = parseConditions(conditions);
+        final List<Document> docs = getAll(filter);
 
-        Map<String, entity.Building> buildings = new HashMap<>();
-        for (Document doc : docs) {
-            entity.Building building = createBuilding(doc);
+        final Map<String, entity.Building> buildings = new HashMap<>();
+        for (final Document doc : docs) {
+            final entity.Building building = createBuilding(doc);
             buildings.put(MongoDocuments.id(doc), building);
         }
         return buildings;
@@ -89,9 +98,9 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the condition mapped to their IDs in the database.
      */
-    public Map<String, entity.Building> getMatchingIDMap(AbstractCondition<?> condition) {
+    public Map<String, entity.Building> getMatchingIDMap(final AbstractCondition<?> condition) {
 
-        List<AbstractCondition<?>> conditions = new ArrayList<>();
+        final List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         return getMatchingIDMap(conditions);
 
@@ -103,8 +112,8 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param conditions list of condition objects to be connected by and statements
      * @return a Bson filter representing satisfying all conditions
      */
-    private static Bson parseConditions(Iterable<AbstractCondition<?>> conditions) {
-        List<Bson> filters = new ArrayList<>();
+    private static Bson parseConditions(final Iterable<AbstractCondition<?>> conditions) {
+        final List<Bson> filters = new ArrayList<>();
         conditions.forEach((condition) -> filters.add(condition.getFilter()));
         return filters.isEmpty() ? new Document() : Filters.and(filters);
     }
@@ -115,9 +124,11 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param filter the filter that must be satisfied for the Document to be returned
      * @return The list of valid documents
      */
-    private List<Document> getAll(Bson filter) {
-        List<Document> docs = new ArrayList<>();
-        return collection.find(filter).into(docs);
+    private List<Document> getAll(final Bson filter) {
+        final List<Document> docs = new ArrayList<>();
+        return collection
+            .find(filter)
+            .into(docs);
     }
 
     /**
@@ -126,11 +137,11 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param doc Document containing building data for a specific building
      * @return the Building object constructed using that data
      */
-    private static entity.Building createBuilding(Document doc) {
+    private static entity.Building createBuilding(final Document doc) {
         return new entity.Building(
-                MongoDocuments.string(doc, MongoDocuments.id(doc), "buildingCode", "code"),
-                MongoDocuments.string(doc, "Unknown building", "longName", "shortName", "name"),
-                getLatitude(doc), getLongitude(doc));
+            MongoDocuments.string(doc, MongoDocuments.id(doc), "buildingCode", "code"),
+            MongoDocuments.string(doc, "Unknown building", "longName", "shortName", "name"),
+            getLatitude(doc), getLongitude(doc));
     }
 
     /**
@@ -139,9 +150,9 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param building Building object with longitude and latitude
      * @return Document that can be inserted into the database and used for geospatial filters
      */
-    private static Document createLocation(Building building) {
-        Document location = new Document("type", "Point");
-        List<Double> coords = new ArrayList<>();
+    private static Document createLocation(final Building building) {
+        final Document location = new Document("type", "Point");
+        final List<Double> coords = new ArrayList<>();
         coords.add(0, building.getLongitude());
         coords.add(1, building.getLatitude());
         location.append("coordinates", coords);
@@ -157,11 +168,11 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      *            coordinates: [longitude, latitude]
      * @return Double representing longitude
      */
-    private static double getLongitude(Document doc) {
-        Document location = doc.get("location", Document.class);
-        List<?> coordinates = location == null ? List.of() : location.getList("coordinates", Object.class, List.of());
-        return coordinates.size() > 0 && coordinates.get(0) instanceof Number coordinate
-                ? coordinate.doubleValue() : MongoDocuments.number(doc, 0, "longitude", "lng");
+    private static double getLongitude(final Document doc) {
+        final Document location = doc.get("location", Document.class);
+        final List<?> coordinates = location == null ? List.of() : location.getList("coordinates", Object.class, List.of());
+        return coordinates.size() > 0 && coordinates.get(0) instanceof final Number coordinate
+            ? coordinate.doubleValue() : MongoDocuments.number(doc, 0, "longitude", "lng");
     }
 
     /**
@@ -173,11 +184,11 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      *            coordinates: [longitude, latitude]}
      * @return Double representing latitude
      */
-    private static double getLatitude(Document doc) {
-        Document location = doc.get("location", Document.class);
-        List<?> coordinates = location == null ? List.of() : location.getList("coordinates", Object.class, List.of());
-        return coordinates.size() > 1 && coordinates.get(1) instanceof Number coordinate
-                ? coordinate.doubleValue() : MongoDocuments.number(doc, 0, "latitude", "lat");
+    private static double getLatitude(final Document doc) {
+        final Document location = doc.get("location", Document.class);
+        final List<?> coordinates = location == null ? List.of() : location.getList("coordinates", Object.class, List.of());
+        return coordinates.size() > 1 && coordinates.get(1) instanceof final Number coordinate
+            ? coordinate.doubleValue() : MongoDocuments.number(doc, 0, "latitude", "lat");
     }
 
     /**
@@ -186,7 +197,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      *
      * @param condition The condition to check.
      */
-    private static void checkAttribute(AbstractCondition<?> condition) {
+    private static void checkAttribute(final AbstractCondition<?> condition) {
         if (!allowedAttributes.contains(condition.getFieldName())) {
             throw new RuntimeException("Not a valid attribute");
         }
@@ -198,29 +209,29 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      *
      * @param conditions The conditions to check.
      */
-    private static void checkAttribute(Iterable<AbstractCondition<?>> conditions) {
-        for (AbstractCondition<?> condition : conditions) {
+    private static void checkAttribute(final Iterable<AbstractCondition<?>> conditions) {
+        for (final AbstractCondition<?> condition : conditions) {
             checkAttribute(condition);
         }
     }
 
-    public static List<Building> loadBuildings(String filename) throws Exception {
-        List<Building> buildings = new ArrayList<>();
+    public static List<Building> loadBuildings(final String filename) throws Exception {
+        final List<Building> buildings = new ArrayList<>();
 
-        try (Reader reader = new FileReader(filename);
-             JsonReader jsonReader = Json.createReader(reader)) {
+        try (final Reader reader = new FileReader(filename);
+             final JsonReader jsonReader = Json.createReader(reader)) {
 
-            JsonArray jsonArray = jsonReader.readArray();
+            final JsonArray jsonArray = jsonReader.readArray();
 
-            for (JsonValue value : jsonArray) {
-                JsonObject obj = (JsonObject) value;
+            for (final JsonValue value : jsonArray) {
+                final JsonObject obj = (JsonObject) value;
 
-                String id = obj.getString("ID");
-                String name = obj.getString("name");
+                final String id = obj.getString("ID");
+                final String name = obj.getString("name");
 
                 // Stored as strings in the JSON
-                double latitude = Double.parseDouble(obj.getString("latitude"));
-                double longitude = Double.parseDouble(obj.getString("longitude"));
+                final double latitude = Double.parseDouble(obj.getString("latitude"));
+                final double longitude = Double.parseDouble(obj.getString("longitude"));
 
                 buildings.add(new entity.Building(id, name, latitude, longitude));
             }
@@ -229,7 +240,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
         return buildings;
     }
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(final String[] args) throws FileNotFoundException {
         /**
          DBBuildingDataAccessObject buildingDAO = new DBBuildingDataAccessObject();
          Condition condition = new Condition<>("buildingCode", Operator.NE, "00");
@@ -244,8 +255,8 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
          System.out.println("Building entrance failed. ");
          }
          */
-        DBBuildingDataAccessObject buildingDAO = new DBBuildingDataAccessObject();
-        Condition condition = new Condition<>("buildingCode", Operator.NE, "00");
+        final DBBuildingDataAccessObject buildingDAO = new DBBuildingDataAccessObject();
+        final Condition condition = new Condition<>("buildingCode", Operator.NE, "00");
         System.out.println(buildingDAO.getMatching(condition));
 
 
@@ -258,15 +269,18 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param building The Building object to be written.
      * @return the ID for the written object.
      */
-    public String write(Building building) {
-        Document doc = new Document();
+    public String write(final Building building) {
+        final Document doc = new Document();
         doc.append("buildingCode", building.getBuildingCode());
         doc.append("shortName", building.getBuildingNameShort());
         doc.append("longName", building.getBuildingNameLong());
         doc.append("location", createLocation(building));
         doc.append("controlInfo", building.getControlInfo());
 
-        return collection.insertOne(doc).getInsertedId().toString();
+        return collection
+            .insertOne(doc)
+            .getInsertedId()
+            .toString();
     }
 
     /**
@@ -275,10 +289,10 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param conditions List of AbstractCondition objects. An object must satisfy
      *                   all conditions to be deleted
      */
-    public void delete(Iterable<AbstractCondition<?>> conditions) {
+    public void delete(final Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
 
-        Bson filter = parseConditions(conditions);
+        final Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);
     }
 
@@ -287,8 +301,8 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      *
      * @param condition A AbstractCondition object that the object must satisfy.
      */
-    public void delete(AbstractCondition<?> condition) {
-        List<AbstractCondition<?>> conditions = new ArrayList<>();
+    public void delete(final AbstractCondition<?> condition) {
+        final List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
         delete(conditions);
     }
@@ -296,21 +310,22 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
     /**
      * Production campus-location seed used by the current Swing application.
      */
-    public List<entity.Building> ensureLocations(List<entity.Building> locations) {
-        List<entity.Building> persisted = new ArrayList<>();
-        for (entity.Building location : locations) {
-            List<entity.Building> existing = getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
+    public List<entity.Building> ensureLocations(final List<entity.Building> locations) {
+        final List<entity.Building> persisted = new ArrayList<>();
+        for (final entity.Building location : locations) {
+            final List<entity.Building> existing = getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
             if (existing.isEmpty()) write(location);
-            Document geoPoint = new Document("type", "Point")
-                    .append("coordinates", List.of(location.longitude(), location.latitude()));
+            final Document geoPoint = new Document("type", "Point")
+                .append("coordinates", List.of(location.longitude(), location.latitude()));
             collection.updateOne(Filters.eq("buildingCode", location.code()),
-                    Updates.combine(
-                            Updates.set("longName", location.name()),
-                            Updates.set("location", geoPoint),
-                            Updates.setOnInsert("shortName", location.name()),
-                            Updates.setOnInsert("controlInfo", "U of T St. George campus reference location")
-                    ), new UpdateOptions().upsert(true));
-            List<entity.Building> refreshed = getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
+                Updates.combine(
+                    Updates.set("longName", location.name()),
+                    Updates.set("location", geoPoint),
+                    Updates.setOnInsert("shortName", location.name()),
+                    Updates.setOnInsert("controlInfo", "U of T St. George campus reference location")
+                ), new UpdateOptions().upsert(true));
+            final List<entity.Building> refreshed =
+                getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
             if (!refreshed.isEmpty()) persisted.add(refreshed.getFirst());
         }
         return List.copyOf(persisted);

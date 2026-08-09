@@ -10,11 +10,11 @@ public final class VoteHelpfulController {
 
     private final VoteHelpfulInputBoundary interactor;
 
-    public VoteHelpfulController(VoteHelpfulInputBoundary interactor) {
+    public VoteHelpfulController(final VoteHelpfulInputBoundary interactor) {
         this.interactor = interactor;
     }
 
-    public void toggle(String reviewId, String username) {
+    public void toggle(final String reviewId, final String username) {
         interactor.toggle(new VoteHelpfulInputData(reviewId, username));
     }
 }

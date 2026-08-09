@@ -1,21 +1,30 @@
 package app;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JWindow;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
 
 public final class Main {
     private Main() {
     }
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception ignored) {
+            } catch (final Exception ignored) {
             }
             UIManager.put("Button.background", Color.WHITE);
             UIManager.put("Button.foreground", Color.BLACK);
-            JWindow loading = loadingWindow();
+            final JWindow loading = loadingWindow();
             loading.setVisible(true);
             try {
                 new AppBuilder().buildAndSeed(app -> {
@@ -23,24 +32,27 @@ public final class Main {
                     app.setLocationRelativeTo(null);
                     app.setVisible(true);
                 });
-            } catch (RuntimeException failure) {
+            } catch (final RuntimeException failure) {
                 loading.dispose();
-                JOptionPane.showMessageDialog(null, failure.getMessage(), "FlushID could not start", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, failure.getMessage(), "FlushID could not start",
+                    JOptionPane.ERROR_MESSAGE);
             }
         });
     }
 
     private static JWindow loadingWindow() {
-        JWindow window = new JWindow();
-        JPanel content = new JPanel(new BorderLayout(0, 8));
+        final JWindow window = new JWindow();
+        final JPanel content = new JPanel(new BorderLayout(0, 8));
         content.setBackground(Color.WHITE);
         content.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(228, 226, 218)),
-                BorderFactory.createEmptyBorder(22, 30, 22, 30)));
-        JLabel title = new JLabel("FlushID");
+            BorderFactory.createLineBorder(new Color(228, 226, 218)),
+            BorderFactory.createEmptyBorder(22, 30, 22, 30)));
+        final JLabel title = new JLabel("FlushID");
         title.setForeground(new Color(24, 95, 165));
-        title.setFont(title.getFont().deriveFont(Font.BOLD, 20f));
-        JLabel message = new JLabel("Loading washrooms and live status…");
+        title.setFont(title
+            .getFont()
+            .deriveFont(Font.BOLD, 20f));
+        final JLabel message = new JLabel("Loading washrooms and live status…");
         message.setForeground(new Color(108, 107, 99));
         content.add(title, BorderLayout.NORTH);
         content.add(message, BorderLayout.CENTER);

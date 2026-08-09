@@ -1,6 +1,8 @@
 package use_case.port;
 
-/** Password hashing boundary; cryptographic library choice remains outside use cases. */
+/**
+ * Password hashing boundary; cryptographic library choice remains outside use cases.
+ */
 public interface PasswordHasher {
     String hash(String password);
 

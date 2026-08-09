@@ -10,7 +10,7 @@ public record User(String username, String passwordHash, String personalPlan,
     /**
      * Convenience constructor for an ordinary (non-moderator) user.
      */
-    public User(String username, String passwordHash, String personalPlan) {
+    public User(final String username, final String passwordHash, final String personalPlan) {
         this(username, passwordHash, personalPlan, false);
     }
 

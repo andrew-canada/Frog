@@ -1,10 +1,21 @@
 package views;
 
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginViewModel;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -20,7 +31,7 @@ public final class LoginView implements ActionListener {
     private LoginController loginController;
 
 
-    public LoginView(LoginViewModel loginViewModel) {
+    public LoginView(final LoginViewModel loginViewModel) {
 
         this.loginViewModel = loginViewModel;
         // this.loginViewModel.addPropertyChangeListener(this);
@@ -32,7 +43,7 @@ public final class LoginView implements ActionListener {
         dialog.setLocationRelativeTo(null);
         windowFrame = new JFrame();
 
-        Container container = dialog.getContentPane();
+        final Container container = dialog.getContentPane();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         panel1 = new JPanel();
         panel2 = new JPanel();
@@ -44,9 +55,9 @@ public final class LoginView implements ActionListener {
         container.add(panel3);
         container.add(panel4);
 
-        ImageIcon photo = new ImageIcon(getClass().getResource("/images/FlushIDLogoPhoto.png"));
-        JLabel photoLabel = new JLabel(photo);
-        Dimension dimension = new Dimension(760, 180);
+        final ImageIcon photo = new ImageIcon(getClass().getResource("/images/FlushIDLogoPhoto.png"));
+        final JLabel photoLabel = new JLabel(photo);
+        final Dimension dimension = new Dimension(760, 180);
         photoLabel.setPreferredSize(dimension);
 
         panel1.add(photoLabel);
@@ -85,9 +96,9 @@ public final class LoginView implements ActionListener {
 
     }
 
-    public void actionPerformed(ActionEvent event) {
+    public void actionPerformed(final ActionEvent event) {
 
-        String eventName = event.getActionCommand();
+        final String eventName = event.getActionCommand();
         if (eventName.equals("OK")) {
             // LoginController.execute()
 
@@ -116,7 +127,7 @@ public final class LoginView implements ActionListener {
 
     }
 
-    public void setLoginController(LoginController loginController) {
+    public void setLoginController(final LoginController loginController) {
         this.loginController = loginController;
     }
 

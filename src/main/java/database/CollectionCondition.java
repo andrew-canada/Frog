@@ -1,8 +1,8 @@
 package database;
 
-import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
 
+import com.mongodb.client.model.Filters;
 import java.util.Collection;
 
 public class CollectionCondition<T extends Collection<?>> extends AbstractCondition<T> {
@@ -13,7 +13,7 @@ public class CollectionCondition<T extends Collection<?>> extends AbstractCondit
     private final Operator operator;
     private final T value;
 
-    public CollectionCondition(String fieldName, Operator operator, T value) {
+    public CollectionCondition(final String fieldName, final Operator operator, final T value) {
         if (operator == Operator.IN) {
             filter = Filters.in(fieldName, (Iterable<?>) value);
         } else if (operator == Operator.NIN) {

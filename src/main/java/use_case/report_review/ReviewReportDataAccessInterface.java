@@ -22,10 +22,14 @@ public interface ReviewReportDataAccessInterface {
      */
     boolean hasReported(String reviewId, String username);
 
-    /** Returns the requested reviews already reported by the user, preferably in one query. */
-    default Set<String> reportedReviewIds(Collection<String> reviewIds, String username) {
-        return reviewIds.stream().filter(reviewId -> hasReported(reviewId, username))
-                .collect(Collectors.toUnmodifiableSet());
+    /**
+     * Returns the requested reviews already reported by the user, preferably in one query.
+     */
+    default Set<String> reportedReviewIds(final Collection<String> reviewIds, final String username) {
+        return reviewIds
+            .stream()
+            .filter(reviewId -> hasReported(reviewId, username))
+            .collect(Collectors.toUnmodifiableSet());
     }
 
 }

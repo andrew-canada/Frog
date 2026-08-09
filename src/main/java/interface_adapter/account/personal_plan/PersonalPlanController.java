@@ -7,11 +7,11 @@ public final class PersonalPlanController {
 
     private final PersonalPlanInputBoundary interactor;
 
-    public PersonalPlanController(PersonalPlanInputBoundary interactor) {
+    public PersonalPlanController(final PersonalPlanInputBoundary interactor) {
         this.interactor = interactor;
     }
 
-    public void execute(String calendarPath, String nTrips, String semester) {
+    public void execute(final String calendarPath, final String nTrips, final String semester) {
         interactor.execute(new PersonalPlanInputData(calendarPath, nTrips, semester));
     }
 

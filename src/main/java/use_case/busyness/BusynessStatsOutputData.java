@@ -8,7 +8,7 @@ public record BusynessStatsOutputData(List<HourBucket> buckets, String sourceNot
     }
 
     public record HourBucket(int hour, double busynessLevel, double cleanlinessLevel, String dominantSource) {
-        public HourBucket(int hour, double busynessLevel, String dominantSource) {
+        public HourBucket(final int hour, final double busynessLevel, final String dominantSource) {
             this(hour, busynessLevel, 0, dominantSource);
         }
     }

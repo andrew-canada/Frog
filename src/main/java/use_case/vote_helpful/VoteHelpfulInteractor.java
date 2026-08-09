@@ -11,12 +11,12 @@ public final class VoteHelpfulInteractor implements VoteHelpfulInputBoundary {
 
     private final HelpfulVoteDataAccessInterface votes;
 
-    public VoteHelpfulInteractor(HelpfulVoteDataAccessInterface votes) {
+    public VoteHelpfulInteractor(final HelpfulVoteDataAccessInterface votes) {
         this.votes = votes;
     }
 
     @Override
-    public void toggle(VoteHelpfulInputData input) {
+    public void toggle(final VoteHelpfulInputData input) {
         if (votes.hasVoted(input.reviewId(), input.username())) {
             votes.removeVote(input.reviewId(), input.username());
         } else {

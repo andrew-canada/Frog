@@ -1,15 +1,26 @@
 package views;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
 import interface_adapter.moderate_reviews.ModerateReviewsController;
 import interface_adapter.moderate_reviews.ModerateReviewsViewModel;
-import use_case.moderate_reviews.ReportedReview;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import use_case.moderate_reviews.ReportedReview;
 
 /**
  * The moderator's Reported Reviews card: shows every reported review as its own
@@ -33,7 +44,7 @@ public final class ReportedReviewsView extends JPanel {
     };
     private ModerateReviewsController controller;
 
-    public ReportedReviewsView(ModerateReviewsViewModel model) {
+    public ReportedReviewsView(final ModerateReviewsViewModel model) {
         this.model = model;
         setLayout(new BorderLayout());
         setBackground(Theme.PAPER);
@@ -41,9 +52,11 @@ public final class ReportedReviewsView extends JPanel {
         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
         body.setBackground(Theme.PAPER);
         body.setBorder(Theme.pad(4, 24, 20, 24));
-        JScrollPane scroll = new JScrollPane(body);
+        final JScrollPane scroll = new JScrollPane(body);
         scroll.setBorder(null);
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        scroll
+            .getVerticalScrollBar()
+            .setUnitIncrement(16);
         add(scroll, BorderLayout.CENTER);
         model.addPropertyChangeListener(e -> {
             expanded.clear();
@@ -52,19 +65,21 @@ public final class ReportedReviewsView extends JPanel {
         render();
     }
 
-    private static JComponent left(JComponent component) {
+    private static JComponent left(final JComponent component) {
         component.setAlignmentX(Component.LEFT_ALIGNMENT);
         return component;
     }
 
-    private static JLabel bold(JLabel label) {
-        label.setFont(label.getFont().deriveFont(Font.BOLD));
+    private static JLabel bold(final JLabel label) {
+        label.setFont(label
+            .getFont()
+            .deriveFont(Font.BOLD));
         return label;
     }
 
-    private static String stars(double rating) {
-        int filled = Math.max(0, Math.min(MAX_STARS, (int) Math.round(rating)));
-        StringBuilder builder = new StringBuilder();
+    private static String stars(final double rating) {
+        final int filled = Math.max(0, Math.min(MAX_STARS, (int) Math.round(rating)));
+        final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < MAX_STARS; i++) {
             builder.append(i < filled ? '★' : '☆');
         }
@@ -72,13 +87,13 @@ public final class ReportedReviewsView extends JPanel {
     }
 
     private JComponent header() {
-        JPanel outer = new JPanel(new BorderLayout());
+        final JPanel outer = new JPanel(new BorderLayout());
         outer.setBackground(Theme.PAPER);
         outer.setBorder(Theme.pad(18, 24, 8, 24));
         outer.add(Theme.title("Reported Reviews"), BorderLayout.WEST);
-        JButton back = Theme.button("← Back to map");
+        final JButton back = Theme.button("← Back to map");
         back.addActionListener(e -> onBack.run());
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        final JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         right.setOpaque(false);
         right.add(back);
         outer.add(right, BorderLayout.EAST);
@@ -87,10 +102,14 @@ public final class ReportedReviewsView extends JPanel {
 
     private void render() {
         body.removeAll();
-        List<ReportedReview> reviews = model.getState().reportedReviews();
+        final List<ReportedReview> reviews = model
+            .getState()
+            .reportedReviews();
         if (reviews.isEmpty()) {
             body.add(left(Theme.label("No reported reviews to moderate.", 14, Theme.MUTED)));
-            String message = model.getState().message();
+            final String message = model
+                .getState()
+                .message();
             if (message != null) {
                 body.add(Box.createVerticalStrut(8));
                 body.add(left(Theme.label(message, 12, Theme.MUTED)));
@@ -100,8 +119,8 @@ public final class ReportedReviewsView extends JPanel {
             return;
         }
 
-        String count = reviews.size() == 1 ? "1 review awaiting moderation"
-                : reviews.size() + " reviews awaiting moderation";
+        final String count = reviews.size() == 1 ? "1 review awaiting moderation"
+            : reviews.size() + " reviews awaiting moderation";
         body.add(left(Theme.label(count, 13, Theme.MUTED)));
         body.add(Box.createVerticalStrut(10));
 
@@ -116,36 +135,39 @@ public final class ReportedReviewsView extends JPanel {
         body.repaint();
     }
 
-    private JComponent card(ReportedReview review) {
-        JPanel card = new JPanel();
+    private JComponent card(final ReportedReview review) {
+        final JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBackground(Theme.PAPER);
         card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Theme.LINE), Theme.pad(14, 16, 14, 16)));
+            BorderFactory.createLineBorder(Theme.LINE), Theme.pad(14, 16, 14, 16)));
 
         card.add(row(bold(Theme.label(review.washroomName(), 15, Theme.INK)),
-                Theme.label(review.totalReports() + " reports", 13, Theme.MUTED)));
+            Theme.label(review.totalReports() + " reports", 13, Theme.MUTED)));
         card.add(Box.createVerticalStrut(8));
         card.add(row(Theme.label("Author: " + review.author(), 13, Theme.INK),
-                Theme.label("Posted: " + review.date().format(DATE), 13, Theme.MUTED)));
-        card.add(left(Theme.label(String.format("Rating: %.1f %s", review.rating(), stars(review.rating())), 13, Theme.INK)));
+            Theme.label("Posted: " + review
+                .date()
+                .format(DATE), 13, Theme.MUTED)));
+        card.add(left(
+            Theme.label(String.format("Rating: %.1f %s", review.rating(), stars(review.rating())), 13, Theme.INK)));
         card.add(Box.createVerticalStrut(8));
         card.add(left(Theme.label("Review", 13, Theme.MUTED)));
         card.add(left(Theme.label("“" + review.comment() + "”", 14, Theme.INK)));
 
         card.add(Box.createVerticalStrut(10));
         card.add(left(Theme.label("Report reasons", 13, Theme.MUTED)));
-        for (ReportedReview.ReasonCount reasonCount : review.reasonCounts()) {
+        for (final ReportedReview.ReasonCount reasonCount : review.reasonCounts()) {
             card.add(left(Theme.label("• " + reasonCount.reason() + " — " + reasonCount.count(), 13, Theme.INK)));
         }
 
-        int detailsCount = review.additionalDetailsCount();
+        final int detailsCount = review.additionalDetailsCount();
         if (detailsCount > 0) {
-            boolean open = expanded.contains(review.reviewId());
+            final boolean open = expanded.contains(review.reviewId());
             card.add(Box.createVerticalStrut(8));
-            JButton toggle = Theme.button(open
-                    ? "Hide Additional Details ▲"
-                    : "View Additional Details (" + detailsCount + ") ▼");
+            final JButton toggle = Theme.button(open
+                ? "Hide Additional Details ▲"
+                : "View Additional Details (" + detailsCount + ") ▼");
             toggle.addActionListener(e -> {
                 if (!expanded.remove(review.reviewId())) {
                     expanded.add(review.reviewId());
@@ -157,7 +179,7 @@ public final class ReportedReviewsView extends JPanel {
                 card.add(Box.createVerticalStrut(6));
                 card.add(left(Theme.label("Additional report details", 13, Theme.MUTED)));
                 int index = 1;
-                for (ReportedReview.AdditionalDetail detail : review.additionalDetails()) {
+                for (final ReportedReview.AdditionalDetail detail : review.additionalDetails()) {
                     card.add(left(Theme.label(index + ". " + detail.reason(), 13, Theme.INK)));
                     card.add(left(Theme.label("      “" + detail.text() + "”", 13, Theme.MUTED)));
                     index++;
@@ -166,8 +188,8 @@ public final class ReportedReviewsView extends JPanel {
         }
 
         card.add(Box.createVerticalStrut(14));
-        JButton dismiss = Theme.button("Dismiss Reports");
-        JButton remove = Theme.primary("Remove Review");
+        final JButton dismiss = Theme.button("Dismiss Reports");
+        final JButton remove = Theme.primary("Remove Review");
         dismiss.addActionListener(e -> {
             if (controller != null) {
                 controller.dismiss(review.reviewId(), moderatorUsername);
@@ -178,7 +200,7 @@ public final class ReportedReviewsView extends JPanel {
                 controller.remove(review.reviewId(), moderatorUsername);
             }
         });
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        final JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actions.setBackground(Theme.PAPER);
         actions.add(dismiss);
         actions.add(remove);
@@ -189,8 +211,8 @@ public final class ReportedReviewsView extends JPanel {
         return card;
     }
 
-    private JPanel row(JComponent left, JComponent right) {
-        JPanel panel = new JPanel(new BorderLayout());
+    private JPanel row(final JComponent left, final JComponent right) {
+        final JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Theme.PAPER);
         panel.add(left, BorderLayout.WEST);
         panel.add(right, BorderLayout.EAST);
@@ -199,15 +221,15 @@ public final class ReportedReviewsView extends JPanel {
         return panel;
     }
 
-    public void setOnBack(Runnable onBack) {
+    public void setOnBack(final Runnable onBack) {
         this.onBack = onBack;
     }
 
-    public void setModeratorUsername(String moderatorUsername) {
+    public void setModeratorUsername(final String moderatorUsername) {
         this.moderatorUsername = moderatorUsername;
     }
 
-    public void setController(ModerateReviewsController controller) {
+    public void setController(final ModerateReviewsController controller) {
         this.controller = controller;
     }
 }

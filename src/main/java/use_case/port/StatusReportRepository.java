@@ -18,14 +18,17 @@ public interface StatusReportRepository {
     /**
      * Returns the newest report from the current clock hour for every requested washroom.
      */
-    default Map<String, StatusReport> getCurrentHourForWashrooms(List<String> washroomIds, int hour) {
-        Map<String, StatusReport> result = new HashMap<>();
-        LocalDateTime since = LocalDateTime.of(2000, 1, 1, 0, 0);
-        for (String washroomId : washroomIds) {
-            getRecentForWashroom(washroomId, since).stream()
-                    .filter(report -> report.timestamp().getHour() == hour)
-                    .max(Comparator.comparing(StatusReport::timestamp))
-                    .ifPresent(report -> result.put(washroomId, report));
+    default Map<String, StatusReport> getCurrentHourForWashrooms(final List<String> washroomIds, final int hour) {
+        final Map<String, StatusReport> result = new HashMap<>();
+        final LocalDateTime since = LocalDateTime.of(2000, 1, 1, 0, 0);
+        for (final String washroomId : washroomIds) {
+            getRecentForWashroom(washroomId, since)
+                .stream()
+                .filter(report -> report
+                    .timestamp()
+                    .getHour() == hour)
+                .max(Comparator.comparing(StatusReport::timestamp))
+                .ifPresent(report -> result.put(washroomId, report));
         }
         return Map.copyOf(result);
     }

@@ -1,5 +1,8 @@
 package database.user;
 
+import org.bson.Document;
+import org.bson.conversions.Bson;
+
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -10,21 +13,23 @@ import database.DBDataAccessObject;
 import database.MongoDocuments;
 import database.Operator;
 import entity.User;
-import org.bson.Document;
-import org.bson.conversions.Bson;
-import use_case.moderate_reviews.ModeratorDataAccessInterface;
-import use_case.port.UserRepository;
-import use_case.port.CurrentUserSession;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import use_case.moderate_reviews.ModeratorDataAccessInterface;
+import use_case.port.CurrentUserSession;
+import use_case.port.UserRepository;
 
 public class DBUserDataAccessObject extends DBDataAccessObject
-        implements UserRepository, CurrentUserSession, ModeratorDataAccessInterface {
+    implements UserRepository, CurrentUserSession, ModeratorDataAccessInterface {
 
-    static final List<String> allowedAttributes = List.of(new String[]{
-            "username", "passwordHash", "personalPlan"});
+    static final List<String> allowedAttributes = List.of(new String[] {
+        "username", "passwordHash", "personalPlan"});
     private final MongoCollection<Document> collection;
     private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
     private entity.User currentApplicationUser;
@@ -35,7 +40,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject
         collection = database.getCollection("Users");
     }
 
-    public DBUserDataAccessObject(MongoDatabase database) {
+    public DBUserDataAccessObject(final MongoDatabase database) {
         super(database);
         collection = database.getCollection("Users");
     }
@@ -46,8 +51,8 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      * @param conditions list of condition objects to be connected by and statements
      * @return a Bson filter representing satisfying all conditions
      */
-    private static Bson parseConditions(Iterable<AbstractCondition<?>> conditions) {
-        List<Bson> filters = new ArrayList<>();
+    private static Bson parseConditions(final Iterable<AbstractCondition<?>> conditions) {
+        final List<Bson> filters = new ArrayList<>();
         conditions.forEach((condition) -> filters.add(condition.getFilter()));
         return filters.isEmpty() ? new Document() : Filters.and(filters);
     }
@@ -58,9 +63,11 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      * @param filter the filter that must be satisfied for the Document to be returned
      * @return The list of valid documents
      */
-    private List<Document> getAll(Bson filter) {
-        List<Document> docs = new ArrayList<>();
-        return collection.find(filter).into(docs);
+    private List<Document> getAll(final Bson filter) {
+        final List<Document> docs = new ArrayList<>();
+        return collection
+            .find(filter)
+            .into(docs);
     }
 
     /**
@@ -69,10 +76,10 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      * @param doc Document containing user data for a specific user
      * @return the user object constructed using that data
      */
-    private static User createUser(Document doc) {
+    private static User createUser(final Document doc) {
         return new User(value(doc, "unknown", "username", "name"),
-                value(doc, "", "passwordHash", "password"),
-                value(doc, "", "personalPlan"), doc.getBoolean("isModerator", false));
+            value(doc, "", "passwordHash", "password"),
+            value(doc, "", "personalPlan"), doc.getBoolean("isModerator", false));
     }
 
     /**
@@ -81,7 +88,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      *
      * @param condition The condition to check.
      */
-    private static void checkAttribute(AbstractCondition<?> condition) {
+    private static void checkAttribute(final AbstractCondition<?> condition) {
         if (!allowedAttributes.contains(condition.getFieldName())) {
             throw new RuntimeException("Not a valid attribute");
         }
@@ -93,21 +100,21 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      *
      * @param conditions The conditions to check.
      */
-    private static void checkAttribute(Iterable<AbstractCondition<?>> conditions) {
-        for (AbstractCondition<?> condition : conditions) {
+    private static void checkAttribute(final Iterable<AbstractCondition<?>> conditions) {
+        for (final AbstractCondition<?> condition : conditions) {
             checkAttribute(condition);
         }
     }
 
-    private static String value(Document document, String fallback, String... fields) {
-        for (String field : fields) {
-            String value = document.getString(field);
+    private static String value(final Document document, final String fallback, final String... fields) {
+        for (final String field : fields) {
+            final String value = document.getString(field);
             if (value != null && !value.isBlank()) return value;
         }
         return fallback;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
         changes.addPropertyChangeListener(l);
     }
 
@@ -117,7 +124,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      * @param conditions a list of condition objects that the returned users must satisfy
      * @return The users that match all the conditions
      */
-    public List<User> getMatching(Iterable<AbstractCondition<?>> conditions) {
+    public List<User> getMatching(final Iterable<AbstractCondition<?>> conditions) {
         return new ArrayList<>(getMatchingIDMap(conditions).values());
     }
 
@@ -127,15 +134,15 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      * @param conditions a list of condition objects that the returned users must satisfy
      * @return The users that match all the conditions mapped to their IDs in the database.
      */
-    public Map<String, User> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
+    public Map<String, User> getMatchingIDMap(final Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
 
-        Bson filter = parseConditions(conditions);
-        List<Document> docs = getAll(filter);
+        final Bson filter = parseConditions(conditions);
+        final List<Document> docs = getAll(filter);
 
-        Map<String, User> users = new HashMap<>();
-        for (Document doc : docs) {
-            User user = createUser(doc);
+        final Map<String, User> users = new HashMap<>();
+        for (final Document doc : docs) {
+            final User user = createUser(doc);
             users.put(MongoDocuments.id(doc), user);
         }
         return users;
@@ -146,13 +153,17 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      *
      * @param user The user object to be written.
      */
-    public String write(User user, String washroomID) {
-        Document doc = new Document("username", user.username()).append("passwordHash", user.passwordHash())
-                .append("personalPlan", user.personalPlan()).append("isModerator", user.isModerator());
+    public String write(final User user, final String washroomID) {
+        final Document doc = new Document("username", user.username())
+            .append("passwordHash", user.passwordHash())
+            .append("personalPlan", user.personalPlan())
+            .append("isModerator", user.isModerator());
         if (washroomID != null && !washroomID.isBlank()) doc.append("washroomID", washroomID);
         collection.replaceOne(Filters.or(Filters.eq("username", user.username()), Filters.eq("name", user.username())),
-                doc, new ReplaceOptions().upsert(true));
-        Document persisted = collection.find(Filters.eq("username", user.username())).first();
+            doc, new ReplaceOptions().upsert(true));
+        final Document persisted = collection
+            .find(Filters.eq("username", user.username()))
+            .first();
         return persisted == null ? user.username() : MongoDocuments.id(persisted);
     }
 
@@ -162,34 +173,42 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      * @param conditions List of AbstractCondition objects. An object must satisfy
      *                   all conditions to be deleted
      */
-    public void delete(Iterable<AbstractCondition<?>> conditions) {
+    public void delete(final Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
-        Bson filter = parseConditions(conditions);
+        final Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);
     }
 
     @Override
-    public Optional<entity.User> get(String username) {
+    public Optional<entity.User> get(final String username) {
         List<User> matches = getMatching(List.of(new Condition<>("username", Operator.EQ, username)));
-        if (matches.isEmpty())
+        if (matches.isEmpty()) {
             matches = getMatching(List.of(new Condition<>("username", Operator.EQ, username)));
-        if (matches.isEmpty() || matches.getFirst().passwordHash().isBlank()) return Optional.empty();
+        }
+        if (matches.isEmpty() || matches
+                .getFirst()
+                .passwordHash()
+                .isBlank()) {
+            return Optional.empty();
+        }
         return Optional.of(matches.getFirst());
     }
 
     @Override
-    public boolean existsByName(String username) {
+    public boolean existsByName(final String username) {
         return get(username).isPresent();
     }
 
     @Override
-    public void save(entity.User user) {
+    public void save(final entity.User user) {
         write(user, null);
     }
 
     @Override
-    public boolean isModerator(String username) {
-        return get(username).map(entity.User::isModerator).orElse(false);
+    public boolean isModerator(final String username) {
+        return get(username)
+            .map(entity.User::isModerator)
+            .orElse(false);
     }
 
     /**
@@ -197,9 +216,9 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      *
      * @param username the account to promote to moderator
      */
-    public void ensureModerator(String username) {
+    public void ensureModerator(final String username) {
         collection.updateOne(Filters.eq("username", username),
-                new Document("$set", new Document("isModerator", true)));
+            new Document("$set", new Document("isModerator", true)));
     }
 
     @Override
@@ -208,8 +227,8 @@ public class DBUserDataAccessObject extends DBDataAccessObject
     }
 
     @Override
-    public void setCurrentUser(entity.User user) {
-        entity.User prev = currentApplicationUser;
+    public void setCurrentUser(final entity.User user) {
+        final entity.User prev = currentApplicationUser;
         currentApplicationUser = user;
         if (Objects.isNull(prev) || Objects.isNull(user)) {
             changes.firePropertyChange("state", prev, user);
@@ -222,7 +241,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject
     }
 
     @Override
-    public void removeUser(String username) {
+    public void removeUser(final String username) {
         delete(List.of(new Condition<>("username", Operator.EQ, username)));
     }
 }

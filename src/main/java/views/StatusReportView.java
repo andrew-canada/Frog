@@ -1,10 +1,19 @@
 package views;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+
 import entity.MaintenanceIssue;
 import interface_adapter.status_report.StatusReportViewModel;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagLayout;
 
 public final class StatusReportView extends JPanel {
     private final JSlider busyness = slider(), cleanliness = slider();
@@ -15,10 +24,10 @@ public final class StatusReportView extends JPanel {
     }, onCancel = () -> {
     };
 
-    public StatusReportView(StatusReportViewModel model) {
+    public StatusReportView(final StatusReportViewModel model) {
         setLayout(new GridBagLayout());
         setBackground(Theme.CREAM);
-        JPanel card = Theme.page();
+        final JPanel card = Theme.page();
         card.setPreferredSize(new Dimension(520, 430));
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.add(Theme.title("How is it right now?"));
@@ -33,9 +42,10 @@ public final class StatusReportView extends JPanel {
         card.add(new JLabel("Maintenance issue"));
         card.add(issue);
         card.add(Box.createVerticalStrut(20));
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        final JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttons.setOpaque(false);
-        JButton submit = Theme.primary("Submit status"), cancel = Theme.button("Cancel");
+        final JButton submit = Theme.primary("Submit status");
+        final JButton cancel = Theme.button("Cancel");
         submit.addActionListener(e -> onSubmit.run());
         cancel.addActionListener(e -> onCancel.run());
         buttons.add(submit);
@@ -44,14 +54,15 @@ public final class StatusReportView extends JPanel {
         card.add(message);
         add(card);
         model.addPropertyChangeListener(e -> {
-            var s = model.getState();
-            message.setText(s.success() ? s.message() + String.format(" · current %.1f/5", s.currentBusyness()) : s.message());
+            final var s = model.getState();
+            message.setText(
+                s.success() ? s.message() + String.format(" · current %.1f/5", s.currentBusyness()) : s.message());
             message.setForeground(s.success() ? new Color(37, 125, 80) : Theme.BERRY);
         });
     }
 
     private static JSlider slider() {
-        JSlider s = new JSlider(1, 5, 3);
+        final JSlider s = new JSlider(1, 5, 3);
         s.setMajorTickSpacing(1);
         s.setPaintTicks(true);
         s.setPaintLabels(true);
@@ -71,15 +82,15 @@ public final class StatusReportView extends JPanel {
         return (MaintenanceIssue) issue.getSelectedItem();
     }
 
-    public void setOnSubmit(Runnable r) {
+    public void setOnSubmit(final Runnable r) {
         onSubmit = r;
     }
 
-    public void setOnCancel(Runnable r) {
+    public void setOnCancel(final Runnable r) {
         onCancel = r;
     }
 
-    public void setWashroomName(String name) {
+    public void setWashroomName(final String name) {
         washroomName.setText(name);
     }
 }

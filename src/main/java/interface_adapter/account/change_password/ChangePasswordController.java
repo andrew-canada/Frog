@@ -7,11 +7,11 @@ public final class ChangePasswordController {
 
     private final ChangePasswordInputBoundary interactor;
 
-    public ChangePasswordController(ChangePasswordInputBoundary interactor) {
+    public ChangePasswordController(final ChangePasswordInputBoundary interactor) {
         this.interactor = interactor;
     }
 
-    public void execute(String newPassword, String confirmNewPassword) {
+    public void execute(final String newPassword, final String confirmNewPassword) {
         interactor.execute(new ChangePasswordInputData(newPassword, confirmNewPassword));
     }
 

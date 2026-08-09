@@ -10,12 +10,12 @@ public final class ModerateReviewsPresenter implements ModerateReviewsOutputBoun
 
     private final ModerateReviewsViewModel model;
 
-    public ModerateReviewsPresenter(ModerateReviewsViewModel model) {
+    public ModerateReviewsPresenter(final ModerateReviewsViewModel model) {
         this.model = model;
     }
 
     @Override
-    public void present(ModerateReviewsOutputData output) {
+    public void present(final ModerateReviewsOutputData output) {
         model.setState(new ModerateReviewsViewModel.State(output.reportedReviews(), output.message()));
     }
 }

@@ -1,8 +1,11 @@
 import entity.Report;
-import use_case.report_review.*;
-
 import java.util.ArrayList;
 import java.util.List;
+import use_case.report_review.ReportReviewInputBoundary;
+import use_case.report_review.ReportReviewInputData;
+import use_case.report_review.ReportReviewInteractor;
+import use_case.report_review.ReportReviewOutputData;
+import use_case.report_review.ReviewReportDataAccessInterface;
 
 final class ReportReviewInteractorTest {
 
@@ -12,17 +15,23 @@ final class ReportReviewInteractorTest {
 
     private static void reportValidatesAndSaves() {
         final List<Report> saved = new ArrayList<>();
-        ReviewReportDataAccessInterface store = new ReviewReportDataAccessInterface() {
-            public void save(Report report) {
+        final ReviewReportDataAccessInterface store = new ReviewReportDataAccessInterface() {
+            public void save(final Report report) {
                 saved.add(report);
             }
 
-            public boolean hasReported(String reviewId, String user) {
-                return saved.stream().anyMatch(r -> r.reviewId().equals(reviewId) && r.reporterUsername().equals(user));
+            public boolean hasReported(final String reviewId, final String user) {
+                return saved
+                    .stream()
+                    .anyMatch(r -> r
+                        .reviewId()
+                        .equals(reviewId) && r
+                        .reporterUsername()
+                        .equals(user));
             }
         };
         final ReportReviewOutputData[] out = new ReportReviewOutputData[1];
-        ReportReviewInputBoundary reporter = new ReportReviewInteractor(store, d -> out[0] = d);
+        final ReportReviewInputBoundary reporter = new ReportReviewInteractor(store, d -> out[0] = d);
 
         reporter.report(new ReportReviewInputData("r1", "user2", List.of(), ""));
         TestSupport.check(!out[0].success(), "report with no reason rejected");

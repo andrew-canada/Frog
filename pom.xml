@@ -1,102 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>Frog</groupId>
-        <artifactId>FlushID</artifactId>
-        <version>1.0-SNAPSHOT</version>
+    <artifactId>FlushID</artifactId>
+    <version>1.0-SNAPSHOT</version>
 
-        <properties>
-            <maven.compiler.release>24</maven.compiler.release>
-            <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        </properties>
+    <properties>
+        <maven.compiler.release>24</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
+    <dependencies>
+        <!-- Account / Security / AI Dependencies (from account_use_cases) -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.genai</groupId>
+            <artifactId>google-genai</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- Database, UI, & Logging Dependencies (from demo) -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.17</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jxmapviewer</groupId>
+            <artifactId>jxmapviewer2</artifactId>
+            <version>2.8.1</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>1.0.4</version>
+        </dependency>
+
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.11.4</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
         <dependencies>
-            <!-- Account / Security / AI Dependencies (from account_use_cases) -->
-            <dependency>
-                <groupId>org.mindrot</groupId>
-                <artifactId>jbcrypt</artifactId>
-                <version>0.4</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.genai</groupId>
-                <artifactId>google-genai</artifactId>
-                <version>1.0.0</version>
-            </dependency>
-
-            <!-- Database, UI, & Logging Dependencies (from demo) -->
             <dependency>
                 <groupId>org.mongodb</groupId>
-                <artifactId>mongodb-driver-sync</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
-                <version>2.0.17</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jxmapviewer</groupId>
-                <artifactId>jxmapviewer2</artifactId>
-                <version>2.8.1</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.json</groupId>
-                <artifactId>javax.json-api</artifactId>
-                <version>1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>javax.json</artifactId>
-                <version>1.0.4</version>
-            </dependency>
-
-
-            <!-- Testing -->
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter</artifactId>
-                <version>5.11.4</version>
-                <scope>test</scope>
+                <artifactId>mongodb-driver-bom</artifactId>
+                <version>5.9.0</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
+    </dependencyManagement>
 
-        <dependencyManagement>
-            <dependencies>
-                <dependency>
-                    <groupId>org.mongodb</groupId>
-                    <artifactId>mongodb-driver-bom</artifactId>
-                    <version>5.9.0</version>
-                    <type>pom</type>
-                    <scope>import</scope>
-                </dependency>
-            </dependencies>
-        </dependencyManagement>
-
-        <build>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.2.5</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
-                    <version>3.5.0</version>
-                    <configuration>
-                        <mainClass>app.Main</mainClass>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.13.0</version>
-                    <configuration>
-                        <release>24</release>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </build>
-    </project>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <mainClass>app.Main</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>24</release>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

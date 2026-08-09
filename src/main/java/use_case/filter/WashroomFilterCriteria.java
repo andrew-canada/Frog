@@ -9,7 +9,7 @@ import java.util.Set;
  * translate this value object to their own query language.
  */
 public record WashroomFilterCriteria(boolean accessibleOnly, Washroom.Gender gender,
-                                    String buildingCode, Set<String> permittedNames) {
+                                     String buildingCode, Set<String> permittedNames) {
     public WashroomFilterCriteria {
         permittedNames = Set.copyOf(permittedNames);
     }

@@ -7,7 +7,7 @@ public final class LogoutInteractor implements LogoutInputBoundary {
     private final CurrentUserSession session;
     private final LogoutOutputBoundary presenter;
 
-    public LogoutInteractor(CurrentUserSession session, LogoutOutputBoundary presenter) {
+    public LogoutInteractor(final CurrentUserSession session, final LogoutOutputBoundary presenter) {
         this.session = session;
         this.presenter = presenter;
     }

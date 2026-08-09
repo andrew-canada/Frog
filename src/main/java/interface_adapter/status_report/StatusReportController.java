@@ -7,11 +7,11 @@ import use_case.status_report.SubmitStatusReportInputData;
 public final class StatusReportController {
     private final SubmitStatusReportInputBoundary interactor;
 
-    public StatusReportController(SubmitStatusReportInputBoundary i) {
+    public StatusReportController(final SubmitStatusReportInputBoundary i) {
         interactor = i;
     }
 
-    public void execute(String id, int busy, int clean, MaintenanceIssue issue, String user) {
+    public void execute(final String id, final int busy, final int clean, final MaintenanceIssue issue, final String user) {
         interactor.execute(new SubmitStatusReportInputData(id, busy, clean, issue, user));
     }
 }

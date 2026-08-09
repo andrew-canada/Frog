@@ -1,9 +1,8 @@
 package interface_adapter.moderate_reviews;
 
 import interface_adapter.common.ViewModel;
-import use_case.moderate_reviews.ReportedReview;
-
 import java.util.List;
+import use_case.moderate_reviews.ReportedReview;
 
 /**
  * ViewModel for the moderator's Reported Reviews card.

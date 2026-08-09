@@ -7,11 +7,11 @@ public final class ChangeUsernameController {
 
     private final ChangeUsernameInputBoundary interactor;
 
-    public ChangeUsernameController(ChangeUsernameInputBoundary interactor) {
+    public ChangeUsernameController(final ChangeUsernameInputBoundary interactor) {
         this.interactor = interactor;
     }
 
-    public void execute(String newUsername) {
+    public void execute(final String newUsername) {
         interactor.execute(new ChangeUsernameInputData(newUsername));
     }
 

@@ -6,12 +6,12 @@ import use_case.write_review.WriteReviewOutputData;
 public final class WriteReviewPresenter implements WriteReviewOutputBoundary {
     private final WriteReviewViewModel model;
 
-    public WriteReviewPresenter(WriteReviewViewModel model) {
+    public WriteReviewPresenter(final WriteReviewViewModel model) {
         this.model = model;
     }
 
     @Override
-    public void present(WriteReviewOutputData output) {
+    public void present(final WriteReviewOutputData output) {
         model.setState(new WriteReviewViewModel.State(output.success(), output.message()));
     }
 }

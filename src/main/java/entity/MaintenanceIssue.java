@@ -6,7 +6,7 @@ public enum MaintenanceIssue {
 
     private final String label;
 
-    MaintenanceIssue(String label) {
+    MaintenanceIssue(final String label) {
         this.label = label;
     }
 

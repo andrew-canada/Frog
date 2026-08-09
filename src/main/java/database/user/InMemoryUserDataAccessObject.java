@@ -1,17 +1,17 @@
 package database.user;
 
-import entity.User;
 import org.mindrot.jbcrypt.BCrypt;
-import use_case.moderate_reviews.ModeratorDataAccessInterface;
-import use_case.port.UserRepository;
-import use_case.port.CurrentUserSession;
 
+import entity.User;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import use_case.moderate_reviews.ModeratorDataAccessInterface;
+import use_case.port.CurrentUserSession;
+import use_case.port.UserRepository;
 
 public final class InMemoryUserDataAccessObject
-        implements UserRepository, CurrentUserSession, ModeratorDataAccessInterface {
+    implements UserRepository, CurrentUserSession, ModeratorDataAccessInterface {
     private final Map<String, User> users = new LinkedHashMap<>();
     private User currentUser;
 
@@ -20,17 +20,17 @@ public final class InMemoryUserDataAccessObject
     }
 
     @Override
-    public Optional<User> get(String username) {
+    public Optional<User> get(final String username) {
         return Optional.ofNullable(users.get(username));
     }
 
     @Override
-    public boolean existsByName(String username) {
+    public boolean existsByName(final String username) {
         return users.containsKey(username);
     }
 
     @Override
-    public void save(User user) {
+    public void save(final User user) {
         users.put(user.username(), user);
     }
 
@@ -40,7 +40,7 @@ public final class InMemoryUserDataAccessObject
     }
 
     @Override
-    public void setCurrentUser(User user) {
+    public void setCurrentUser(final User user) {
         currentUser = user;
     }
 
@@ -50,12 +50,14 @@ public final class InMemoryUserDataAccessObject
     }
 
     @Override
-    public void removeUser(String username) {
+    public void removeUser(final String username) {
         users.remove(username);
     }
 
     @Override
-    public boolean isModerator(String username) {
-        return get(username).map(User::isModerator).orElse(false);
+    public boolean isModerator(final String username) {
+        return get(username)
+            .map(User::isModerator)
+            .orElse(false);
     }
 }

@@ -10,14 +10,14 @@ public class IsLoggedInState {
     private boolean isLoggedIn;
     private String username;
 
-    public IsLoggedInState(boolean isLoggedIn, String username) {
+    public IsLoggedInState(final boolean isLoggedIn, final String username) {
 
         this.isLoggedIn = isLoggedIn;
         this.username = username;
 
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
         changes.addPropertyChangeListener(l);
     }
 
@@ -25,8 +25,8 @@ public class IsLoggedInState {
         return username;
     }
 
-    public void setUsername(String username) {
-        String prev = this.username;
+    public void setUsername(final String username) {
+        final String prev = this.username;
         this.username = username;
         changes.firePropertyChange("state", prev, username);
     }
@@ -35,8 +35,8 @@ public class IsLoggedInState {
         return isLoggedIn;
     }
 
-    public void setIsLoggedIn(boolean isLoggedIn) {
-        boolean prev = this.isLoggedIn;
+    public void setIsLoggedIn(final boolean isLoggedIn) {
+        final boolean prev = this.isLoggedIn;
         this.isLoggedIn = isLoggedIn;
         changes.firePropertyChange("state", prev, isLoggedIn);
     }

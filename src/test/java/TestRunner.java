@@ -1,5 +1,5 @@
 public final class TestRunner {
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         run("ViewReviewsInteractorTest", ViewReviewsInteractorTest::run);
         run("LoginInteractorTest", LoginInteractorTest::run);
         run("SignupInteractorTest", SignupInteractorTest::run);
@@ -18,7 +18,7 @@ public final class TestRunner {
         System.out.println("All interactor, adapter, sorting, and UI smoke tests passed.");
     }
 
-    private static void run(String name, Runnable test) {
+    private static void run(final String name, final Runnable test) {
         test.run();
         System.out.println("PASS  " + name);
     }

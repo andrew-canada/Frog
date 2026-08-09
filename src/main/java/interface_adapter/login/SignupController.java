@@ -6,11 +6,11 @@ import use_case.signup.SignupInputData;
 public final class SignupController {
     private final SignupInputBoundary interactor;
 
-    public SignupController(SignupInputBoundary interactor) {
+    public SignupController(final SignupInputBoundary interactor) {
         this.interactor = interactor;
     }
 
-    public void execute(String username, String password) {
+    public void execute(final String username, final String password) {
         interactor.execute(new SignupInputData(username, password));
     }
 }

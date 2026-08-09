@@ -1,9 +1,19 @@
 package views;
 
-import entity.GeoPoint;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 
-import javax.swing.*;
-import java.awt.*;
+import entity.GeoPoint;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Window;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -14,13 +24,15 @@ public final class LocationInputDialog extends JDialog {
     private final Function<String, GeoPoint> addressLookup;
     private final BiConsumer<Double, Double> onSave;
 
-    public LocationInputDialog(Window owner, Function<String, GeoPoint> addressLookup, BiConsumer<Double, Double> onSave, Double currLat, Double currLong, MapClicker mapClicker) {
+    public LocationInputDialog(final Window owner, final Function<String, GeoPoint> addressLookup,
+                               final BiConsumer<Double, Double> onSave, final Double currLat, final Double currLong,
+                               final MapClicker mapClicker) {
         super(owner, "Set your location", ModalityType.APPLICATION_MODAL);
         this.addressLookup = addressLookup;
         this.onSave = onSave;
-        JPanel p = Theme.page();
+        final JPanel p = Theme.page();
         p.setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
+        final GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(5, 5, 5, 5);
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
@@ -41,10 +53,10 @@ public final class LocationInputDialog extends JDialog {
         c.fill = GridBagConstraints.NONE;
         mapClicker.addOnSave(onSave);
         mapClicker.addFrame(this);
-        JButton clickLocation = Theme.primary("Right click on map to select location");
+        final JButton clickLocation = Theme.primary("Right click on map to select location");
         clickLocation.addActionListener(mapClicker);
         p.add(clickLocation, c);
-        JButton useAddress = Theme.primary("Use address");
+        final JButton useAddress = Theme.primary("Use address");
         c.gridx = 1;
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.NONE;
@@ -64,7 +76,7 @@ public final class LocationInputDialog extends JDialog {
         p.add(new JLabel("Longitude"), c);
         c.gridx = 1;
         p.add(longitude, c);
-        JButton useCoordinates = Theme.primary("Use coordinates");
+        final JButton useCoordinates = Theme.primary("Use coordinates");
         c.gridx = 1;
         c.gridy++;
         c.anchor = GridBagConstraints.EAST;
@@ -79,17 +91,25 @@ public final class LocationInputDialog extends JDialog {
 
     private void useCoordinates() {
         try {
-            onSave.accept(Double.parseDouble(latitude.getText().trim()), Double.parseDouble(longitude.getText().trim()));
+            onSave.accept(Double.parseDouble(latitude
+                .getText()
+                .trim()), Double.parseDouble(longitude
+                .getText()
+                .trim()));
             dispose();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Enter numeric coordinates.", "Invalid coordinates", JOptionPane.WARNING_MESSAGE);
+        } catch (final NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Enter numeric coordinates.", "Invalid coordinates",
+                JOptionPane.WARNING_MESSAGE);
         }
     }
 
-    private void useAddress(JButton button) {
-        String query = address.getText().trim();
+    private void useAddress(final JButton button) {
+        final String query = address
+            .getText()
+            .trim();
         if (query.isBlank()) {
-            JOptionPane.showMessageDialog(this, "Enter an address to search.", "Address required", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Enter an address to search.", "Address required",
+                JOptionPane.WARNING_MESSAGE);
             return;
         }
         button.setEnabled(false);
@@ -103,12 +123,14 @@ public final class LocationInputDialog extends JDialog {
             @Override
             protected void done() {
                 try {
-                    GeoPoint point = get();
+                    final GeoPoint point = get();
                     onSave.accept(point.latitude(), point.longitude());
                     dispose();
-                } catch (Exception failure) {
-                    Throwable cause = failure.getCause() == null ? failure : failure.getCause();
-                    JOptionPane.showMessageDialog(LocationInputDialog.this, cause.getMessage() == null ? "Address search failed." : cause.getMessage(), "Address search", JOptionPane.WARNING_MESSAGE);
+                } catch (final Exception failure) {
+                    final Throwable cause = failure.getCause() == null ? failure : failure.getCause();
+                    JOptionPane.showMessageDialog(LocationInputDialog.this,
+                        cause.getMessage() == null ? "Address search failed." : cause.getMessage(), "Address search",
+                        JOptionPane.WARNING_MESSAGE);
                     button.setEnabled(true);
                     button.setText("Use address");
                 }

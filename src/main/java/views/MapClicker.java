@@ -2,8 +2,14 @@ package views;
 
 import org.jxmapviewer.viewer.GeoPosition;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
 import java.util.function.BiConsumer;
 
 public class MapClicker implements ActionListener {
@@ -11,27 +17,27 @@ public class MapClicker implements ActionListener {
     BiConsumer<Double, Double> onSave;
     Window frame;
 
-    public MapClicker(MainView.CampusMapPanel map) {
+    public MapClicker(final MainView.CampusMapPanel map) {
         this.map = map;
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
         System.out.println("button clicked!");
         class MapClickListener extends MouseAdapter {
             final MainView.CampusMapPanel map;
             final BiConsumer<Double, Double> onSave;
 
-            public MapClickListener(MainView.CampusMapPanel map, BiConsumer<Double, Double> onSave) {
+            public MapClickListener(final MainView.CampusMapPanel map, final BiConsumer<Double, Double> onSave) {
                 this.map = map;
                 this.onSave = onSave;
             }
 
             @Override
-            public void mouseReleased(MouseEvent e) {
+            public void mouseReleased(final MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
-                    Point pt = e.getPoint();
-                    GeoPosition pos = map.convertPointToGeoPosition(pt);
+                    final Point pt = e.getPoint();
+                    final GeoPosition pos = map.convertPointToGeoPosition(pt);
                     onSave.accept(pos.getLatitude(), pos.getLongitude());
                     map.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     map.removeMouseListener(this);
@@ -44,11 +50,11 @@ public class MapClicker implements ActionListener {
         frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
     }
 
-    public void addOnSave(BiConsumer<Double, Double> onSave) {
+    public void addOnSave(final BiConsumer<Double, Double> onSave) {
         this.onSave = onSave;
     }
 
-    public void addFrame(Window frame) {
+    public void addFrame(final Window frame) {
         this.frame = frame;
     }
 }

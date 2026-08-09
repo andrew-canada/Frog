@@ -1,5 +1,20 @@
 package views;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
+import javax.swing.Timer;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,9 +26,11 @@ import interface_adapter.account.change_password.ChangePasswordController;
 import interface_adapter.account.change_username.ChangeUsernameController;
 import interface_adapter.account.delete_account.DeleteAccountController;
 import interface_adapter.account.personal_plan.PersonalPlanController;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -63,17 +80,24 @@ public final class AccountView extends JPanel {
     private Consumer<String> onViewPlan = id -> {
     };
 
-    public AccountView(AccountViewModel viewModel, IsLoggedInViewModel isLoggedInViewModel, ChangeUsernameController changeUsernameController, ChangePasswordController changePasswordController, DeleteAccountController deleteAccountController, PersonalPlanController personalPlanController) {
+    public AccountView(final AccountViewModel viewModel, final IsLoggedInViewModel isLoggedInViewModel,
+                       final ChangeUsernameController changeUsernameController,
+                       final ChangePasswordController changePasswordController,
+                       final DeleteAccountController deleteAccountController, final PersonalPlanController personalPlanController) {
 
-        viewModel.getState().addPropertyChangeListener(e -> render(viewModel.getState()));
-        isLoggedInViewModel.getState().addPropertyChangeListener(e -> render(isLoggedInViewModel.getState()));
+        viewModel
+            .getState()
+            .addPropertyChangeListener(e -> render(viewModel.getState()));
+        isLoggedInViewModel
+            .getState()
+            .addPropertyChangeListener(e -> render(isLoggedInViewModel.getState()));
 
         setLayout(new BorderLayout());
 
-        JPanel title = Theme.page();
+        final JPanel title = Theme.page();
         title.setLayout(new BorderLayout());
 
-        JPanel titleWords = Theme.page();
+        final JPanel titleWords = Theme.page();
         titleWords.setLayout(new BorderLayout());
         titleWords.add(Theme.title("Account"), BorderLayout.NORTH);
         titleWords.add(accountLabel, BorderLayout.SOUTH);
@@ -83,7 +107,7 @@ public final class AccountView extends JPanel {
         title.add(back, BorderLayout.EAST);
         add(title, BorderLayout.NORTH);
 
-        JPanel container = Theme.page();
+        final JPanel container = Theme.page();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         container.add(personalPlan);
         container.add(Box.createVerticalStrut(10));
@@ -95,17 +119,21 @@ public final class AccountView extends JPanel {
 
         personalPlan.setLayout(new BoxLayout(personalPlan, BoxLayout.Y_AXIS));
         personalPlan.setBackground(Theme.PAPER);
-        personalPlan.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
-        JPanel personalPlanTitle = new JPanel();
+        personalPlan.setBorder(
+            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
+        final JPanel personalPlanTitle = new JPanel();
         personalPlanTitle.setLayout(new FlowLayout(FlowLayout.LEFT));
         personalPlanTitle.setBackground(Theme.PAPER);
         personalPlanTitle.add(Theme.title("Personal Washroom Plan"));
         personalPlan.add(personalPlanTitle);
         personalPlan.add(Box.createVerticalStrut(10));
 
-        JTextArea personalPlanInstructions = new JTextArea("Upload your acorn timetable to generate a personal washroom schedule!\n" +
-                "To generate plan, download your timetable from Acorn Timetable as an .ics file and upload it here, then enter your desired number of washroom trips per day and the current semester. \n" +
-                "Click the Generate Plan button then the View Plan button to see the schedule (this may take a few minutes)");
+        final JTextArea personalPlanInstructions =
+            new JTextArea("Upload your acorn timetable to generate a personal washroom schedule!\n" +
+                "To generate plan, download your timetable from Acorn Timetable as an .ics file and upload it here, " +
+                    "then enter your desired number of washroom trips per day and the current semester. \n" +
+                "Click the Generate Plan button then the View Plan button to see the schedule (this may take a few " +
+                    "minutes)");
         personalPlanInstructions.setLineWrap(true);
         personalPlanInstructions.setWrapStyleWord(true);
         personalPlanInstructions.setEditable(false);
@@ -113,7 +141,7 @@ public final class AccountView extends JPanel {
         personalPlanInstructions.setColumns(50);
         personalPlan.add(personalPlanInstructions);
 
-        JPanel fileUploadPanel = new JPanel();
+        final JPanel fileUploadPanel = new JPanel();
         fileUploadPanel.setBackground(Theme.PAPER);
         fileUploadPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         fileUploadPanel.add(personalPlanUploadFileButton);
@@ -122,7 +150,7 @@ public final class AccountView extends JPanel {
         personalPlan.add(fileUploadPanel);
         personalPlan.add(Box.createVerticalStrut(10));
 
-        JPanel numTripPanel = new JPanel();
+        final JPanel numTripPanel = new JPanel();
         numTripPanel.setBackground(Theme.PAPER);
         numTripPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         numTripPanel.add(Theme.label("Number of Washroom Trips Per Day:", 14, Theme.INK));
@@ -131,7 +159,7 @@ public final class AccountView extends JPanel {
         personalPlan.add(numTripPanel);
         personalPlan.add(Box.createVerticalStrut(10));
 
-        JPanel semesterPanel = new JPanel();
+        final JPanel semesterPanel = new JPanel();
         semesterPanel.setBackground(Theme.PAPER);
         semesterPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         semesterPanel.add(Theme.label("Semester:", 14, Theme.INK));
@@ -140,7 +168,7 @@ public final class AccountView extends JPanel {
         personalPlan.add(semesterPanel);
         personalPlan.add(Box.createVerticalStrut(10));
 
-        JPanel generateButtonPanel = new JPanel();
+        final JPanel generateButtonPanel = new JPanel();
         generateButtonPanel.setBackground(Theme.PAPER);
         generateButtonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         generateButtonPanel.add(personalPlanViewButton);
@@ -151,12 +179,13 @@ public final class AccountView extends JPanel {
         personalPlan.add(generateButtonPanel);
 
         changeUsername.setLayout(new BoxLayout(changeUsername, BoxLayout.Y_AXIS));
-        changeUsername.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
-        JPanel changeUsernameTitle = Theme.page();
+        changeUsername.setBorder(
+            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
+        final JPanel changeUsernameTitle = Theme.page();
         changeUsernameTitle.setLayout(new BorderLayout());
         changeUsernameTitle.add(Theme.title("Change Username"), BorderLayout.WEST);
-        JPanel changeUsernameContent = Theme.page();
-        JPanel changeUsernameButtons = Theme.page();
+        final JPanel changeUsernameContent = Theme.page();
+        final JPanel changeUsernameButtons = Theme.page();
         changeUsernameButtons.setLayout(new BorderLayout());
         changeUsernameButtons.add(changeUsernameButton, BorderLayout.WEST);
         changeUsername.add(changeUsernameTitle);
@@ -164,12 +193,13 @@ public final class AccountView extends JPanel {
         changeUsername.add(changeUsernameButtons);
 
         changePassword.setLayout(new BoxLayout(changePassword, BoxLayout.Y_AXIS));
-        changePassword.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
-        JPanel changePasswordTitle = Theme.page();
+        changePassword.setBorder(
+            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
+        final JPanel changePasswordTitle = Theme.page();
         changePasswordTitle.setLayout(new BorderLayout());
         changePasswordTitle.add(Theme.title("Change Password"), BorderLayout.WEST);
-        JPanel changePasswordContent = Theme.page();
-        JPanel changePasswordButtons = Theme.page();
+        final JPanel changePasswordContent = Theme.page();
+        final JPanel changePasswordButtons = Theme.page();
         changePasswordButtons.setLayout(new BorderLayout());
         changePasswordButtons.add(changePasswordButton, BorderLayout.WEST);
         changePassword.add(changePasswordTitle);
@@ -177,30 +207,39 @@ public final class AccountView extends JPanel {
         changePassword.add(changePasswordButtons);
 
         deleteAccount.setLayout(new BoxLayout(deleteAccount, BoxLayout.Y_AXIS));
-        deleteAccount.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
-        JPanel deleteAccountTitle = Theme.page();
+        deleteAccount.setBorder(
+            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
+        final JPanel deleteAccountTitle = Theme.page();
         deleteAccountTitle.setLayout(new BorderLayout());
         deleteAccountTitle.add(Theme.title("Delete Account"), BorderLayout.WEST);
-        JPanel deleteAccountContent = Theme.page();
+        final JPanel deleteAccountContent = Theme.page();
         deleteAccountContent.setLayout(new BorderLayout());
-        JPanel deleteAccountButtons = Theme.page();
+        final JPanel deleteAccountButtons = Theme.page();
         deleteAccountButtons.setLayout(new BorderLayout());
         deleteAccountButtons.add(deleteAccountButton, BorderLayout.WEST);
         deleteAccount.add(deleteAccountTitle);
         deleteAccount.add(deleteAccountContent);
         deleteAccount.add(deleteAccountButtons);
 
-        JScrollPane scrollPane = new JScrollPane(container);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(32);
-        scrollPane.getVerticalScrollBar().setBlockIncrement(192);
+        final JScrollPane scrollPane = new JScrollPane(container);
+        scrollPane
+            .getVerticalScrollBar()
+            .setUnitIncrement(32);
+        scrollPane
+            .getVerticalScrollBar()
+            .setBlockIncrement(192);
         add(scrollPane, BorderLayout.CENTER);
 
         personalPlanUploadFileButton.addActionListener(e -> {
 
-            int result = icsChooser.showOpenDialog(this);
+            final int result = icsChooser.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
-                personalPlanSelectedFilePath = icsChooser.getSelectedFile().getAbsolutePath();
-                personalPlanSelectedFileLabel.setText("Selected File: " + icsChooser.getSelectedFile().getName());
+                personalPlanSelectedFilePath = icsChooser
+                    .getSelectedFile()
+                    .getAbsolutePath();
+                personalPlanSelectedFileLabel.setText("Selected File: " + icsChooser
+                    .getSelectedFile()
+                    .getName());
             } else if (result == JFileChooser.CANCEL_OPTION) {
                 personalPlanSelectedFilePath = "";
                 personalPlanSelectedFileLabel.setText("Selected File: ");
@@ -213,9 +252,9 @@ public final class AccountView extends JPanel {
             personalPlanGenerateButton.setEnabled(false);
 
             personalPlanStatusLabel.setText("Loading");
-            Timer loadingTimer = new Timer(500, null);
+            final Timer loadingTimer = new Timer(500, null);
             loadingTimer.addActionListener(evt -> {
-                String curr = personalPlanStatusLabel.getText();
+                final String curr = personalPlanStatusLabel.getText();
                 if (curr.endsWith("...")) {
                     personalPlanStatusLabel.setText("Loading");
                 } else {
@@ -223,12 +262,15 @@ public final class AccountView extends JPanel {
                 }
             });
 
-            SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
+            final SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
 
                 @Override
                 protected String doInBackground() throws Exception {
 
-                    personalPlanController.execute(icsChooser.getSelectedFile().getAbsolutePath(), personalPlanNumField.getText(), (String) personalPlanSemesterBox.getSelectedItem());
+                    personalPlanController.execute(icsChooser
+                            .getSelectedFile()
+                            .getAbsolutePath(), personalPlanNumField.getText(),
+                        (String) personalPlanSemesterBox.getSelectedItem());
                     return "";
 
                 }
@@ -240,7 +282,7 @@ public final class AccountView extends JPanel {
                     try {
                         get();
                         personalPlanViewButton.doClick();
-                    } catch (Exception ex) {
+                    } catch (final Exception ex) {
                         personalPlanStatusLabel.setText("Please try again");
                     } finally {
                         personalPlanGenerateButton.setEnabled(true);
@@ -257,189 +299,192 @@ public final class AccountView extends JPanel {
 
         personalPlanViewButton.addActionListener(e -> {
 
-            onViewPlan.accept(viewModel.getState().getPersonalPlan());
+            onViewPlan.accept(viewModel
+                .getState()
+                .getPersonalPlan());
 
         });
 
         changeUsernameButton.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
+            new ActionListener() {
+                public void actionPerformed(final ActionEvent evt) {
 
-                        changeUsernameContent.removeAll();
-                        changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                        changeUsernameContent.add(Theme.label("New Username:", 14, Theme.INK));
-                        changeUsernameContent.add(Box.createHorizontalStrut(10));
-                        changeUsernameContent.add(usernameField);
+                    changeUsernameContent.removeAll();
+                    changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                    changeUsernameContent.add(Theme.label("New Username:", 14, Theme.INK));
+                    changeUsernameContent.add(Box.createHorizontalStrut(10));
+                    changeUsernameContent.add(usernameField);
 
-                        changeUsernameContent.revalidate();
-                        changeUsernameContent.repaint();
+                    changeUsernameContent.revalidate();
+                    changeUsernameContent.repaint();
 
-                        changeUsernameButtons.removeAll();
-                        changeUsernameButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-                        changeUsernameButtons.add(confirmUsernameButton);
-                        changeUsernameButtons.add(Box.createHorizontalStrut(10));
-                        changeUsernameButtons.add(cancelUsernameButton);
-                        changePasswordContent.add(Box.createHorizontalStrut(10));
-                        changeUsernameButtons.add(usernameStatusLabel, BorderLayout.EAST);
+                    changeUsernameButtons.removeAll();
+                    changeUsernameButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+                    changeUsernameButtons.add(confirmUsernameButton);
+                    changeUsernameButtons.add(Box.createHorizontalStrut(10));
+                    changeUsernameButtons.add(cancelUsernameButton);
+                    changePasswordContent.add(Box.createHorizontalStrut(10));
+                    changeUsernameButtons.add(usernameStatusLabel, BorderLayout.EAST);
 
-                        changeUsernameButtons.revalidate();
-                        changeUsernameButtons.repaint();
+                    changeUsernameButtons.revalidate();
+                    changeUsernameButtons.repaint();
 
-                    }
                 }
+            }
         );
 
         confirmUsernameButton.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
+            new ActionListener() {
+                public void actionPerformed(final ActionEvent evt) {
 
-                        changeUsernameController.execute(usernameField.getText());
+                    changeUsernameController.execute(usernameField.getText());
 
-                    }
                 }
+            }
         );
 
         cancelUsernameButton.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
+            new ActionListener() {
+                public void actionPerformed(final ActionEvent evt) {
 
-                        changeUsernameContent.removeAll();
-                        changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                        changeUsernameContent.add(usernameStatusLabel);
-                        changeUsernameContent.revalidate();
-                        changeUsernameContent.repaint();
+                    changeUsernameContent.removeAll();
+                    changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                    changeUsernameContent.add(usernameStatusLabel);
+                    changeUsernameContent.revalidate();
+                    changeUsernameContent.repaint();
 
-                        changeUsernameButtons.removeAll();
-                        changeUsernameButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-                        changeUsernameButtons.add(changeUsernameButton);
+                    changeUsernameButtons.removeAll();
+                    changeUsernameButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+                    changeUsernameButtons.add(changeUsernameButton);
 
-                        changeUsernameButtons.revalidate();
-                        changeUsernameButtons.repaint();
+                    changeUsernameButtons.revalidate();
+                    changeUsernameButtons.repaint();
 
-                    }
                 }
+            }
         );
 
         changePasswordButton.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
+            new ActionListener() {
+                public void actionPerformed(final ActionEvent evt) {
 
-                        changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                        changePasswordContent.add(Theme.label("New Password:", 14, Theme.INK));
-                        changePasswordContent.add(Box.createHorizontalStrut(10));
-                        changePasswordContent.add(passwordField);
-                        changePasswordContent.add(Box.createHorizontalStrut(10));
-                        changePasswordContent.add(Theme.label("Confirm Password:", 14, Theme.INK));
-                        changePasswordContent.add(Box.createHorizontalStrut(10));
-                        changePasswordContent.add(confirmPasswordField);
-                        changePasswordContent.add(Box.createHorizontalStrut(10));
-                        changePasswordContent.add(passwordStatusLabel);
+                    changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                    changePasswordContent.add(Theme.label("New Password:", 14, Theme.INK));
+                    changePasswordContent.add(Box.createHorizontalStrut(10));
+                    changePasswordContent.add(passwordField);
+                    changePasswordContent.add(Box.createHorizontalStrut(10));
+                    changePasswordContent.add(Theme.label("Confirm Password:", 14, Theme.INK));
+                    changePasswordContent.add(Box.createHorizontalStrut(10));
+                    changePasswordContent.add(confirmPasswordField);
+                    changePasswordContent.add(Box.createHorizontalStrut(10));
+                    changePasswordContent.add(passwordStatusLabel);
 
-                        changePasswordContent.revalidate();
-                        changePasswordContent.repaint();
+                    changePasswordContent.revalidate();
+                    changePasswordContent.repaint();
 
-                        changePasswordButtons.remove(changePasswordButton);
-                        changePasswordButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-                        changePasswordButtons.add(confirmPasswordButton);
-                        changePasswordContent.add(Box.createHorizontalStrut(10));
-                        changePasswordButtons.add(cancelPasswordButton);
+                    changePasswordButtons.remove(changePasswordButton);
+                    changePasswordButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+                    changePasswordButtons.add(confirmPasswordButton);
+                    changePasswordContent.add(Box.createHorizontalStrut(10));
+                    changePasswordButtons.add(cancelPasswordButton);
 
-                        changePasswordButtons.revalidate();
-                        changePasswordButtons.repaint();
+                    changePasswordButtons.revalidate();
+                    changePasswordButtons.repaint();
 
-                    }
                 }
+            }
         );
 
         confirmPasswordButton.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
+            new ActionListener() {
+                public void actionPerformed(final ActionEvent evt) {
 
-                        changePasswordController.execute(String.valueOf(passwordField.getPassword()), String.valueOf(confirmPasswordField.getPassword()));
+                    changePasswordController.execute(String.valueOf(passwordField.getPassword()),
+                        String.valueOf(confirmPasswordField.getPassword()));
 
-                    }
                 }
+            }
         );
 
         cancelPasswordButton.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
+            new ActionListener() {
+                public void actionPerformed(final ActionEvent evt) {
 
-                        changePasswordContent.removeAll();
-                        changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                        changePasswordContent.add(passwordStatusLabel);
-                        changePasswordContent.revalidate();
-                        changePasswordContent.repaint();
+                    changePasswordContent.removeAll();
+                    changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                    changePasswordContent.add(passwordStatusLabel);
+                    changePasswordContent.revalidate();
+                    changePasswordContent.repaint();
 
-                        changePasswordButtons.remove(confirmPasswordButton);
-                        changePasswordButtons.remove(cancelPasswordButton);
-                        changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                        changePasswordButtons.add(changePasswordButton);
+                    changePasswordButtons.remove(confirmPasswordButton);
+                    changePasswordButtons.remove(cancelPasswordButton);
+                    changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                    changePasswordButtons.add(changePasswordButton);
 
-                        changePasswordButtons.revalidate();
-                        changePasswordButtons.repaint();
+                    changePasswordButtons.revalidate();
+                    changePasswordButtons.repaint();
 
-                    }
                 }
+            }
         );
 
         deleteAccountButton.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
+            new ActionListener() {
+                public void actionPerformed(final ActionEvent evt) {
 
-                        deleteAccountContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                        deleteAccountContent.add(Theme.label("Are you sure? This action cannot be undone.", 14, Theme.INK));
+                    deleteAccountContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                    deleteAccountContent.add(Theme.label("Are you sure? This action cannot be undone.", 14, Theme.INK));
 
-                        deleteAccountContent.revalidate();
-                        deleteAccountContent.repaint();
+                    deleteAccountContent.revalidate();
+                    deleteAccountContent.repaint();
 
-                        deleteAccountButtons.remove(deleteAccountButton);
-                        deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-                        deleteAccountButtons.add(confirmDeleteAccountButton);
-                        deleteAccountButtons.add(Box.createHorizontalStrut(10));
-                        deleteAccountButtons.add(cancelDeleteAccountButton);
+                    deleteAccountButtons.remove(deleteAccountButton);
+                    deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+                    deleteAccountButtons.add(confirmDeleteAccountButton);
+                    deleteAccountButtons.add(Box.createHorizontalStrut(10));
+                    deleteAccountButtons.add(cancelDeleteAccountButton);
 
-                        deleteAccountButtons.revalidate();
-                        deleteAccountButtons.repaint();
+                    deleteAccountButtons.revalidate();
+                    deleteAccountButtons.repaint();
 
-                    }
                 }
+            }
         );
 
         confirmDeleteAccountButton.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
+            new ActionListener() {
+                public void actionPerformed(final ActionEvent evt) {
 
-                        deleteAccountController.execute();
+                    deleteAccountController.execute();
 
-                    }
                 }
+            }
         );
 
         cancelDeleteAccountButton.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
+            new ActionListener() {
+                public void actionPerformed(final ActionEvent evt) {
 
-                        deleteAccountContent.remove(0);
+                    deleteAccountContent.remove(0);
 
-                        deleteAccountContent.revalidate();
-                        deleteAccountContent.repaint();
+                    deleteAccountContent.revalidate();
+                    deleteAccountContent.repaint();
 
-                        deleteAccountButtons.remove(confirmDeleteAccountButton);
-                        deleteAccountButtons.remove(cancelDeleteAccountButton);
-                        deleteAccountContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                        deleteAccountButtons.add(deleteAccountButton);
+                    deleteAccountButtons.remove(confirmDeleteAccountButton);
+                    deleteAccountButtons.remove(cancelDeleteAccountButton);
+                    deleteAccountContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                    deleteAccountButtons.add(deleteAccountButton);
 
-                        deleteAccountButtons.revalidate();
-                        deleteAccountButtons.repaint();
+                    deleteAccountButtons.revalidate();
+                    deleteAccountButtons.repaint();
 
-                    }
                 }
+            }
         );
 
     }
 
-    private void render(AccountState state) {
+    private void render(final AccountState state) {
 
         accountLabel.setText(state.getUsername());
 
@@ -469,47 +514,47 @@ public final class AccountView extends JPanel {
 
     }
 
-    private void render(IsLoggedInState state) {
+    private void render(final IsLoggedInState state) {
 
         accountLabel.setText(state.getUsername());
 
     }
 
-    private void renderPlan(String plan) {
+    private void renderPlan(final String plan) {
 
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            List<WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<WashroomPlan>>() {
+            final ObjectMapper mapper = new ObjectMapper();
+            final List<WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<WashroomPlan>>() {
             });
 
-            List<String> days = List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
+            final List<String> days = List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
 
-            JPanel planPanel = new JPanel(new GridBagLayout());
-            GridBagConstraints constraints = new GridBagConstraints();
+            final JPanel planPanel = new JPanel(new GridBagLayout());
+            final GridBagConstraints constraints = new GridBagConstraints();
             constraints.fill = GridBagConstraints.BOTH;
             constraints.insets = new Insets(5, 5, 5, 5);
             constraints.weightx = 1.0;
             constraints.weighty = 0.0;
 
             for (int x = 0; x < days.size(); x++) {
-                String day = days.get(x);
+                final String day = days.get(x);
                 constraints.gridx = x;
                 constraints.gridy = 0;
-                JPanel dayPanel = new JPanel();
+                final JPanel dayPanel = new JPanel();
                 dayPanel.add(Theme.label(day.toUpperCase(), 14, Theme.INK));
                 planPanel.add(dayPanel, constraints);
                 int y = 1;
-                for (WashroomPlan washroom : washroomList) {
+                for (final WashroomPlan washroom : washroomList) {
                     if (washroom.day.contains(day)) {
                         constraints.gridx = x;
                         constraints.gridy = y;
-                        JTextArea textArea = new JTextArea(washroom.washroom);
+                        final JTextArea textArea = new JTextArea(washroom.washroom);
                         textArea.setLineWrap(true);
                         textArea.setWrapStyleWord(true);
                         textArea.setEditable(false);
                         textArea.setOpaque(false);
                         textArea.setColumns(10);
-                        JPanel card = new JPanel(new FlowLayout());
+                        final JPanel card = new JPanel(new FlowLayout());
                         card.add(Theme.label(washroom.time, 14, Theme.INK));
                         card.add(textArea);
                         planPanel.add(card, constraints);
@@ -522,27 +567,22 @@ public final class AccountView extends JPanel {
             personalPlan.add(planPanel);
             personalPlan.revalidate();
             personalPlan.repaint();
-        } catch (Exception e) {
+        } catch (final Exception e) {
 
         }
 
     }
 
-    /** JSON view model for the Gemini response; parsing is kept in the UI layer. */
-    public static final class WashroomPlan {
-        @JsonProperty("Day of week")
-        public String day;
-        @JsonProperty("Time (nearest hour) of washroom break")
-        public String time;
-        @JsonProperty("Washroom")
-        public String washroom;
+    public void setOnViewPlan(final Consumer<String> c) {
+        onViewPlan = c;
     }
 
 //    private void renderPlan(String plan) {
 //
 //        try {
 //            ObjectMapper mapper = new ObjectMapper();
-//            List<PersonalPlanInteractor.WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<PersonalPlanInteractor.WashroomPlan>>() {});
+//            List<PersonalPlanInteractor.WashroomPlan> washroomList = mapper.readValue(plan, new
+//            TypeReference<List<PersonalPlanInteractor.WashroomPlan>>() {});
 //
 //            List<String> days = List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
 //
@@ -574,12 +614,20 @@ public final class AccountView extends JPanel {
 //        }
 //    }
 
-    public void setOnViewPlan(Consumer<String> c) {
-        onViewPlan = c;
+    public void setOnBack(final Runnable r) {
+        onBack = r;
     }
 
-    public void setOnBack(Runnable r) {
-        onBack = r;
+    /**
+     * JSON view model for the Gemini response; parsing is kept in the UI layer.
+     */
+    public static final class WashroomPlan {
+        @JsonProperty("Day of week")
+        public String day;
+        @JsonProperty("Time (nearest hour) of washroom break")
+        public String time;
+        @JsonProperty("Washroom")
+        public String washroom;
     }
 
 }

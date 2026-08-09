@@ -1,10 +1,19 @@
 package views;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginViewModel;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.GridBagLayout;
 
 public final class LoginPanel extends JPanel {
     private static final String DEFAULT_MESSAGE = "Sign in with an account stored in MongoDB.";
@@ -17,16 +26,16 @@ public final class LoginPanel extends JPanel {
     private Runnable onSignup = () -> {
     };
 
-    public LoginPanel(LoginViewModel model, LoginController controller) {
+    public LoginPanel(final LoginViewModel model, final LoginController controller) {
         setLayout(new GridBagLayout());
         setBackground(Theme.CREAM);
-        JPanel card = Theme.page();
+        final JPanel card = Theme.page();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         //card.setPreferredSize(new Dimension(430, 440));
 
-        java.net.URL logoUrl = getClass().getResource("/images/FlushIDLogoPhoto.png");
+        final java.net.URL logoUrl = getClass().getResource("/images/FlushIDLogoPhoto.png");
         if (logoUrl != null) {
-            JLabel logo = new JLabel(new ImageIcon(logoUrl));
+            final JLabel logo = new JLabel(new ImageIcon(logoUrl));
             logo.setAlignmentX(Component.LEFT_ALIGNMENT);
             card.add(logo);
             card.add(Box.createVerticalStrut(12));
@@ -41,9 +50,9 @@ public final class LoginPanel extends JPanel {
         card.add(password);
         card.add(Box.createVerticalStrut(16));
 
-        JButton login = Theme.primary("Log in");
-        JButton signup = Theme.button("Create account");
-        for (JButton button : new JButton[]{login, signup, back}) button.setAlignmentX(Component.LEFT_ALIGNMENT);
+        final JButton login = Theme.primary("Log in");
+        final JButton signup = Theme.button("Create account");
+        for (final JButton button : new JButton[] {login, signup, back}) button.setAlignmentX(Component.LEFT_ALIGNMENT);
         login.addActionListener(event -> controller.execute(username.getText(), new String(password.getPassword())));
         signup.addActionListener(event -> onSignup.run());
         back.addActionListener(event -> onBack.run());
@@ -57,19 +66,23 @@ public final class LoginPanel extends JPanel {
         add(card);
 
         model.addPropertyChangeListener(event -> {
-            LoginViewModel.State state = model.getState();
-            message.setText(state.message().isBlank() ? DEFAULT_MESSAGE : state.message());
-            message.setForeground(state.message().isBlank() ? Theme.MUTED
-                    : state.success() ? new Color(37, 125, 80) : Theme.BERRY);
+            final LoginViewModel.State state = model.getState();
+            message.setText(state
+                .message()
+                .isBlank() ? DEFAULT_MESSAGE : state.message());
+            message.setForeground(state
+                .message()
+                .isBlank() ? Theme.MUTED
+                : state.success() ? new Color(37, 125, 80) : Theme.BERRY);
             back.setText(state.success() ? "View map" : "Continue as guest");
         });
     }
 
-    public void setOnBack(Runnable action) {
+    public void setOnBack(final Runnable action) {
         onBack = action;
     }
 
-    public void setOnSignup(Runnable action) {
+    public void setOnSignup(final Runnable action) {
         onSignup = action;
     }
 }

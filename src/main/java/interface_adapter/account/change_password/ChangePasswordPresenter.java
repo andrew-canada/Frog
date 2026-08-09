@@ -9,13 +9,13 @@ public final class ChangePasswordPresenter implements ChangePasswordOutputBounda
 
     private final AccountViewModel viewModel;
 
-    public ChangePasswordPresenter(AccountViewModel viewModel) {
+    public ChangePasswordPresenter(final AccountViewModel viewModel) {
         this.viewModel = viewModel;
     }
 
-    public void present(ChangePasswordOutputData outputData) {
+    public void present(final ChangePasswordOutputData outputData) {
 
-        AccountState state = viewModel.getState();
+        final AccountState state = viewModel.getState();
         state.setChangePasswordMessage(outputData.message());
         state.setChangePasswordSuccess(outputData.success());
 

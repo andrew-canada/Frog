@@ -1,18 +1,30 @@
-import entity.*;
 import org.mindrot.jbcrypt.BCrypt;
+
+import entity.Building;
+import entity.MaintenanceIssue;
+import entity.Review;
+import entity.ReviewSummary;
+import entity.StatusReport;
+import entity.User;
+import entity.Washroom;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import use_case.filter.FilterInputData;
 import use_case.filter.FilterInteractor;
 import use_case.filter.FilterOutputBoundary;
 import use_case.filter.FilterOutputData;
 import use_case.filter.WashroomFilterCriteria;
 import use_case.filter.WashroomFilterRepository;
+import use_case.port.CurrentUserSession;
 import use_case.port.ReviewRepository;
 import use_case.port.StatusReportRepository;
 import use_case.port.UserRepository;
-import use_case.port.CurrentUserSession;
-
-import java.time.LocalDateTime;
-import java.util.*;
 
 final class FilterInteractorTest {
     static void run() {
@@ -21,48 +33,48 @@ final class FilterInteractorTest {
 
             public FakeWashrooms() {
                 washrooms.add(new Washroom(
-                        "a",
-                        "a",
-                        new Building("a", "a", 44.0, 72.0),
-                        "1",
-                        true,
-                        Washroom.Gender.ALL_GENDER,
-                        0,
-                        0,
-                        "none",
-                        new ReviewSummary(1.0, 1.0, 1)));
+                    "a",
+                    "a",
+                    new Building("a", "a", 44.0, 72.0),
+                    "1",
+                    true,
+                    Washroom.Gender.ALL_GENDER,
+                    0,
+                    0,
+                    "none",
+                    new ReviewSummary(1.0, 1.0, 1)));
                 washrooms.add(new Washroom(
-                        "b",
-                        "b",
-                        new Building("a", "a", 44.0, 72.0),
-                        "1",
-                        false,
-                        Washroom.Gender.ALL_GENDER,
-                        0,
-                        0,
-                        "none",
-                        new ReviewSummary(1.0, 1.0, 1)));
+                    "b",
+                    "b",
+                    new Building("a", "a", 44.0, 72.0),
+                    "1",
+                    false,
+                    Washroom.Gender.ALL_GENDER,
+                    0,
+                    0,
+                    "none",
+                    new ReviewSummary(1.0, 1.0, 1)));
                 washrooms.add(new Washroom(
-                        "c",
-                        "c",
-                        new Building("b", "b", 45.0, 72.0),
-                        "1",
-                        true,
-                        Washroom.Gender.ALL_GENDER,
-                        0,
-                        0,
-                        "none",
-                        new ReviewSummary(1.0, 1.0, 1)));
+                    "c",
+                    "c",
+                    new Building("b", "b", 45.0, 72.0),
+                    "1",
+                    true,
+                    Washroom.Gender.ALL_GENDER,
+                    0,
+                    0,
+                    "none",
+                    new ReviewSummary(1.0, 1.0, 1)));
             }
 
             @Override
-            public Optional<Washroom> getById(String Id) {
+            public Optional<Washroom> getById(final String Id) {
                 return Optional.of(washrooms.get(0));
             }
 
             @Override
-            public List<Washroom> getNearby(double latitude, double longitude, double radiusMeters) {
-                return new ArrayList<>(List.of(new Washroom[]{washrooms.get(1), washrooms.get(0)}));
+            public List<Washroom> getNearby(final double latitude, final double longitude, final double radiusMeters) {
+                return new ArrayList<>(List.of(new Washroom[] {washrooms.get(1), washrooms.get(0)}));
             }
 
             @Override
@@ -71,7 +83,7 @@ final class FilterInteractorTest {
             }
 
             @Override
-            public List<Washroom> findMatching(WashroomFilterCriteria criteria) {
+            public List<Washroom> findMatching(final WashroomFilterCriteria criteria) {
                 return new ArrayList<>(Collections.singleton(washrooms.get(2)));
             }
         }
@@ -81,29 +93,29 @@ final class FilterInteractorTest {
 
             public FakeReviews() {
                 reviews.add(new Review(
-                        "a", "a", "", 4.0, 4.0,
-                        "", 5, null));
+                    "a", "a", "", 4.0, 4.0,
+                    "", 5, null));
                 reviews.add(new Review(
-                        "b", "a", "", 2.0, 2.0,
-                        "", 1, null));
+                    "b", "a", "", 2.0, 2.0,
+                    "", 1, null));
                 reviews.add(new Review(
-                        "c", "c", "", 5.0, 4.0,
-                        "", 5, null));
+                    "c", "c", "", 5.0, 4.0,
+                    "", 5, null));
             }
 
             @Override
-            public List<Review> getReviewsForWashroom(String washroomId) {
+            public List<Review> getReviewsForWashroom(final String washroomId) {
                 return new ArrayList<>(Collections.singleton(reviews.getFirst()));
             }
 
             @Override
-            public ReviewSummary getSummary(String washroomId) {
+            public ReviewSummary getSummary(final String washroomId) {
                 return new ReviewSummary(1.0, 1.0, 1);
             }
 
             @Override
-            public List<Review> getReviewsByUser(String username) {
-                List<Review> byUser = new ArrayList<>();
+            public List<Review> getReviewsByUser(final String username) {
+                final List<Review> byUser = new ArrayList<>();
                 byUser.add(reviews.get(0));
                 byUser.add(reviews.get(2));
 
@@ -111,7 +123,7 @@ final class FilterInteractorTest {
             }
 
             @Override
-            public void save(Review review) {
+            public void save(final Review review) {
                 reviews.add(review);
             }
         }
@@ -121,17 +133,17 @@ final class FilterInteractorTest {
             final User saved = new User("demo", BCrypt.hashpw("secret", BCrypt.gensalt()), "");
 
             @Override
-            public Optional<User> get(String n) {
+            public Optional<User> get(final String n) {
                 return Optional.of(saved);
             }
 
             @Override
-            public boolean existsByName(String n) {
+            public boolean existsByName(final String n) {
                 return true;
             }
 
             @Override
-            public void save(User u) {
+            public void save(final User u) {
             }
 
             @Override
@@ -140,7 +152,7 @@ final class FilterInteractorTest {
             }
 
             @Override
-            public void setCurrentUser(User u) {
+            public void setCurrentUser(final User u) {
                 current = u;
             }
 
@@ -150,31 +162,32 @@ final class FilterInteractorTest {
             }
 
             @Override
-            public void removeUser(String n) {
+            public void removeUser(final String n) {
             }
         }
 
         class FakeStatus implements StatusReportRepository {
 
             @Override
-            public void save(StatusReport report) {
+            public void save(final StatusReport report) {
             }
 
             @Override
-            public List<StatusReport> getRecentForWashroom(String washroomId, LocalDateTime since) {
+            public List<StatusReport> getRecentForWashroom(final String washroomId, final LocalDateTime since) {
                 return new ArrayList<>();
             }
 
             @Override
-            public List<StatusReport> getForWashroom(String washroomId, LocalDateTime from, LocalDateTime to) {
+            public List<StatusReport> getForWashroom(final String washroomId, final LocalDateTime from, final LocalDateTime to) {
                 return new ArrayList<>();
             }
 
             @Override
-            public Map<String, StatusReport> getCurrentHourForWashrooms(List<String> washroomIds, int hour) {
-                Map<String, StatusReport> map = new HashMap<>();
-                for (String washroomId : washroomIds) {
-                    map.put(washroomId, new StatusReport(washroomId, "", 3, 3, MaintenanceIssue.NONE, LocalDateTime.now()));
+            public Map<String, StatusReport> getCurrentHourForWashrooms(final List<String> washroomIds, final int hour) {
+                final Map<String, StatusReport> map = new HashMap<>();
+                for (final String washroomId : washroomIds) {
+                    map.put(washroomId,
+                        new StatusReport(washroomId, "", 3, 3, MaintenanceIssue.NONE, LocalDateTime.now()));
                 }
                 return map;
             }
@@ -184,34 +197,36 @@ final class FilterInteractorTest {
             public FilterOutputData out;
 
             @Override
-            public void present(FilterOutputData data) {
+            public void present(final FilterOutputData data) {
                 out = data;
             }
 
             @Override
-            public void presentError(String message) {
+            public void presentError(final String message) {
                 System.out.println(message);
             }
         }
 
-        FakeWashrooms washrooms = new FakeWashrooms();
-        FakeReviews reviews = new FakeReviews();
-        FakeUser users = new FakeUser();
-        FakeStatus status = new FakeStatus();
-        FakePresenter output = new FakePresenter();
+        final FakeWashrooms washrooms = new FakeWashrooms();
+        final FakeReviews reviews = new FakeReviews();
+        final FakeUser users = new FakeUser();
+        final FakeStatus status = new FakeStatus();
+        final FakePresenter output = new FakePresenter();
 
         new FilterInteractor(
-                washrooms,
-                reviews,
-                status,
-                users,
-                output,
-                new HashSet<String>()).execute(
-                new FilterInputData(5.0F, 1.0F, false, null, "", false, false, 1.0, 1.0)
+            washrooms,
+            reviews,
+            status,
+            users,
+            output,
+            new HashSet<String>()).execute(
+            new FilterInputData(5.0F, 1.0F, false, null, "", false, false, 1.0, 1.0)
         );
 
         TestSupport.check(output.out.success()
-                && output.out.washrooms().size() == 1, "valid filter should only return one washroom here");
+            && output.out
+            .washrooms()
+            .size() == 1, "valid filter should only return one washroom here");
     }
 }
 

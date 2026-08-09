@@ -2,38 +2,43 @@ package use_case.filter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import use_case.port.ReviewRepository;
-import use_case.port.StatusReportRepository;
-import use_case.port.CurrentUserSession;
 import entity.Building;
 import entity.StatusReport;
 import entity.User;
 import entity.Washroom;
-
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import use_case.port.CurrentUserSession;
+import use_case.port.ReviewRepository;
+import use_case.port.StatusReportRepository;
 
 public class FilterInteractor implements FilterInputBoundary {
-    private final Set<String> permittedWashroomNames;
     WashroomFilterRepository washroomDAO;
     ReviewRepository reviewDAO;
     StatusReportRepository statusReports;
     CurrentUserSession session;
     FilterOutputBoundary presenter;
+    private final Set<String> permittedWashroomNames;
 
-    public FilterInteractor(WashroomFilterRepository washroomDAO,
-                            ReviewRepository reviewDAO,
-                            CurrentUserSession session,
-                            FilterOutputBoundary presenter) {
+    public FilterInteractor(final WashroomFilterRepository washroomDAO,
+                            final ReviewRepository reviewDAO,
+                            final CurrentUserSession session,
+                            final FilterOutputBoundary presenter) {
         this(washroomDAO, reviewDAO, null, session, presenter, Set.of());
     }
 
-    public FilterInteractor(WashroomFilterRepository washroomDAO,
-                            ReviewRepository reviewDAO,
-                            StatusReportRepository statusReports,
-                            CurrentUserSession session,
-                            FilterOutputBoundary presenter,
-                            Set<String> permittedWashroomNames) {
+    public FilterInteractor(final WashroomFilterRepository washroomDAO,
+                            final ReviewRepository reviewDAO,
+                            final StatusReportRepository statusReports,
+                            final CurrentUserSession session,
+                            final FilterOutputBoundary presenter,
+                            final Set<String> permittedWashroomNames) {
         this.washroomDAO = washroomDAO;
         this.reviewDAO = reviewDAO;
         this.statusReports = statusReports;
@@ -43,16 +48,20 @@ public class FilterInteractor implements FilterInputBoundary {
     }
 
     @Override
-    public void execute(FilterInputData inputData) {
+    public void execute(final FilterInputData inputData) {
         String buildingCode = null;
 
-        if (!inputData.washroomID().isEmpty()) {
-            Optional<Washroom> washroom = washroomDAO.getById(inputData.washroomID());
+        if (!inputData
+            .washroomID()
+            .isEmpty()) {
+            final Optional<Washroom> washroom = washroomDAO.getById(inputData.washroomID());
             if (washroom.isEmpty()) {
                 presenter.presentError("Invalid Washroom Selected.");
                 return;
             } else {
-                Building building = washroom.get().building();
+                final Building building = washroom
+                    .get()
+                    .building();
                 buildingCode = building.getBuildingCode();
             }
         }
@@ -61,16 +70,16 @@ public class FilterInteractor implements FilterInputBoundary {
         if (inputData.gender() != null) {
             try {
                 gender = Washroom.Gender.valueOf(inputData.gender());
-            } catch (IllegalArgumentException invalidGender) {
+            } catch (final IllegalArgumentException invalidGender) {
                 presenter.presentError("Invalid washroom category.");
                 return;
             }
         }
-        List<Washroom> initialWashrooms = washroomDAO.findMatching(new WashroomFilterCriteria(
-                inputData.accessible(), gender, buildingCode, permittedWashroomNames));
+        final List<Washroom> initialWashrooms = washroomDAO.findMatching(new WashroomFilterCriteria(
+            inputData.accessible(), gender, buildingCode, permittedWashroomNames));
 
         if (inputData.ownReviews()) {
-            Optional<User> user = session.currentUser();
+            final Optional<User> user = session.currentUser();
             if (user.isEmpty()) {
                 presenter.presentError("Cannot filter on own reviews while the user is logged out.");
                 return;
@@ -80,11 +89,16 @@ public class FilterInteractor implements FilterInputBoundary {
         }
 
         if (inputData.personalPlan()) {
-            Optional<User> user = session.currentUser();
+            final Optional<User> user = session.currentUser();
             if (user.isEmpty()) {
                 presenter.presentError("Cannot filter on personal plan while the user is logged out.");
                 return;
-            } else if (user.map(entity.User::personalPlan).orElse("").equals("") || Objects.isNull(user.map(entity.User::personalPlan).orElse(""))) {
+            } else if (user
+                .map(entity.User::personalPlan)
+                .orElse("")
+                .equals("") || Objects.isNull(user
+                .map(entity.User::personalPlan)
+                .orElse(""))) {
                 presenter.presentError("Please generate personal plan before filtering.");
                 return;
             } else {
@@ -96,10 +110,10 @@ public class FilterInteractor implements FilterInputBoundary {
         filterByCurrentStatus(initialWashrooms, inputData);
 
         presenter.present(new FilterOutputData(
-                true,
-                initialWashrooms,
-                inputData.latitude(),
-                inputData.longitude()));
+            true,
+            initialWashrooms,
+            inputData.latitude(),
+            inputData.longitude()));
     }
 
     /**
@@ -109,10 +123,12 @@ public class FilterInteractor implements FilterInputBoundary {
      * @param washrooms A Map from washroomID to Washroom object of the washrooms to be filtered.
      * @param user      The user whose reviews are required for the washroom to pass the filter.
      */
-    private void filterByUser(List<Washroom> washrooms, User user) {
-        Set<String> washroomIds = reviewDAO.getReviewsByUser(user.name()).stream()
-                .map(entity.Review::washroomId)
-                .collect(java.util.stream.Collectors.toSet());
+    private void filterByUser(final List<Washroom> washrooms, final User user) {
+        final Set<String> washroomIds = reviewDAO
+            .getReviewsByUser(user.name())
+            .stream()
+            .map(entity.Review::washroomId)
+            .collect(java.util.stream.Collectors.toSet());
         washrooms.removeIf(washroom -> !washroomIds.contains(washroom.id()));
     }
 
@@ -123,16 +139,18 @@ public class FilterInteractor implements FilterInputBoundary {
      * @param washrooms A Map from washroomID to Washroom object of the washrooms to be filtered.
      * @param user      The user whose personal plan is required for the washroom to pass the filter.
      */
-    private void filterByPlan(List<Washroom> washrooms, User user) {
+    private void filterByPlan(final List<Washroom> washrooms, final User user) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            List<HashMap<String, String>> washroomList = mapper.readValue(user.personalPlan(), new TypeReference<List<HashMap<String, String>>>() {});
-            Set<String> washroomIds = new HashSet<>();
-            for (HashMap<String, String> washroom : washroomList) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final List<HashMap<String, String>> washroomList =
+                mapper.readValue(user.personalPlan(), new TypeReference<List<HashMap<String, String>>>() {
+                });
+            final Set<String> washroomIds = new HashSet<>();
+            for (final HashMap<String, String> washroom : washroomList) {
                 washroomIds.add(washroom.get("id"));
             }
             washrooms.removeIf(washroom -> !washroomIds.contains(washroom.id()));
-        } catch (Exception e) {
+        } catch (final Exception e) {
             presenter.presentError("Please re-generate your personal plan.");
         }
 
@@ -141,19 +159,24 @@ public class FilterInteractor implements FilterInputBoundary {
     /**
      * Filters by each washroom's newest status report in the current clock hour.
      */
-    private void filterByCurrentStatus(List<Washroom> washrooms, FilterInputData inputData) {
+    private void filterByCurrentStatus(final List<Washroom> washrooms, final FilterInputData inputData) {
         if (statusReports == null) {
             presenter.presentError("Live status filtering is unavailable.");
             washrooms.clear();
             return;
         }
-        Map<String, StatusReport> currentStatus = statusReports.getCurrentHourForWashrooms(
-                washrooms.stream().map(Washroom::id).toList(), LocalDateTime.now().getHour());
+        final Map<String, StatusReport> currentStatus = statusReports.getCurrentHourForWashrooms(
+            washrooms
+                .stream()
+                .map(Washroom::id)
+                .toList(), LocalDateTime
+                .now()
+                .getHour());
         washrooms.removeIf(washroom -> {
-            StatusReport status = currentStatus.get(washroom.id());
+            final StatusReport status = currentStatus.get(washroom.id());
             return status == null
-                    || status.busyness() > inputData.maxBusyness()
-                    || status.cleanliness() < inputData.minCleanliness();
+                || status.busyness() > inputData.maxBusyness()
+                || status.cleanliness() < inputData.minCleanliness();
         });
     }
 

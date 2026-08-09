@@ -4,16 +4,17 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import entity.User;
 import entity.Washroom;
-import use_case.port.CurrentUserSession;
-import use_case.port.UserRepository;
-import use_case.port.WashroomRepository;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import use_case.port.CurrentUserSession;
+import use_case.port.UserRepository;
+import use_case.port.WashroomRepository;
 
-/** Generates, validates, and stores a user's washroom-break recommendation. */
+/**
+ * Generates, validates, and stores a user's washroom-break recommendation.
+ */
 public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
     private static final String DAY = "Day of week";
     private static final String TIME = "Time (nearest hour) of washroom break";
@@ -26,9 +27,9 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
     private final PersonalPlanGenerator generator;
     private final PersonalPlanOutputBoundary presenter;
 
-    public PersonalPlanInteractor(UserRepository users, CurrentUserSession session, WashroomRepository washrooms,
-                                  CalendarContentReader calendarReader, PersonalPlanGenerator generator,
-                                  PersonalPlanOutputBoundary presenter) {
+    public PersonalPlanInteractor(final UserRepository users, final CurrentUserSession session, final WashroomRepository washrooms,
+                                  final CalendarContentReader calendarReader, final PersonalPlanGenerator generator,
+                                  final PersonalPlanOutputBoundary presenter) {
         this.users = users;
         this.session = session;
         this.washrooms = washrooms;
@@ -38,13 +39,17 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
     }
 
     @Override
-    public void execute(PersonalPlanInputData inputData) {
-        User user = session.currentUser().orElse(null);
+    public void execute(final PersonalPlanInputData inputData) {
+        final User user = session
+            .currentUser()
+            .orElse(null);
         if (user == null) {
             presenter.present(new PersonalPlanOutputData(false, "You need an account", ""));
             return;
         }
-        if (inputData.calendarPath() == null || !inputData.calendarPath().endsWith(".ics")) {
+        if (inputData.calendarPath() == null || !inputData
+            .calendarPath()
+            .endsWith(".ics")) {
             presenter.present(new PersonalPlanOutputData(false, "Please upload a .ics file", ""));
             return;
         }
@@ -53,44 +58,48 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
         try {
             tripsPerDay = Integer.parseInt(inputData.nTrips());
             if (tripsPerDay < 1) throw new NumberFormatException();
-        } catch (RuntimeException invalidTrips) {
+        } catch (final RuntimeException invalidTrips) {
             presenter.present(new PersonalPlanOutputData(false, "Please input a positive whole number of trips", ""));
             return;
         }
 
         try {
-            List<Washroom> availableWashrooms = washrooms.getAll();
-            String calendar = calendarReader.read(inputData.calendarPath());
-            String generatedPlan = generator.generate(calendar, tripsPerDay, inputData.semester(), availableWashrooms);
-            String personalPlan = normalizePlan(generatedPlan, availableWashrooms);
-            User updatedUser = new User(user.username(), user.passwordHash(), personalPlan, user.moderator());
+            final List<Washroom> availableWashrooms = washrooms.getAll();
+            final String calendar = calendarReader.read(inputData.calendarPath());
+            final String generatedPlan = generator.generate(calendar, tripsPerDay, inputData.semester(), availableWashrooms);
+            final String personalPlan = normalizePlan(generatedPlan, availableWashrooms);
+            final User updatedUser = new User(user.username(), user.passwordHash(), personalPlan, user.moderator());
             users.save(updatedUser);
             session.setCurrentUser(updatedUser);
             presenter.present(new PersonalPlanOutputData(true, "Personal plan generated", personalPlan));
-        } catch (Exception failure) {
-            presenter.present(new PersonalPlanOutputData(false, "Could not generate a personal plan. Please try again.", ""));
+        } catch (final Exception failure) {
+            presenter.present(
+                new PersonalPlanOutputData(false, "Could not generate a personal plan. Please try again.", ""));
         }
     }
 
-    /** Converts the model response to the compact format consumed by the plan viewer and filter. */
-    private static String normalizePlan(String generatedPlan, List<Washroom> availableWashrooms) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        List<Map<String, String>> suggestions = mapper.readValue(generatedPlan,
-                new TypeReference<List<Map<String, String>>>() { });
-        Map<String, Washroom> washroomsById = new LinkedHashMap<>();
-        for (Washroom washroom : availableWashrooms) washroomsById.put(washroom.id(), washroom);
+    /**
+     * Converts the model response to the compact format consumed by the plan viewer and filter.
+     */
+    private static String normalizePlan(final String generatedPlan, final List<Washroom> availableWashrooms) throws Exception {
+        final ObjectMapper mapper = new ObjectMapper();
+        final List<Map<String, String>> suggestions = mapper.readValue(generatedPlan,
+            new TypeReference<List<Map<String, String>>>() {
+            });
+        final Map<String, Washroom> washroomsById = new LinkedHashMap<>();
+        for (final Washroom washroom : availableWashrooms) washroomsById.put(washroom.id(), washroom);
 
-        List<Map<String, String>> plan = new ArrayList<>();
-        for (Map<String, String> suggestion : suggestions) {
-            String washroomId = suggestion.get(WASHROOM_ID);
-            Washroom washroom = washroomsById.get(washroomId);
+        final List<Map<String, String>> plan = new ArrayList<>();
+        for (final Map<String, String> suggestion : suggestions) {
+            final String washroomId = suggestion.get(WASHROOM_ID);
+            final Washroom washroom = washroomsById.get(washroomId);
             if (washroom == null) throw new IllegalArgumentException("Recommendation contains an unknown washroom");
-            String day = suggestion.get(DAY);
-            String time = suggestion.get(TIME);
+            final String day = suggestion.get(DAY);
+            final String time = suggestion.get(TIME);
             if (day == null || day.isBlank() || time == null || time.isBlank()) {
                 throw new IllegalArgumentException("Recommendation is missing a day or time");
             }
-            Map<String, String> entry = new LinkedHashMap<>();
+            final Map<String, String> entry = new LinkedHashMap<>();
             entry.put("day", day);
             entry.put("time", time);
             entry.put("id", washroom.id());

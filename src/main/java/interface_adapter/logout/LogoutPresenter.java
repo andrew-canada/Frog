@@ -10,7 +10,7 @@ public final class LogoutPresenter implements LogoutOutputBoundary {
     private final LoginViewModel login;
     private final LoggedInViewModel loggedIn;
 
-    public LogoutPresenter(IsLoggedInViewModel isLoggedIn, LoginViewModel login, LoggedInViewModel loggedIn) {
+    public LogoutPresenter(final IsLoggedInViewModel isLoggedIn, final LoginViewModel login, final LoggedInViewModel loggedIn) {
         this.isLoggedIn = isLoggedIn;
         this.login = login;
         this.loggedIn = loggedIn;
@@ -18,8 +18,12 @@ public final class LogoutPresenter implements LogoutOutputBoundary {
 
     @Override
     public void present() {
-        isLoggedIn.getState().setIsLoggedIn(false);
-        isLoggedIn.getState().setUsername("");
+        isLoggedIn
+            .getState()
+            .setIsLoggedIn(false);
+        isLoggedIn
+            .getState()
+            .setUsername("");
         loggedIn.setState(new LoggedInViewModel.State(false, "Guest", false));
         login.setState(new LoginViewModel.State(false, "", ""));
     }

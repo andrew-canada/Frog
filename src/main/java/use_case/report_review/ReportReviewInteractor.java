@@ -19,27 +19,31 @@ public final class ReportReviewInteractor implements ReportReviewInputBoundary {
     private final ReportReviewOutputBoundary presenter;
     private final Clock clock;
 
-    public ReportReviewInteractor(ReviewReportDataAccessInterface reports,
-                                  ReportReviewOutputBoundary presenter) {
+    public ReportReviewInteractor(final ReviewReportDataAccessInterface reports,
+                                  final ReportReviewOutputBoundary presenter) {
         this(reports, presenter, Clock.systemDefaultZone());
     }
 
-    public ReportReviewInteractor(ReviewReportDataAccessInterface reports,
-                                  ReportReviewOutputBoundary presenter, Clock clock) {
+    public ReportReviewInteractor(final ReviewReportDataAccessInterface reports,
+                                  final ReportReviewOutputBoundary presenter, final Clock clock) {
         this.reports = reports;
         this.presenter = presenter;
         this.clock = clock;
     }
 
     @Override
-    public void report(ReportReviewInputData input) {
-        if (input.reasons().isEmpty()) {
+    public void report(final ReportReviewInputData input) {
+        if (input
+            .reasons()
+            .isEmpty()) {
             presenter.present(new ReportReviewOutputData(false, NO_REASON));
             return;
         }
-        reports.save(new Report(UUID.randomUUID().toString(), input.reviewId(),
-                input.reporterUsername(), input.reasons(), input.details(),
-                LocalDateTime.now(clock)));
+        reports.save(new Report(UUID
+            .randomUUID()
+            .toString(), input.reviewId(),
+            input.reporterUsername(), input.reasons(), input.details(),
+            LocalDateTime.now(clock)));
         presenter.present(new ReportReviewOutputData(true, THANK_YOU));
     }
 }

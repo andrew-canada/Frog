@@ -14,9 +14,9 @@ public final class Washroom {
     private final String locationDescription;
     private ReviewSummary reviewSummary;
 
-    public Washroom(String id, String name, entity.Building building, String floor, boolean accessible,
-                    Gender gender, int numToilets, int numSinks, String locationDescription,
-                    ReviewSummary reviewSummary) {
+    public Washroom(final String id, final String name, final entity.Building building, final String floor, final boolean accessible,
+                    final Gender gender, final int numToilets, final int numSinks, final String locationDescription,
+                    final ReviewSummary reviewSummary) {
         this.id = require(id, "id");
         this.name = require(name, "name");
         this.building = Objects.requireNonNull(building);
@@ -29,12 +29,12 @@ public final class Washroom {
         this.reviewSummary = Objects.requireNonNull(reviewSummary);
     }
 
-    private static String require(String value, String field) {
+    private static String require(final String value, final String field) {
         if (value == null || value.isBlank()) throw new IllegalArgumentException(field + " is required");
         return value;
     }
 
-    private static int positive(int value, String field) {
+    private static int positive(final int value, final String field) {
         if (value < 0) throw new IllegalArgumentException(field + " cannot be negative");
         return value;
     }
@@ -79,9 +79,9 @@ public final class Washroom {
         return reviewSummary;
     }
 
-    public void updateReviewSummary(ReviewSummary summary) {
+    public void updateReviewSummary(final ReviewSummary summary) {
         this.reviewSummary = Objects.requireNonNull(summary);
     }
 
-    public enum Gender {ALL_GENDER, WOMEN, MEN}
+    public enum Gender { ALL_GENDER, WOMEN, MEN }
 }

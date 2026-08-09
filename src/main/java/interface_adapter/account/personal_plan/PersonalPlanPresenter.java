@@ -9,13 +9,13 @@ public final class PersonalPlanPresenter implements PersonalPlanOutputBoundary {
 
     private final AccountViewModel viewModel;
 
-    public PersonalPlanPresenter(AccountViewModel viewModel) {
+    public PersonalPlanPresenter(final AccountViewModel viewModel) {
         this.viewModel = viewModel;
     }
 
-    public void present(PersonalPlanOutputData outputData) {
+    public void present(final PersonalPlanOutputData outputData) {
 
-        AccountState state = viewModel.getState();
+        final AccountState state = viewModel.getState();
         state.setPersonalPlanSuccess(outputData.success());
         state.setPersonalPlan(outputData.personalPlan());
         state.setPersonalPlanMessage(outputData.message());
