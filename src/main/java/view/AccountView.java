@@ -1,24 +1,7 @@
 package view;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeListener;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import entity.User;
 import interface_adapter.account.AccountState;
 import interface_adapter.account.AccountViewModel;
 import interface_adapter.account.IsLoggedInState;
@@ -27,51 +10,44 @@ import interface_adapter.account.change_password.ChangePasswordController;
 import interface_adapter.account.change_username.ChangeUsernameController;
 import interface_adapter.account.delete_account.DeleteAccountController;
 import interface_adapter.account.personal_plan.PersonalPlanController;
-import interface_adapter.login.LoginController;
-import interface_adapter.login.LoginViewModel;
 import use_case.account.personal_plan.PersonalPlanInteractor;
 
-public final class AccountView extends JPanel {
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
 
-    private Runnable onBack = () -> {
-    };
+public final class AccountView extends JPanel {
 
     private final JPanel personalPlan = Theme.page();
     private final JPanel changeUsername = Theme.page();
     private final JPanel changePassword = Theme.page();
     private final JPanel deleteAccount = Theme.page();
-
     private final JButton back = Theme.button("← Back to Map");
-
     private final JLabel accountLabel = new JLabel();
     private final JLabel personalPlanLabel = new JLabel();
     private final JLabel personalPlanStatusLabel = new JLabel();
-
     private final JFileChooser icsChooser = new JFileChooser(); // TODO: make it so that it has to be an ics file
     private final JTextField nTripField = new JTextField(10);
-
     private final JTextField usernameField = new JTextField(10);
     private final JLabel usernameStatusLabel = new JLabel();
-
     private final JPasswordField passwordField = new JPasswordField(10);
     private final JPasswordField confirmPasswordField = new JPasswordField(10);
     private final JLabel passwordStatusLabel = new JLabel();
-
     private final JLabel deleteAccountLabel = new JLabel();
-
     private final JButton personalPlanButton = Theme.button("Generate New Plan");
-
     private final JButton changeUsernameButton = Theme.button("Change Username");
     private final JButton confirmUsernameButton = Theme.button("Confirm Username");
     private final JButton cancelUsernameButton = Theme.button("Cancel");
-
     private final JButton changePasswordButton = Theme.button("Change Password");
     private final JButton confirmPasswordButton = Theme.button("Confirm Password");
     private final JButton cancelPasswordButton = Theme.button("Cancel");
-
     private final JButton deleteAccountButton = Theme.button("Delete Account");
     private final JButton confirmDeleteAccountButton = Theme.button("Delete Account");
     private final JButton cancelDeleteAccountButton = Theme.button("Cancel");
+    private Runnable onBack = () -> {
+    };
 
     public AccountView(AccountViewModel viewModel, IsLoggedInViewModel isLoggedInViewModel, ChangeUsernameController changeUsernameController, ChangePasswordController changePasswordController, DeleteAccountController deleteAccountController, PersonalPlanController personalPlanController) {
 
@@ -446,7 +422,8 @@ public final class AccountView extends JPanel {
 
         try {
             ObjectMapper mapper = new ObjectMapper();
-            List<PersonalPlanInteractor.WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<PersonalPlanInteractor.WashroomPlan>>() {});
+            List<PersonalPlanInteractor.WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<PersonalPlanInteractor.WashroomPlan>>() {
+            });
 
             List<String> days = List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
 
@@ -477,7 +454,7 @@ public final class AccountView extends JPanel {
                         textArea.setOpaque(false);
                         textArea.setColumns(10);
                         JPanel card = new JPanel(new FlowLayout());
-                        card.add(Theme.label(washroom.time, 14,  Theme.INK));
+                        card.add(Theme.label(washroom.time, 14, Theme.INK));
                         card.add(textArea);
                         planPanel.add(card, constraints);
                         y++;

@@ -11,11 +11,10 @@ import data_access.MongoDocuments;
 import entity.user.LoggedInUser;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import use_case.moderate_reviews.ModeratorDataAccessInterface;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import use_case.moderate_reviews.ModeratorDataAccessInterface;
-
 import java.util.*;
 
 public class DBUserDataAccessObject extends DBDataAccessObject implements UserDataAccessInterface, ModeratorDataAccessInterface {

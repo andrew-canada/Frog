@@ -1,9 +1,13 @@
 import data_access.route.RouteDataAccessInterface;
 import data_access.washroom.WashroomDataAccessInterface;
-import entity.*;
-import use_case.directions.*;
+import entity.Route;
+import entity.Washroom;
+import use_case.directions.GetDirectionsInputData;
+import use_case.directions.GetDirectionsInteractor;
+import use_case.directions.GetDirectionsOutputData;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 final class GetDirectionsInteractorTest {
     static void run() {

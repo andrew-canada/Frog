@@ -1,6 +1,6 @@
 import interface_adapter.view_reviews.ReviewsViewModel;
-import use_case.vote_helpful.*;
 import use_case.view_reviews.ViewReviewsOutputData;
+import use_case.vote_helpful.*;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -18,9 +18,17 @@ final class VoteHelpfulInteractorTest {
     private static void voteTogglesThroughGateway() {
         final Set<String> voted = new HashSet<>();
         HelpfulVoteDataAccessInterface votes = new HelpfulVoteDataAccessInterface() {
-            public boolean hasVoted(String r, String u) { return voted.contains(r + "|" + u); }
-            public void addVote(String r, String u) { voted.add(r + "|" + u); }
-            public void removeVote(String r, String u) { voted.remove(r + "|" + u); }
+            public boolean hasVoted(String r, String u) {
+                return voted.contains(r + "|" + u);
+            }
+
+            public void addVote(String r, String u) {
+                voted.add(r + "|" + u);
+            }
+
+            public void removeVote(String r, String u) {
+                voted.remove(r + "|" + u);
+            }
         };
         VoteHelpfulInputBoundary interactor = new VoteHelpfulInteractor(votes);
 

@@ -1,16 +1,12 @@
+import data_access.washroom.WashroomDataAccessInterface;
 import entity.Report;
 import entity.Review;
 import entity.Washroom;
-import data_access.washroom.WashroomDataAccessInterface;
 import use_case.moderate_reviews.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 final class ModerateReviewsInteractorTest {
 
@@ -64,14 +60,26 @@ final class ModerateReviewsInteractorTest {
                 report("r1", "user3", List.of("Harassment"), ""),
                 report("r2", "user4", List.of("Off-topic"), "")));
         ReviewAdminDataAccessInterface reviewStore = new ReviewAdminDataAccessInterface() {
-            public Optional<Review> getById(String id) { return Optional.of(review(id)); }
-            public void deleteReview(String id) { }
+            public Optional<Review> getById(String id) {
+                return Optional.of(review(id));
+            }
+
+            public void deleteReview(String id) {
+            }
         };
         Washroom w = TestSupport.washroom(); // "Test washroom", floor "2nd"
         WashroomDataAccessInterface washrooms = new WashroomDataAccessInterface() {
-            public Optional<Washroom> getById(String id) { return Optional.of(w); }
-            public List<Washroom> getNearby(double a, double b, double c) { return List.of(w); }
-            public List<Washroom> getAll() { return List.of(w); }
+            public Optional<Washroom> getById(String id) {
+                return Optional.of(w);
+            }
+
+            public List<Washroom> getNearby(double a, double b, double c) {
+                return List.of(w);
+            }
+
+            public List<Washroom> getAll() {
+                return List.of(w);
+            }
         };
         final ModerateReviewsOutputData[] out = new ModerateReviewsOutputData[1];
         new ModerateReviewsInteractor(reportStore(reports), reviewStore, washrooms, moderators(true), d -> out[0] = d).loadReportedReviews();
@@ -87,8 +95,12 @@ final class ModerateReviewsInteractorTest {
     private static void moderatorQueueSkipsReportsForMissingReview() {
         final List<Report> reports = new ArrayList<>(List.of(report("gone", "user2", List.of("Spam"), "")));
         ReviewAdminDataAccessInterface reviewStore = new ReviewAdminDataAccessInterface() {
-            public Optional<Review> getById(String id) { return Optional.empty(); } // review no longer exists
-            public void deleteReview(String id) { }
+            public Optional<Review> getById(String id) {
+                return Optional.empty();
+            } // review no longer exists
+
+            public void deleteReview(String id) {
+            }
         };
         final ModerateReviewsOutputData[] out = new ModerateReviewsOutputData[1];
         new ModerateReviewsInteractor(reportStore(reports), reviewStore, noWashrooms(), moderators(true), d -> out[0] = d).loadReportedReviews();
@@ -123,36 +135,56 @@ final class ModerateReviewsInteractorTest {
         return new Review(id, "w1", "author", 3, 3, "a comment", 0, LocalDate.now());
     }
 
-    /** A report store backed by the given mutable list (getAll reads it; delete removes from it). */
+    /**
+     * A report store backed by the given mutable list (getAll reads it; delete removes from it).
+     */
     private static ReportedReviewsDataAccessInterface reportStore(List<Report> reports) {
         return new ReportedReviewsDataAccessInterface() {
-            public List<Report> getAllReports() { return new ArrayList<>(reports); }
+            public List<Report> getAllReports() {
+                return new ArrayList<>(reports);
+            }
+
             public void deleteReportsForReview(String reviewId) {
                 reports.removeIf(r -> r.reviewId().equals(reviewId));
             }
         };
     }
 
-    /** A review admin store: every id resolves to a review until it is deleted. */
+    /**
+     * A review admin store: every id resolves to a review until it is deleted.
+     */
     private static ReviewAdminDataAccessInterface reviewStore(Set<String> deleted) {
         return new ReviewAdminDataAccessInterface() {
             public Optional<Review> getById(String id) {
                 return deleted.contains(id) ? Optional.empty() : Optional.of(review(id));
             }
-            public void deleteReview(String id) { deleted.add(id); }
+
+            public void deleteReview(String id) {
+                deleted.add(id);
+            }
         };
     }
 
-    /** A moderator-authorization gateway that grants or denies everyone uniformly. */
+    /**
+     * A moderator-authorization gateway that grants or denies everyone uniformly.
+     */
     private static ModeratorDataAccessInterface moderators(boolean allowed) {
         return username -> allowed;
     }
 
     private static WashroomDataAccessInterface noWashrooms() {
         return new WashroomDataAccessInterface() {
-            public Optional<Washroom> getById(String id) { return Optional.empty(); }
-            public List<Washroom> getNearby(double a, double b, double c) { return List.of(); }
-            public List<Washroom> getAll() { return List.of(); }
+            public Optional<Washroom> getById(String id) {
+                return Optional.empty();
+            }
+
+            public List<Washroom> getNearby(double a, double b, double c) {
+                return List.of();
+            }
+
+            public List<Washroom> getAll() {
+                return List.of();
+            }
         };
     }
 }

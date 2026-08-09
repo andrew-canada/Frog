@@ -1,11 +1,9 @@
 package view;
 
 import entity.GeoPoint;
-import org.jxmapviewer.input.MapClickListener;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 

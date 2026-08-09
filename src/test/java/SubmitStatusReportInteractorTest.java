@@ -1,10 +1,16 @@
-import entity.StatusReport;
 import data_access.status.StatusReportDataAccessInterface;
-import use_case.status_report.*;
 import entity.MaintenanceIssue;
+import entity.StatusReport;
+import use_case.status_report.SubmitStatusReportInputData;
+import use_case.status_report.SubmitStatusReportInteractor;
+import use_case.status_report.SubmitStatusReportOutputData;
 
-import java.time.*;
-import java.util.*;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 
 final class SubmitStatusReportInteractorTest {
     static void run() {

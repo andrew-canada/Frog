@@ -13,7 +13,10 @@ final class ReportReviewInteractorTest {
     private static void reportValidatesAndSaves() {
         final List<Report> saved = new ArrayList<>();
         ReviewReportDataAccessInterface store = new ReviewReportDataAccessInterface() {
-            public void save(Report report) { saved.add(report); }
+            public void save(Report report) {
+                saved.add(report);
+            }
+
             public boolean hasReported(String reviewId, String user) {
                 return saved.stream().anyMatch(r -> r.reviewId().equals(reviewId) && r.reporterUsername().equals(user));
             }

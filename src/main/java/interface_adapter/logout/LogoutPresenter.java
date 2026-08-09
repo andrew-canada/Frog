@@ -1,8 +1,6 @@
 package interface_adapter.logout;
 
 import interface_adapter.account.IsLoggedInViewModel;
-import use_case.login.LoginOutputBoundary;
-import use_case.login.LoginOutputData;
 import use_case.logout.LogoutOutputBoundary;
 
 public final class LogoutPresenter implements LogoutOutputBoundary {

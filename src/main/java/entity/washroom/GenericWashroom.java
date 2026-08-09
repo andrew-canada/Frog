@@ -12,18 +12,9 @@ class HighestOverallComparator implements Comparator<Review> {
     }
 }
 
-public class GenericWashroom implements Washroom {
-    private final String floor;
-
-    public GenericWashroom(String floor) {
-        this.floor = floor;
-    }
+public record GenericWashroom(String floor) implements Washroom {
 
     public GenericWashroom(String floor, List<Review> reviews) {
-        this.floor = floor;
-    }
-
-    public String getFloor() {
-        return floor;
+        this(floor);
     }
 }

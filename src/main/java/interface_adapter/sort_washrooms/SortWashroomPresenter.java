@@ -12,7 +12,7 @@ public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
     private final SortWashroomViewModel sortModel;
 
     public SortWashroomPresenter(WashroomListViewModel listModel,
-                                 SortWashroomViewModel sortModel){
+                                 SortWashroomViewModel sortModel) {
         this.listModel = listModel;
         this.sortModel = sortModel;
     }

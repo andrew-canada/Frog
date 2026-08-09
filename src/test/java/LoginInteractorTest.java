@@ -1,7 +1,9 @@
+import data_access.user.UserDataAccessInterface;
 import entity.User;
 import org.mindrot.jbcrypt.BCrypt;
-import data_access.user.UserDataAccessInterface;
-import use_case.login.*;
+import use_case.login.LoginInputData;
+import use_case.login.LoginInteractor;
+import use_case.login.LoginOutputData;
 
 import java.util.Optional;
 
@@ -9,7 +11,7 @@ final class LoginInteractorTest {
     static void run() {
         class Fake implements UserDataAccessInterface {
             User current;
-            User saved = new User("demo", BCrypt.hashpw("secret", BCrypt.gensalt()), "");
+            final User saved = new User("demo", BCrypt.hashpw("secret", BCrypt.gensalt()), "");
 
             public Optional<User> get(String n) {
                 return Optional.of(saved);
@@ -22,16 +24,16 @@ final class LoginInteractorTest {
             public void save(User u) {
             }
 
-            public void setCurrentUser(User u) {
-                current = u;
-            }
-
             public Optional<User> getCurrentUser() {
                 return Optional.ofNullable(current);
+            }            public void setCurrentUser(User u) {
+                current = u;
             }
 
             public void removeUser(String n) {
             }
+
+
         }
         Fake fake = new Fake();
         final LoginOutputData[] out = new LoginOutputData[1];
@@ -53,16 +55,16 @@ final class LoginInteractorTest {
                 saved = u;
             }
 
-            public void setCurrentUser(User u) {
-                current = u;
-            }
-
             public Optional<User> getCurrentUser() {
                 return Optional.ofNullable(current);
+            }            public void setCurrentUser(User u) {
+                current = u;
             }
 
             public void removeUser(String n) {
             }
+
+
         }
         LegacyFake legacy = new LegacyFake();
         new LoginInteractor(legacy, d -> out[0] = d).execute(new LoginInputData("legacy", "secret"));

@@ -1,6 +1,5 @@
 package use_case.logout;
 
-import entity.User;
 import data_access.user.UserDataAccessInterface;
 
 public final class LogoutInteractor implements LogoutInputBoundary {

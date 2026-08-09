@@ -1,10 +1,17 @@
 import data_access.review.ReviewDataAccessInterface;
 import data_access.washroom.WashroomDataAccessInterface;
-import entity.*;
-import use_case.view_reviews.*;
+import entity.Report;
+import entity.Review;
+import entity.ReviewSummary;
+import entity.Washroom;
+import use_case.view_reviews.ViewReviewsInputData;
+import use_case.view_reviews.ViewReviewsInteractor;
+import use_case.view_reviews.ViewReviewsOutputBoundary;
+import use_case.view_reviews.ViewReviewsOutputData;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 final class ViewReviewsInteractorTest {
     static void run() {
@@ -46,13 +53,23 @@ final class ViewReviewsInteractorTest {
             }
         };
         use_case.vote_helpful.HelpfulVoteDataAccessInterface votes = new use_case.vote_helpful.HelpfulVoteDataAccessInterface() {
-            public boolean hasVoted(String r, String u) { return false; }
-            public void addVote(String r, String u) { }
-            public void removeVote(String r, String u) { }
+            public boolean hasVoted(String r, String u) {
+                return false;
+            }
+
+            public void addVote(String r, String u) {
+            }
+
+            public void removeVote(String r, String u) {
+            }
         };
         use_case.report_review.ReviewReportDataAccessInterface reports = new use_case.report_review.ReviewReportDataAccessInterface() {
-            public void save(Report report) { }
-            public boolean hasReported(String r, String u) { return false; }
+            public void save(Report report) {
+            }
+
+            public boolean hasReported(String r, String u) {
+                return false;
+            }
 
         };
         new ViewReviewsInteractor(reviews, washrooms, votes, reports, output).execute(new ViewReviewsInputData("w1", "tester"));

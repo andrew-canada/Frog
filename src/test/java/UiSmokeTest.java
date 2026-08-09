@@ -1,3 +1,6 @@
+import entity.Building;
+import entity.ReviewSummary;
+import entity.Washroom;
 import interface_adapter.busyness.BusynessViewModel;
 import interface_adapter.directions.MapViewModel;
 import interface_adapter.login.LoginController;
@@ -5,17 +8,13 @@ import interface_adapter.login.LoginViewModel;
 import interface_adapter.status_report.StatusReportViewModel;
 import interface_adapter.view_reviews.ReviewsViewModel;
 import interface_adapter.view_reviews.WashroomListViewModel;
-import entity.Building;
-import entity.ReviewSummary;
-import entity.Washroom;
+import use_case.busyness.BusynessStatsOutputData;
 import view.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
-
-import use_case.busyness.BusynessStatsOutputData;
 
 final class UiSmokeTest {
     static void run() {

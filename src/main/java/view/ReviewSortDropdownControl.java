@@ -1,4 +1,5 @@
 package view;
+
 import javax.swing.*;
 
 public final class ReviewSortDropdownControl extends JComboBox<String> {
