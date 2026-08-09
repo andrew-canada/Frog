@@ -150,7 +150,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      *
      * @param washroom The Washroom object to be written.
      */
-    public String write(Washroom washroom, String buildingID) {
+    public static String write(Washroom washroom, String buildingID) {
         if (washroom instanceof entity.Washroom applicationWashroom) {
             Document doc = new Document();
             doc.append("buildingID", buildingID);
@@ -286,7 +286,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
         return washroomList;
     }
 
-    public void main(String[] args) {
+    public static void main(String[] args) {
         try {
             DBWashroomDataAccessObject dbwashroomDAO = new DBWashroomDataAccessObject();
             Condition condition = new Condition<>("floor", Operator.NE, "00");

@@ -11,7 +11,7 @@ import entity.Building;
 import entity.StatusReport;
 import entity.User;
 import entity.Washroom;
-import data_access.review.ReviewDataAccessInterface;
+import use_case.view_reviews.ReviewDataAccessInterface;
 
 import java.time.LocalDateTime;
 import java.util.*;
