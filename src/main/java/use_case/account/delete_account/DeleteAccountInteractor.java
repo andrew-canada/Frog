@@ -19,11 +19,11 @@ public final class DeleteAccountInteractor implements DeleteAccountInputBoundary
         User user = users.getCurrentUser().orElse(null);
 
         if (user == null) {
-            presenter.present(new DeleteAccountOutputData(false));
+            presenter.present(new DeleteAccountOutputData(false, "You are not logged in"));
         } else {
             users.removeUser(user.username());
             users.setCurrentUser(null);
-            presenter.present(new DeleteAccountOutputData(true));
+            presenter.present(new DeleteAccountOutputData(true, ""));
         }
 
     }

@@ -165,6 +165,7 @@ public final class AppBuilder {
 
         AccountView account = new AccountView(
                 accountModel,
+                isLoggedIn,
                 changeUsernameController,
                 changePasswordController,
                 deleteAccountController,
