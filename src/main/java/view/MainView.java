@@ -49,14 +49,11 @@ public final class MainView extends JPanel {
     /**
      * Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies.
      */
-    private final CardLayout buttonsLayout = new CardLayout();
-    private final JPanel buttonsPanel = new JPanel(buttonsLayout);
     private final JPanel list = new JPanel();
     private final JLabel routeLabel = Theme.label("Select a washroom to explore", 13, Theme.MUTED);
     private final JLabel heatmapLegend = Theme.label("", 11, Theme.MUTED);
     private final CampusMapPanel map = new CampusMapPanel();
     private final Map<String, JPanel> cardsByWashroomId = new HashMap<>();
-    private IsLoggedInViewModel isLoggedIn = new IsLoggedInViewModel();
     private JButton moderatorNav;
     private JButton busynessHeatmap, cleanlinessHeatmap;
     private boolean busynessHeatmapVisible, cleanlinessHeatmapVisible;
