@@ -41,6 +41,29 @@ public class AccountState {
         changes.addPropertyChangeListener(l);
     }
 
+    private void baseResetState() {
+        changeUsernameSuccess = false;
+        changeUsernameMessage = "";
+        changePasswordSuccess = false;
+        changePasswordMessage = "";
+        deleteAccountSuccess = false;
+        deleteAccountMessage = "";
+        personalPlanSuccess = false;
+        personalPlanMessage = "";
+    }
+
+    public void exitResetState() {
+        baseResetState();
+        changes.firePropertyChange("state", "a", "b");
+    }
+
+    public void logoutResetState() {
+        baseResetState();
+        username = "";
+        personalPlan = "";
+        changes.firePropertyChange("state", "a", "b");
+    }
+
     public String getUsername() {
         return username;
     }
@@ -48,7 +71,7 @@ public class AccountState {
     public void setUsername(String username) {
         String prev = this.username;
         this.username = username;
-        changes.firePropertyChange("state", prev, username);
+        changes.firePropertyChange("username", prev, username);
     }
 
     public String getPersonalPlan() {
@@ -58,7 +81,7 @@ public class AccountState {
     public void setPersonalPlan(String personalPlan) {
         String prev = this.personalPlan;
         this.personalPlan = personalPlan;
-        changes.firePropertyChange("state", prev, personalPlan);
+        changes.firePropertyChange("personalPlan", prev, personalPlan);
     }
 
     public boolean getChangeUsernameSuccess() {
@@ -68,7 +91,7 @@ public class AccountState {
     public void setChangeUsernameSuccess(boolean changeUsernameSuccess) {
         boolean prev = this.changeUsernameSuccess;
         this.changeUsernameSuccess = changeUsernameSuccess;
-        changes.firePropertyChange("state", prev, changeUsernameSuccess);
+        changes.firePropertyChange("changeUsernameSuccess", prev, changeUsernameSuccess);
     }
 
     public String getChangeUsernameMessage() {
@@ -78,7 +101,7 @@ public class AccountState {
     public void setChangeUsernameMessage(String changeUsernameMessage) {
         String prev = this.changeUsernameMessage;
         this.changeUsernameMessage = changeUsernameMessage;
-        changes.firePropertyChange("state", prev, changeUsernameMessage);
+        changes.firePropertyChange("changeUsernameMessage", prev, changeUsernameMessage);
 
     }
 
@@ -89,7 +112,7 @@ public class AccountState {
     public void setChangePasswordSuccess(boolean changePasswordSuccess) {
         boolean prev = this.changePasswordSuccess;
         this.changePasswordSuccess = changePasswordSuccess;
-        changes.firePropertyChange("state", prev, changePasswordSuccess);
+        changes.firePropertyChange("changePasswordSuccess", prev, changePasswordSuccess);
     }
 
     public String getChangePasswordMessage() {
@@ -99,7 +122,7 @@ public class AccountState {
     public void setChangePasswordMessage(String changePasswordMessage) {
         String prev = this.changePasswordMessage;
         this.changePasswordMessage = changePasswordMessage;
-        changes.firePropertyChange("state", prev, changePasswordMessage);
+        changes.firePropertyChange("changePasswordMessage", prev, changePasswordMessage);
     }
 
     public boolean getDeleteAccountSuccess() {
@@ -109,7 +132,7 @@ public class AccountState {
     public void setDeleteAccountSuccess(boolean deleteAccountSuccess) {
         boolean prev = this.deleteAccountSuccess;
         this.deleteAccountSuccess = deleteAccountSuccess;
-        changes.firePropertyChange("state", prev, deleteAccountSuccess);
+        changes.firePropertyChange("deleteAccountSuccess", prev, deleteAccountSuccess);
     }
 
     public String getDeleteAccountMessage() {
@@ -119,7 +142,7 @@ public class AccountState {
     public void setDeleteAccountMessage(String deleteAccountMessage) {
         String prev = this.deleteAccountMessage;
         this.deleteAccountMessage = deleteAccountMessage;
-        changes.firePropertyChange("state", prev, deleteAccountMessage);
+        changes.firePropertyChange("deleteAccountMessage", prev, deleteAccountMessage);
     }
 
     public boolean getPersonalPlanSuccess() {
@@ -129,7 +152,7 @@ public class AccountState {
     public void setPersonalPlanSuccess(boolean personalPlanSuccess) {
         boolean prev = this.personalPlanSuccess;
         this.personalPlanSuccess = personalPlanSuccess;
-        changes.firePropertyChange("state", prev, personalPlanSuccess);
+        changes.firePropertyChange("personalPlanSuccess", prev, personalPlanSuccess);
     }
 
     public String getPersonalPlanMessage() {
@@ -139,7 +162,7 @@ public class AccountState {
     public void setPersonalPlanMessage(String personalPlanMessage) {
         String prev = this.personalPlanMessage;
         this.personalPlanMessage = personalPlanMessage;
-        changes.firePropertyChange("state", prev, personalPlanMessage);
+        changes.firePropertyChange("personalPlanMessage", prev, personalPlanMessage);
     }
 
 }

@@ -68,4 +68,9 @@ public final class JUnitBridgeTest {
     void sorting() {
         SortingInteractorTest.run();
     }
+
+    @Test
+    void personalPlan() {
+        PersonalPlanInteractorTest.run();
+    }
 }

@@ -11,8 +11,8 @@ public final class PersonalPlanController {
         this.interactor = interactor;
     }
 
-    public void execute(String calendarPath, String nTrips) {
-        interactor.execute(new PersonalPlanInputData(calendarPath, nTrips));
+    public void execute(String calendarPath, String nTrips, String semester) {
+        interactor.execute(new PersonalPlanInputData(calendarPath, nTrips, semester));
     }
 
 }

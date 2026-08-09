@@ -14,6 +14,7 @@ public final class TestRunner {
         run("ReportReviewInteractorTest", ReportReviewInteractorTest::run);
         run("ModerateReviewsInteractorTest", ModerateReviewsInteractorTest::run);
         run("SortingInteractorTest", SortingInteractorTest::run);
+        run("PersonalPlanInteractorTest", PersonalPlanInteractorTest::run);
         System.out.println("All interactor, adapter, sorting, and UI smoke tests passed.");
     }
 

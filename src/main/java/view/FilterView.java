@@ -22,6 +22,7 @@ public class FilterView extends JFrame {
                     filterPanel.accessibleOnly(),
                     filterPanel.ownReviews(),
                     filterPanel.selectedBuilding(),
+                    filterPanel.personalPlan(),
                     selected,
                     filterPanel.gender(),
                     latitude,

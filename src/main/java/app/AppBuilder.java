@@ -323,7 +323,7 @@ public final class AppBuilder {
                 new ChangePasswordPresenter(accountModel)));
         var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, users,
                 new DeleteAccountPresenter(accountModel, isLoggedIn)));
-        var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, users,
+        var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, users, washrooms,
                 new FileCalendarContentReader(), new GeminiPersonalPlanGenerator(
                 () -> System.getenv(GeminiPersonalPlanGenerator.API_KEY_ENV)),
                 new PersonalPlanPresenter(accountModel)));
@@ -463,6 +463,7 @@ public final class AppBuilder {
         });
         busyness.setOnBack(showMain);
         account.setOnBack(showMain);
+        account.setOnViewPlan(plan -> new PersonalPlanView(frame, plan));
 
         loadMainDataAsync(washrooms, reviews, reports, seedData, moderateController::load,
                 main, listModel, displayedWashrooms, originLat, originLng, () -> onLoaded.accept(frame));

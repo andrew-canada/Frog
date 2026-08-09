@@ -7,6 +7,7 @@ public record FilterInputData(
         String gender,
         String washroomID,
         boolean ownReviews,
+        boolean personalPlan,
         double latitude,
         double longitude) {
 }
