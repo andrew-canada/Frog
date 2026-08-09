@@ -9,6 +9,8 @@ import interface_adapter.account.IsLoggedInViewModel;
 import interface_adapter.directions.MapViewModel;
 import interface_adapter.filter.FilterController;
 import interface_adapter.filter.FilterViewModel;
+import interface_adapter.login.LoggedInViewModel;
+import interface_adapter.login.LoginViewModel;
 import interface_adapter.logout.LogoutController;
 import interface_adapter.logout.LogoutPresenter;
 import interface_adapter.logout.LogoutController;
@@ -83,6 +85,8 @@ public final class MainView extends JPanel {
             onAccount = () -> {
             },
             onModerator = () -> {
+            },
+            onLogout = () -> {
             };
 
     private Function<String, GeoPoint> addressLookup = address -> {
@@ -96,7 +100,8 @@ public final class MainView extends JPanel {
                 route,
                 new FilterViewModel(),
                 new IsLoggedInViewModel(),
-                new LogoutController(new LogoutInteractor(new DBUserDataAccessObject(), new LogoutPresenter(new IsLoggedInViewModel()))));
+                new LogoutController(new LogoutInteractor(new InMemoryUserDataAccessObject(),
+                        new LogoutPresenter(new IsLoggedInViewModel(), new LoginViewModel(), new LoggedInViewModel()))));
     }
 
     public MainView(WashroomListViewModel washrooms, MapViewModel route, FilterViewModel filter, IsLoggedInViewModel isLoggedIn, LogoutController logoutController) {
@@ -157,6 +162,7 @@ public final class MainView extends JPanel {
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
 
+                    onLogout.run();
                     logoutController.execute();
 
                 }
@@ -401,6 +407,10 @@ public final class MainView extends JPanel {
 
     public void setOnLogin(Runnable r) {
         onLogin = r;
+    }
+
+    public void setOnLogout(Runnable r) {
+        onLogout = r;
     }
 
     public void setOnAccount(Runnable r) {

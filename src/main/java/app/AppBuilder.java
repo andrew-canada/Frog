@@ -333,7 +333,8 @@ public final class AppBuilder {
         var changePasswordController = new ChangePasswordController(new ChangePasswordInteractor(users, new ChangePasswordPresenter(accountModel)));
         var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel, isLoggedIn)));
         var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
-        var logoutController = new LogoutController(new LogoutInteractor(users, new LogoutPresenter(isLoggedIn)));
+        var logoutController = new LogoutController(new LogoutInteractor(users,
+                new LogoutPresenter(isLoggedIn, loginModel, loggedInModel)));
         var filterController = new FilterController(new FilterInteractor(washrooms, reviews, reports, users,
                 new FilterPresenter(filterModel, listModel, mapModel), JSON_WASHROOM_NAMES));
         var sortWashroomController = new SortWashroomController(
@@ -394,6 +395,7 @@ public final class AppBuilder {
         });
         main.setOnDirections(id -> requestDirections(main, directionsController, id));
         main.setOnLogin(() -> layout.show(cards, LOGIN));
+        main.setOnLogout(() -> layout.show(cards, LOGIN));
         main.setOnAccount(() -> layout.show(cards, ACCOUNT));
 
         main.setOnReport(() -> selected(washrooms, main).ifPresentOrElse(

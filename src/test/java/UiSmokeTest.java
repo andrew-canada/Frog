@@ -39,8 +39,7 @@ final class UiSmokeTest {
                 busynessHeatmap.doClick();
                 TestSupport.check(!busynessHeatmap.getText().contains("On"), "busyness heatmap should toggle off");
                 List<JPanel> views = List.of(main, new ReadReviewsView(reviews),
-                        new LoginPanel(new LoginViewModel(), new LoginController(input -> {
-                        })),
+                        loginPanel(),
                         new StatusReportView(new StatusReportViewModel()),
                         new BusynessChartView(busyness), new FilterPanel(null, "", () -> {
                         }));
@@ -58,6 +57,18 @@ final class UiSmokeTest {
         } catch (Exception e) {
             throw new AssertionError("UI smoke rendering failed", e);
         }
+    }
+
+    private static LoginPanel loginPanel() {
+        LoginViewModel model = new LoginViewModel();
+        LoginPanel loginPanel = new LoginPanel(model, new LoginController(input -> {
+        }));
+        TestSupport.check(buttonNamed(loginPanel, "Continue as guest") != null,
+                "the initial login screen should offer guest access");
+        model.setState(new LoginViewModel.State(true, "demo", "Welcome back, demo"));
+        TestSupport.check(buttonNamed(loginPanel, "View map") != null,
+                "the successful login screen should offer to view the map");
+        return loginPanel;
     }
 
     private static void assertButtonContrast(Container container) {
