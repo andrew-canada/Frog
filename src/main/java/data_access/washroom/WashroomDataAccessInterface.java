@@ -22,4 +22,8 @@ public interface WashroomDataAccessInterface {
         throw new UnsupportedOperationException("Matching washrooms by ID is not supported by this data source");
     }
 
+    default String write(Washroom washroom, String buildingID) {
+        throw new UnsupportedOperationException("Writing washrooms is not supported by this data source");
+    }
+
 }

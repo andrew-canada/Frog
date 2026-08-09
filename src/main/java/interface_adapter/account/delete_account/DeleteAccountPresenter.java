@@ -21,10 +21,11 @@ public final class DeleteAccountPresenter implements DeleteAccountOutputBoundary
 
         AccountState state = viewModel.getState();
         state.setDeleteAccountSuccess(outputData.success());
+        state.setDeleteAccountMessage(outputData.message());
         IsLoggedInState loggedInState = isLoggedInViewModel.getState();
-        loggedInState.setIsLoggedIn(!outputData.success());
         if (outputData.success()) {
             loggedInState.setUsername("");
+            loggedInState.setIsLoggedIn(false);
         }
 
     }

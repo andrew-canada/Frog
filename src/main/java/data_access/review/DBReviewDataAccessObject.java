@@ -5,6 +5,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Indexes;
 import data_access.AbstractCondition;
+
 import data_access.DBDataAccessObject;
 import data_access.MongoDocuments;
 import entity.Report;
@@ -22,7 +23,7 @@ import java.time.ZoneId;
 import java.util.*;
 
 public class DBReviewDataAccessObject extends DBDataAccessObject
-        implements use_case.view_reviews.ReviewDataAccessInterface,
+        implements ReviewDataAccessInterface,
         HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface, ReviewAdminDataAccessInterface, ReportedReviewsDataAccessInterface {
 
     static final List<String> allowedAttributes = List.of(new String[]{
