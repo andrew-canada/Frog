@@ -167,7 +167,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
         }
         Document doc = new Document();
         doc.append("buildingID", buildingID);
-        doc.append("floor", washroom.floor());
+        doc.append("floor", washroom.getFloor());
 
         return collection.insertOne(doc).getInsertedId().toString();
     }

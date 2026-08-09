@@ -1,7 +1,7 @@
 package interface_adapter.filter;
 
 import interface_adapter.directions.MapViewModel;
-import interface_adapter.WashroomListViewModel;
+import interface_adapter.view_reviews.WashroomListViewModel;
 import use_case.filter.FilterOutputBoundary;
 import use_case.filter.FilterOutputData;
 
