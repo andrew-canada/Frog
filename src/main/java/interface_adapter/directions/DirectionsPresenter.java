@@ -15,9 +15,11 @@ public final class DirectionsPresenter implements GetDirectionsOutputBoundary {
 
     @Override
     public void present(final GetDirectionsOutputData d) {
-        final Runnable update = () -> model.setState(new MapViewModel.State(d.success(), d.routePoints(),
-            d.success() ? d.distanceMeters() + " m" : "", d.success() ? Math.max(1, d.timeSeconds() / 60) + " min" : "",
-            d.message()));
+        final Runnable update = () -> {
+            model.setState(
+                new MapViewModel.State(d.success(), d.routePoints(), d.success() ? d.distanceMeters() + " m" : "",
+                    d.success() ? Math.max(1, d.timeSeconds() / 60) + " min" : "", d.message()));
+        };
         ui.dispatch(update);
     }
 }

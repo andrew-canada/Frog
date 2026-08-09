@@ -1,14 +1,5 @@
 package database.status;
 
-import org.bson.Document;
-
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Indexes;
-import database.MongoDocuments;
-import entity.MaintenanceIssue;
-import entity.StatusReport;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -20,6 +11,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.bson.Document;
+
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Indexes;
+import database.MongoDocuments;
+import entity.MaintenanceIssue;
+import entity.StatusReport;
 import use_case.port.StatusReportRepository;
 
 public final class DBStatusReportDataAccessObject implements StatusReportRepository {
@@ -67,7 +68,9 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
             final entity.Washroom washroom = washrooms.get(washroomIndex);
             for (int hour = 0; hour < 24; hour++) {
                 final String seedKey = "json-hourly-status-" + washroom.id() + "-" + hour;
-                if (existingSeedKeys.contains(seedKey)) continue;
+                if (existingSeedKeys.contains(seedKey)) {
+                    continue;
+                }
                 final int busyness = 1 + Math.floorMod(washroomIndex * 2 + hour * 3, 5);
                 final int cleanliness = 1 + Math.floorMod(washroomIndex * 3 + hour * 2, 5);
                 final LocalDateTime timestamp = LocalDateTime.of(reportDay, LocalTime.of(hour, 0));
@@ -83,7 +86,9 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
                     .append("seedKey", seedKey));
             }
         }
-        if (!newReports.isEmpty()) reports.insertMany(newReports);
+        if (!newReports.isEmpty()) {
+            reports.insertMany(newReports);
+        }
     }
 
     @Override
@@ -94,7 +99,8 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
     }
 
     @Override
-    public List<StatusReport> getForWashroom(final String washroomId, final LocalDateTime from, final LocalDateTime to) {
+    public List<StatusReport> getForWashroom(final String washroomId, final LocalDateTime from,
+                                             final LocalDateTime to) {
         final List<StatusReport> result = new ArrayList<>();
         for (final Document document : reports.find()) {
             if (!MongoDocuments.referenceMatches(document.get("washroomId"), washroomId)
@@ -118,16 +124,15 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
      */
     @Override
     public Map<String, StatusReport> getCurrentHourForWashrooms(final List<String> washroomIds, final int hour) {
-        if (washroomIds.isEmpty()) return Map.of();
-        final Document currentHour = new Document("$or", List.of(
-            new Document("hourOfDay", hour),
+        if (washroomIds.isEmpty()) {
+            return Map.of();
+        }
+        final Document currentHour = new Document("$or", List.of(new Document("hourOfDay", hour),
             new Document("$expr", new Document("$eq", List.of(new Document("$hour", "$timestamp"), hour)))));
-        final List<Document> pipeline = List.of(
-            new Document("$match", new Document("washroomId", new Document("$in", washroomIds))
-                .append("$or", currentHour.get("$or"))),
-            new Document("$sort", new Document("timestamp", -1)),
-            new Document("$group", new Document("_id", "$washroomId")
-                .append("latest", new Document("$first", "$$ROOT"))),
+        final List<Document> pipeline = List.of(new Document("$match",
+                new Document("washroomId", new Document("$in", washroomIds)).append("$or", currentHour.get("$or"))),
+            new Document("$sort", new Document("timestamp", -1)), new Document("$group",
+                new Document("_id", "$washroomId").append("latest", new Document("$first", "$$ROOT"))),
             new Document("$replaceRoot", new Document("newRoot", "$latest")));
         final Map<String, StatusReport> result = new HashMap<>();
         for (final Document document : reports.aggregate(pipeline)) {
@@ -141,23 +146,24 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
      * Backfills the hour bucket once, then indexes the current-hour heatmap query.
      */
     public void ensurePerformanceIndexes() {
-        reports.updateMany(Filters.exists("hourOfDay", false), List.of(
-            new Document("$set", new Document("hourOfDay", new Document("$hour", "$timestamp")))));
-        reports.createIndex(Indexes.compoundIndex(Indexes.ascending("hourOfDay"),
-            Indexes.ascending("washroomId"), Indexes.descending("timestamp")));
+        reports.updateMany(Filters.exists("hourOfDay", false),
+            List.of(new Document("$set", new Document("hourOfDay", new Document("$hour", "$timestamp")))));
+        reports.createIndex(Indexes.compoundIndex(Indexes.ascending("hourOfDay"), Indexes.ascending("washroomId"),
+            Indexes.descending("timestamp")));
     }
 
     private StatusReport toEntity(final Document document) {
-        final String issueName = MongoDocuments.string(document, MaintenanceIssue.NONE.name(), "issue", "maintenanceIssue");
+        final String issueName =
+            MongoDocuments.string(document, MaintenanceIssue.NONE.name(), "issue", "maintenanceIssue");
         MaintenanceIssue issue;
         try {
             issue = MaintenanceIssue.valueOf(issueName);
-        } catch (final IllegalArgumentException ignored) {
+        }
+        catch (final IllegalArgumentException ignored) {
             issue = MaintenanceIssue.OTHER;
         }
         return new StatusReport(MongoDocuments.string(document, "unknown", "washroomId", "washroomID"),
-            MongoDocuments.string(document, null, "username"),
-            clamp(MongoDocuments.integer(document, 1, "busyness")),
+            MongoDocuments.string(document, null, "username"), clamp(MongoDocuments.integer(document, 1, "busyness")),
             clamp(MongoDocuments.integer(document, 1, "cleanliness")), issue,
             MongoDocuments.dateTime(document, LocalDateTime.now(), "timestamp", "createdAt"));
     }

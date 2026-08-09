@@ -1,5 +1,15 @@
 package views;
 
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.function.Consumer;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -26,15 +36,6 @@ import interface_adapter.account.change_password.ChangePasswordController;
 import interface_adapter.account.change_username.ChangeUsernameController;
 import interface_adapter.account.delete_account.DeleteAccountController;
 import interface_adapter.account.personal_plan.PersonalPlanController;
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
-import java.util.function.Consumer;
 
 public final class AccountView extends JPanel {
 
@@ -82,17 +83,22 @@ public final class AccountView extends JPanel {
     public AccountView(final AccountViewModel viewModel, final IsLoggedInViewModel isLoggedInViewModel,
                        final ChangeUsernameController changeUsernameController,
                        final ChangePasswordController changePasswordController,
-                       final DeleteAccountController deleteAccountController, final PersonalPlanController personalPlanController) {
+                       final DeleteAccountController deleteAccountController,
+                       final PersonalPlanController personalPlanController) {
 
         this.viewModel = viewModel;
         this.isLoggedInViewModel = isLoggedInViewModel;
 
         viewModel
             .getState()
-            .addPropertyChangeListener(e -> render(viewModel.getState()));
+            .addPropertyChangeListener(e -> {
+                render(viewModel.getState());
+            });
         isLoggedInViewModel
             .getState()
-            .addPropertyChangeListener(e -> render(isLoggedInViewModel.getState()));
+            .addPropertyChangeListener(e -> {
+                render(isLoggedInViewModel.getState());
+            });
 
         setLayout(new BorderLayout());
 
@@ -106,7 +112,9 @@ public final class AccountView extends JPanel {
 
         title.add(titleWords, BorderLayout.WEST);
         back.addActionListener(e -> {
-            viewModel.getState().exitResetState();
+            viewModel
+                .getState()
+                .exitResetState();
             resetAccountView();
             onBack.run();
         });
@@ -134,12 +142,12 @@ public final class AccountView extends JPanel {
         personalPlan.add(personalPlanTitle);
         personalPlan.add(Box.createVerticalStrut(10));
 
-        final JTextArea personalPlanInstructions =
-            new JTextArea("Upload your acorn timetable to generate a personal washroom schedule!\n" +
-                "To generate plan, download your timetable from Acorn Timetable as an .ics file and upload it here, " +
-                    "then enter your desired number of washroom trips per day and the current semester. \n" +
-                "Click the Generate Plan button then the View Plan button to see the schedule (this may take a few " +
-                    "minutes)");
+        final JTextArea personalPlanInstructions = new JTextArea(
+            "Upload your acorn timetable to generate a personal washroom schedule!\n"
+                + "To generate plan, download your timetable from Acorn Timetable as an .ics file and upload it here, "
+                + "then enter your desired number of washroom trips per day and the current semester. \n"
+                + "Click the Generate Plan button then the View Plan button to see the schedule (this may take a few "
+                + "minutes)");
         personalPlanInstructions.setLineWrap(true);
         personalPlanInstructions.setWrapStyleWord(true);
         personalPlanInstructions.setEditable(false);
@@ -246,7 +254,8 @@ public final class AccountView extends JPanel {
                 personalPlanSelectedFileLabel.setText("Selected File: " + icsChooser
                     .getSelectedFile()
                     .getName());
-            } else if (result == JFileChooser.CANCEL_OPTION) {
+            }
+            else if (result == JFileChooser.CANCEL_OPTION) {
                 personalPlanSelectedFilePath = "";
                 personalPlanSelectedFileLabel.setText("Selected File: ");
             }
@@ -263,7 +272,8 @@ public final class AccountView extends JPanel {
                 final String curr = personalPlanStatusLabel.getText();
                 if (curr.endsWith("...")) {
                     personalPlanStatusLabel.setText("Loading");
-                } else {
+                }
+                else {
                     personalPlanStatusLabel.setText(curr + ".");
                 }
             });
@@ -273,7 +283,8 @@ public final class AccountView extends JPanel {
                 @Override
                 protected String doInBackground() throws Exception {
 
-                    personalPlanController.execute(personalPlanSelectedFilePath, personalPlanNumField.getText(), (String) personalPlanSemesterBox.getSelectedItem());
+                    personalPlanController.execute(personalPlanSelectedFilePath, personalPlanNumField.getText(),
+                        (String) personalPlanSemesterBox.getSelectedItem());
                     return "";
 
                 }
@@ -285,9 +296,11 @@ public final class AccountView extends JPanel {
                     try {
                         get();
                         personalPlanViewButton.doClick();
-                    } catch (final Exception ex) {
+                    }
+                    catch (final Exception ex) {
                         personalPlanStatusLabel.setText("Please try again");
-                    } finally {
+                    }
+                    finally {
                         personalPlanGenerateButton.setEnabled(true);
                     }
 
@@ -308,18 +321,18 @@ public final class AccountView extends JPanel {
 
         });
 
-        changeUsernameButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(final ActionEvent evt) {
+        changeUsernameButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent evt) {
 
-                    changeUsernameContent.removeAll();
-                    changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                    changeUsernameContent.add(Theme.label("New Username:", 14, Theme.INK));
-                    changeUsernameContent.add(Box.createHorizontalStrut(10));
-                    changeUsernameContent.add(usernameField);
+                changeUsernameContent.removeAll();
+                changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                changeUsernameContent.add(Theme.label("New Username:", 14, Theme.INK));
+                changeUsernameContent.add(Box.createHorizontalStrut(10));
+                changeUsernameContent.add(usernameField);
 
-                    changeUsernameContent.revalidate();
-                    changeUsernameContent.repaint();
+                changeUsernameContent.revalidate();
+                changeUsernameContent.repaint();
 
                     changeUsernameButtons.removeAll();
                     changeUsernameButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -329,162 +342,153 @@ public final class AccountView extends JPanel {
                     changePasswordContent.add(Box.createHorizontalStrut(10));
                     changeUsernameButtons.add(usernameStatusLabel);
 
-                    changeUsernameButtons.revalidate();
-                    changeUsernameButtons.repaint();
+                changeUsernameButtons.revalidate();
+                changeUsernameButtons.repaint();
 
-                }
             }
-        );
+        });
 
-        confirmUsernameButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(final ActionEvent evt) {
+        confirmUsernameButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent evt) {
 
-                    changeUsernameController.execute(usernameField.getText());
+                changeUsernameController.execute(usernameField.getText());
 
-                }
             }
-        );
+        });
 
-        cancelUsernameButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(final ActionEvent evt) {
+        cancelUsernameButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent evt) {
 
-                    usernameField.setText("");
-                    changeUsernameContent.removeAll();
-                    changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                    changeUsernameContent.add(usernameStatusLabel);
-                    changeUsernameContent.revalidate();
-                    changeUsernameContent.repaint();
+                usernameField.setText("");
+                changeUsernameContent.removeAll();
+                changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                changeUsernameContent.add(usernameStatusLabel);
+                changeUsernameContent.revalidate();
+                changeUsernameContent.repaint();
 
-                    changeUsernameButtons.removeAll();
-                    changeUsernameButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-                    changeUsernameButtons.add(changeUsernameButton);
+                changeUsernameButtons.removeAll();
+                changeUsernameButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+                changeUsernameButtons.add(changeUsernameButton);
 
-                    changeUsernameButtons.revalidate();
-                    changeUsernameButtons.repaint();
+                changeUsernameButtons.revalidate();
+                changeUsernameButtons.repaint();
 
-                }
             }
-        );
+        });
 
-        changePasswordButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(final ActionEvent evt) {
+        changePasswordButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent evt) {
 
-                    passwordField.setText("");
-                    confirmPasswordField.setText("");
-                    changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                    changePasswordContent.add(Theme.label("New Password:", 14, Theme.INK));
-                    changePasswordContent.add(Box.createHorizontalStrut(10));
-                    changePasswordContent.add(passwordField);
-                    changePasswordContent.add(Box.createHorizontalStrut(10));
-                    changePasswordContent.add(Theme.label("Confirm Password:", 14, Theme.INK));
-                    changePasswordContent.add(Box.createHorizontalStrut(10));
-                    changePasswordContent.add(confirmPasswordField);
-                    changePasswordContent.add(Box.createHorizontalStrut(10));
-                    changePasswordContent.add(passwordStatusLabel);
+                passwordField.setText("");
+                confirmPasswordField.setText("");
+                changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                changePasswordContent.add(Theme.label("New Password:", 14, Theme.INK));
+                changePasswordContent.add(Box.createHorizontalStrut(10));
+                changePasswordContent.add(passwordField);
+                changePasswordContent.add(Box.createHorizontalStrut(10));
+                changePasswordContent.add(Theme.label("Confirm Password:", 14, Theme.INK));
+                changePasswordContent.add(Box.createHorizontalStrut(10));
+                changePasswordContent.add(confirmPasswordField);
+                changePasswordContent.add(Box.createHorizontalStrut(10));
+                changePasswordContent.add(passwordStatusLabel);
 
-                    changePasswordContent.revalidate();
-                    changePasswordContent.repaint();
+                changePasswordContent.revalidate();
+                changePasswordContent.repaint();
 
-                    changePasswordButtons.remove(changePasswordButton);
-                    changePasswordButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-                    changePasswordButtons.add(confirmPasswordButton);
-                    changePasswordContent.add(Box.createHorizontalStrut(10));
-                    changePasswordButtons.add(cancelPasswordButton);
+                changePasswordButtons.remove(changePasswordButton);
+                changePasswordButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+                changePasswordButtons.add(confirmPasswordButton);
+                changePasswordContent.add(Box.createHorizontalStrut(10));
+                changePasswordButtons.add(cancelPasswordButton);
 
-                    changePasswordButtons.revalidate();
-                    changePasswordButtons.repaint();
+                changePasswordButtons.revalidate();
+                changePasswordButtons.repaint();
 
-                }
             }
-        );
+        });
 
-        confirmPasswordButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(final ActionEvent evt) {
+        confirmPasswordButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent evt) {
 
-                    changePasswordController.execute(String.valueOf(passwordField.getPassword()),
-                        String.valueOf(confirmPasswordField.getPassword()));
+                changePasswordController.execute(String.valueOf(passwordField.getPassword()),
+                    String.valueOf(confirmPasswordField.getPassword()));
 
-                }
             }
-        );
+        });
 
-        cancelPasswordButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(final ActionEvent evt) {
+        cancelPasswordButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent evt) {
 
-                    changePasswordContent.removeAll();
-                    changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                    changePasswordContent.add(passwordStatusLabel);
-                    changePasswordContent.revalidate();
-                    changePasswordContent.repaint();
+                changePasswordContent.removeAll();
+                changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                changePasswordContent.add(passwordStatusLabel);
+                changePasswordContent.revalidate();
+                changePasswordContent.repaint();
 
-                    changePasswordButtons.remove(confirmPasswordButton);
-                    changePasswordButtons.remove(cancelPasswordButton);
-                    changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                    changePasswordButtons.add(changePasswordButton);
+                changePasswordButtons.remove(confirmPasswordButton);
+                changePasswordButtons.remove(cancelPasswordButton);
+                changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                changePasswordButtons.add(changePasswordButton);
 
-                    changePasswordButtons.revalidate();
-                    changePasswordButtons.repaint();
+                changePasswordButtons.revalidate();
+                changePasswordButtons.repaint();
 
-                }
             }
-        );
+        });
 
-        deleteAccountButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(final ActionEvent evt) {
+        deleteAccountButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent evt) {
 
-                    deleteAccountContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                    deleteAccountContent.add(Theme.label("Are you sure? This action cannot be undone.", 14, Theme.INK));
+                deleteAccountContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                deleteAccountContent.add(Theme.label("Are you sure? This action cannot be undone.", 14, Theme.INK));
 
-                    deleteAccountContent.revalidate();
-                    deleteAccountContent.repaint();
+                deleteAccountContent.revalidate();
+                deleteAccountContent.repaint();
 
-                    deleteAccountButtons.remove(deleteAccountButton);
-                    deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-                    deleteAccountButtons.add(confirmDeleteAccountButton);
-                    deleteAccountButtons.add(Box.createHorizontalStrut(10));
-                    deleteAccountButtons.add(cancelDeleteAccountButton);
+                deleteAccountButtons.remove(deleteAccountButton);
+                deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+                deleteAccountButtons.add(confirmDeleteAccountButton);
+                deleteAccountButtons.add(Box.createHorizontalStrut(10));
+                deleteAccountButtons.add(cancelDeleteAccountButton);
 
-                    deleteAccountButtons.revalidate();
-                    deleteAccountButtons.repaint();
+                deleteAccountButtons.revalidate();
+                deleteAccountButtons.repaint();
 
-                }
             }
-        );
+        });
 
-        confirmDeleteAccountButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(final ActionEvent evt) {
+        confirmDeleteAccountButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent evt) {
 
-                    deleteAccountController.execute();
+                deleteAccountController.execute();
 
-                }
             }
-        );
+        });
 
-        cancelDeleteAccountButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(final ActionEvent evt) {
+        cancelDeleteAccountButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent evt) {
 
-                    deleteAccountContent.removeAll();
-                    deleteAccountContent.revalidate();
-                    deleteAccountContent.repaint();
+                deleteAccountContent.removeAll();
+                deleteAccountContent.revalidate();
+                deleteAccountContent.repaint();
 
                     deleteAccountButtons.removeAll();
                     deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
                     deleteAccountButtons.add(deleteAccountButton);
 
-                    deleteAccountButtons.revalidate();
-                    deleteAccountButtons.repaint();
+                deleteAccountButtons.revalidate();
+                deleteAccountButtons.repaint();
 
-                }
             }
-        );
+        });
 
     }
 
@@ -521,10 +525,14 @@ public final class AccountView extends JPanel {
     private void render(final IsLoggedInState state) {
 
         accountLabel.setText(state.getUsername());
-        viewModel.getState().setUsername(state.getUsername());
+        viewModel
+            .getState()
+            .setUsername(state.getUsername());
         if (!state.getIsLoggedIn()) {
             resetAccountView();
-            viewModel.getState().logoutResetState();
+            viewModel
+                .getState()
+                .logoutResetState();
         }
 
     }

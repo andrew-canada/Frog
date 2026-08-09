@@ -1,10 +1,11 @@
 package database.status;
 
-import entity.MaintenanceIssue;
-import entity.StatusReport;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import entity.MaintenanceIssue;
+import entity.StatusReport;
 import use_case.port.StatusReportRepository;
 
 public final class InMemoryStatusReportDataAccessObject implements StatusReportRepository {
@@ -33,14 +34,15 @@ public final class InMemoryStatusReportDataAccessObject implements StatusReportR
     public List<StatusReport> getForWashroom(final String id, final LocalDateTime from, final LocalDateTime to) {
         return reports
             .stream()
-            .filter(r -> r
-                .washroomId()
-                .equals(id)
-                && !r
-                .timestamp()
-                .isBefore(from) && !r
-                .timestamp()
-                .isAfter(to))
+            .filter(r -> {
+                return r
+                    .washroomId()
+                    .equals(id) && !r
+                    .timestamp()
+                    .isBefore(from) && !r
+                    .timestamp()
+                    .isAfter(to);
+            })
             .toList();
     }
 }

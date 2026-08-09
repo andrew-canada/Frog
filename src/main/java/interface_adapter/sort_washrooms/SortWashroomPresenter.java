@@ -1,8 +1,9 @@
 package interface_adapter.sort_washrooms;
 
+import java.util.List;
+
 import interface_adapter.common.UiDispatcher;
 import interface_adapter.view_reviews.WashroomListViewModel;
-import java.util.List;
 import use_case.sort_washrooms.SortWashroomsOutputBoundary;
 import use_case.sort_washrooms.SortWashroomsOutputData;
 
@@ -11,8 +12,8 @@ public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
     private final SortWashroomViewModel sortModel;
     private final UiDispatcher ui;
 
-    public SortWashroomPresenter(final WashroomListViewModel listModel,
-                                 final SortWashroomViewModel sortModel, final UiDispatcher ui) {
+    public SortWashroomPresenter(final WashroomListViewModel listModel, final SortWashroomViewModel sortModel,
+                                 final UiDispatcher ui) {
         this.listModel = listModel;
         this.sortModel = sortModel;
         this.ui = ui;
@@ -42,31 +43,22 @@ public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
         final List<WashroomListViewModel.Item> items = outputData
             .washrooms()
             .stream()
-            .map(
-                washroom -> new WashroomListViewModel.Item(
-                    washroom.id(),
-                    washroom
-                        .building()
-                        .name(),
-                    listDescription(washroom.name()),
-                    washroom
-                        .reviewSummary()
-                        .averageRating(),
-                    (int) Math.round(distance(
-                        outputData.latitude(),
-                        outputData.longitude(),
-                        washroom
-                            .building()
-                            .latitude(),
-                        washroom
-                            .building()
-                            .longitude())),
-                    washroom.accessible()))
+            .map(washroom -> {
+                return new WashroomListViewModel.Item(washroom.id(), washroom
+                    .building()
+                    .name(), listDescription(washroom.name()), washroom
+                    .reviewSummary()
+                    .averageRating(), (int) Math.round(distance(outputData.latitude(), outputData.longitude(), washroom
+                    .building()
+                    .latitude(), washroom
+                    .building()
+                    .longitude())), washroom.accessible());
+            })
             .toList();
         final Runnable update = () -> {
             listModel.setState(new WashroomListViewModel.State(items, null, "Sort by: Nearest", false));
-            sortModel.setState(new
-                interface_adapter.sort_washrooms.SortWashroomViewModel.State(true, outputData.washrooms()));
+            sortModel.setState(
+                new interface_adapter.sort_washrooms.SortWashroomViewModel.State(true, outputData.washrooms()));
         };
         ui.dispatch(update);
 

@@ -13,22 +13,29 @@ import use_case.port.StatusReportRepository;
 final class BusynessStatsInteractorTest {
     static void run() {
         final StatusReportRepository reports = new StatusReportRepository() {
+            @Override
             public void save(final StatusReport r) {
             }
 
+            @Override
             public List<StatusReport> getRecentForWashroom(final String id, final LocalDateTime s) {
                 return List.of();
             }
 
+            @Override
             public List<StatusReport> getForWashroom(final String id, final LocalDateTime f, final LocalDateTime t) {
                 return List.of(
                     new StatusReport(id, "older", 1, 5, MaintenanceIssue.NONE, LocalDateTime.of(2026, 8, 4, 9, 0)),
                     new StatusReport(id, "newer", 5, 2, MaintenanceIssue.NONE, LocalDateTime.of(2026, 8, 5, 9, 0)));
             }
         };
-        final EnrollmentScheduleGateway enrollment = (code, day) -> List.of(new EnrollmentMeeting(9, 11, 300));
+        final EnrollmentScheduleGateway enrollment = (code, day) -> {
+            return List.of(new EnrollmentMeeting(9, 11, 300));
+        };
         final BusynessStatsOutputData[] out = new BusynessStatsOutputData[1];
-        new BusynessStatsInteractor(reports, enrollment, d -> out[0] = d).execute(
+        new BusynessStatsInteractor(reports, enrollment, d -> {
+            out[0] = d;
+        }).execute(
             new BusynessStatsInputData("w1", "BA", DayOfWeek.THURSDAY));
         TestSupport.check(out[0]
             .buckets()

@@ -1,8 +1,8 @@
 package use_case.moderate_reviews;
 
-import entity.Review;
-
 import java.util.Optional;
+
+import entity.Review;
 
 /**
  * Review lookups and mutations needed by moderation (looking a review up by id

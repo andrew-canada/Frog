@@ -16,22 +16,28 @@ final class ReportReviewInteractorTest {
     private static void reportValidatesAndSaves() {
         final List<Report> saved = new ArrayList<>();
         final ReviewReportDataAccessInterface store = new ReviewReportDataAccessInterface() {
+            @Override
             public void save(final Report report) {
                 saved.add(report);
             }
 
+            @Override
             public boolean hasReported(final String reviewId, final String user) {
                 return saved
                     .stream()
-                    .anyMatch(r -> r
-                        .reviewId()
-                        .equals(reviewId) && r
-                        .reporterUsername()
-                        .equals(user));
+                    .anyMatch(r -> {
+                        return r
+                            .reviewId()
+                            .equals(reviewId) && r
+                            .reporterUsername()
+                            .equals(user);
+                    });
             }
         };
         final ReportReviewOutputData[] out = new ReportReviewOutputData[1];
-        final ReportReviewInputBoundary reporter = new ReportReviewInteractor(store, d -> out[0] = d);
+        final ReportReviewInputBoundary reporter = new ReportReviewInteractor(store, d -> {
+            out[0] = d;
+        });
 
         reporter.report(new ReportReviewInputData("r1", "user2", List.of(), ""));
         TestSupport.check(!out[0].success(), "report with no reason rejected");

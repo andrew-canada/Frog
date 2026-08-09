@@ -1,9 +1,9 @@
 package use_case.port;
 
+import java.util.List;
+
 import entity.Review;
 import entity.ReviewSummary;
-
-import java.util.List;
 
 public interface ReviewRepository {
     List<Review> getReviewsForWashroom(String washroomId);

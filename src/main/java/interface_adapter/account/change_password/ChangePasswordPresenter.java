@@ -13,6 +13,7 @@ public final class ChangePasswordPresenter implements ChangePasswordOutputBounda
         this.viewModel = viewModel;
     }
 
+    @Override
     public void present(final ChangePasswordOutputData outputData) {
 
         final AccountState state = viewModel.getState();

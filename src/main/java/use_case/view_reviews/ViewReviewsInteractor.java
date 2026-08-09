@@ -1,13 +1,14 @@
 package use_case.view_reviews;
 
-import entity.Review;
-import entity.ReviewSummary;
-import entity.Washroom;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+
+import entity.Review;
+import entity.ReviewSummary;
+import entity.Washroom;
 import use_case.port.ReviewRepository;
 import use_case.port.WashroomRepository;
 import use_case.report_review.ReviewReportDataAccessInterface;
@@ -22,7 +23,8 @@ public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
     private final ViewReviewsOutputBoundary presenter;
 
     public ViewReviewsInteractor(final ReviewRepository reviews, final WashroomRepository washrooms,
-                                 final HelpfulVoteDataAccessInterface votes, final ReviewReportDataAccessInterface reports,
+                                 final HelpfulVoteDataAccessInterface votes,
+                                 final ReviewReportDataAccessInterface reports,
                                  final ViewReviewsOutputBoundary presenter) {
         this.reviews = reviews;
         this.washrooms = washrooms;
@@ -71,14 +73,14 @@ public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
             .sorted(Comparator
                 .comparingDouble(ViewReviewsInteractor::score)
                 .reversed())
-            .map(r -> new ViewReviewsOutputData.ReviewDisplay(r.id(), r.rating(), r.comment(), r.helpfulCount(),
-                r.createdAt(), r.authorUsername(), votedReviewIds.contains(r.id()),
-                reportedReviewIds.contains(r.id())))
+            .map(r -> {
+                return new ViewReviewsOutputData.ReviewDisplay(r.id(), r.rating(), r.comment(), r.helpfulCount(), r.createdAt(), r.authorUsername(), votedReviewIds.contains(r.id()),
+                    reportedReviewIds.contains(r.id()));
+            })
             .toList();
         presenter.present(new ViewReviewsOutputData(washroom.id(), washroom
             .building()
-            .name(), displayDescription(washroom),
-            summary.averageRating(), summary.averageCleanliness(), summary.reviewCount(),
-            washroom.numToilets(), washroom.numSinks(), display));
+            .name(), displayDescription(washroom), summary.averageRating(), summary.averageCleanliness(),
+            summary.reviewCount(), washroom.numToilets(), washroom.numSinks(), display));
     }
 }

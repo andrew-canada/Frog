@@ -1,7 +1,8 @@
 package interface_adapter.moderate_reviews;
 
-import interface_adapter.common.ViewModel;
 import java.util.List;
+
+import interface_adapter.common.ViewModel;
 import use_case.moderate_reviews.ReportedReview;
 
 /**

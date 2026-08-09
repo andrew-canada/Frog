@@ -1,9 +1,5 @@
 package database.route;
 
-import org.bson.Document;
-
-import entity.GeoPoint;
-import entity.Route;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -15,6 +11,11 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import org.bson.Document;
+
+import entity.GeoPoint;
+import entity.Route;
 import use_case.port.RouteGateway;
 
 /**
@@ -49,7 +50,8 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
         final Document root;
         try {
             root = Document.parse(json);
-        } catch (final RuntimeException malformed) {
+        }
+        catch (final RuntimeException malformed) {
             throw new IllegalStateException("GraphHopper returned invalid JSON.", malformed);
         }
         final List<Document> paths = root.getList("paths", Document.class);
@@ -58,18 +60,22 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
         }
         final Document path = paths.getFirst();
         final Document geometry = path.get("points", Document.class);
-        if (geometry == null) throw new IllegalStateException("GraphHopper response did not contain route geometry.");
+        if (geometry == null) {
+            throw new IllegalStateException("GraphHopper response did not contain route geometry.");
+        }
         final List<?> coordinates = geometry.getList("coordinates", List.class);
         final List<GeoPoint> points = new ArrayList<>();
         if (coordinates != null) {
             for (final Object coordinate : coordinates) {
-                if (coordinate instanceof final List<?> pair && pair.size() >= 2
-                        && pair.get(0) instanceof final Number longitude && pair.get(1) instanceof final Number latitude) {
+                if (coordinate instanceof final List<?> pair && pair.size() >= 2 && pair.get(
+                    0) instanceof final Number longitude && pair.get(1) instanceof final Number latitude) {
                     points.add(new GeoPoint(latitude.doubleValue(), longitude.doubleValue()));
                 }
             }
         }
-        if (points.size() < 2) throw new IllegalStateException("GraphHopper returned incomplete route geometry.");
+        if (points.size() < 2) {
+            throw new IllegalStateException("GraphHopper returned incomplete route geometry.");
+        }
         final Number distance = path.get("distance", Number.class);
         final Number time = path.get("time", Number.class);
         return new Route(points, distance == null ? 0 : (int) Math.round(distance.doubleValue()),
@@ -98,12 +104,14 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
                 throw new IllegalStateException("GraphHopper returned HTTP " + response.statusCode() + ".");
             }
             return parseRoute(response.body());
-        } catch (final InterruptedException interrupted) {
+        }
+        catch (final InterruptedException interrupted) {
             Thread
                 .currentThread()
                 .interrupt();
             throw new IllegalStateException("GraphHopper request was interrupted.", interrupted);
-        } catch (final IOException failure) {
+        }
+        catch (final IOException failure) {
             throw new IllegalStateException("Could not reach the GraphHopper routing service.", failure);
         }
     }

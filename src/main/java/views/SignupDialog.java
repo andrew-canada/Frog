@@ -1,5 +1,8 @@
 package views;
 
+import java.awt.GridLayout;
+import java.awt.Window;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -8,8 +11,6 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import interface_adapter.login.SignupController;
-import java.awt.GridLayout;
-import java.awt.Window;
 
 
 public final class SignupDialog extends JDialog {
@@ -26,7 +27,9 @@ public final class SignupDialog extends JDialog {
         p.add(password);
         final JButton cancel = Theme.button("Cancel");
         final JButton create = Theme.primary("Create account");
-        cancel.addActionListener(e -> dispose());
+        cancel.addActionListener(e -> {
+            dispose();
+        });
         create.addActionListener(e -> {
             controller.execute(name.getText(), new String(password.getPassword()));
             dispose();

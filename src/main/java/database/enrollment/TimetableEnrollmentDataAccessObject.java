@@ -1,8 +1,9 @@
 package database.enrollment;
 
-import entity.EnrollmentMeeting;
 import java.time.DayOfWeek;
 import java.util.List;
+
+import entity.EnrollmentMeeting;
 import use_case.port.EnrollmentScheduleGateway;
 
 /**

@@ -19,29 +19,36 @@ final class LoginInteractorTest {
             User current;
             final User saved = new User("demo", BCrypt.hashpw("secret", BCrypt.gensalt()), "");
 
+            @Override
             public Optional<User> get(final String n) {
                 return Optional.of(saved);
             }
 
+            @Override
             public boolean existsByName(final String n) {
                 return true;
             }
 
+            @Override
             public void save(final User u) {
             }
 
+            @Override
             public Optional<User> currentUser() {
                 return Optional.ofNullable(current);
             }
 
+            @Override
             public void setCurrentUser(final User u) {
                 current = u;
             }
 
+            @Override
             public void clear() {
                 current = null;
             }
 
+            @Override
             public void removeUser(final String n) {
             }
 
@@ -49,44 +56,55 @@ final class LoginInteractorTest {
         }
         final Fake fake = new Fake();
         final LoginOutputData[] out = new LoginOutputData[1];
-        new LoginInteractor(fake, fake, new BCryptPasswordHasher(), d -> out[0] = d).execute(
+        new LoginInteractor(fake, fake, new BCryptPasswordHasher(), d -> {
+            out[0] = d;
+        }).execute(
             new LoginInputData("demo", "secret"));
         TestSupport.check(out[0].success() && fake.current != null, "valid login should set current user");
         class LegacyFake implements UserRepository, CurrentUserSession {
             User current;
             User saved = new User("legacy", "secret", "");
 
+            @Override
             public Optional<User> get(final String n) {
                 return Optional.of(saved);
             }
 
+            @Override
             public boolean existsByName(final String n) {
                 return true;
             }
 
+            @Override
             public void save(final User u) {
                 saved = u;
             }
 
+            @Override
             public Optional<User> currentUser() {
                 return Optional.ofNullable(current);
             }
 
+            @Override
             public void setCurrentUser(final User u) {
                 current = u;
             }
 
+            @Override
             public void clear() {
                 current = null;
             }
 
+            @Override
             public void removeUser(final String n) {
             }
 
 
         }
         final LegacyFake legacy = new LegacyFake();
-        new LoginInteractor(legacy, legacy, new BCryptPasswordHasher(), d -> out[0] = d).execute(
+        new LoginInteractor(legacy, legacy, new BCryptPasswordHasher(), d -> {
+            out[0] = d;
+        }).execute(
             new LoginInputData("legacy", "secret"));
         TestSupport.check(out[0].success() && BCrypt.checkpw("secret", legacy.saved.passwordHash()),
             "a correct legacy password should be upgraded to BCrypt");

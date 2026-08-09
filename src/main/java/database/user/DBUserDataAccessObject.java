@@ -1,5 +1,14 @@
 package database.user;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -13,14 +22,6 @@ import database.DBDataAccessObject;
 import database.MongoDocuments;
 import database.Operator;
 import entity.User;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import use_case.moderate_reviews.ModeratorDataAccessInterface;
 import use_case.port.CurrentUserSession;
 import use_case.port.UserRepository;
@@ -28,8 +29,7 @@ import use_case.port.UserRepository;
 public class DBUserDataAccessObject extends DBDataAccessObject
     implements UserRepository, CurrentUserSession, ModeratorDataAccessInterface {
 
-    static final List<String> allowedAttributes = List.of(new String[] {
-        "username", "passwordHash", "personalPlan"});
+    static final List<String> allowedAttributes = List.of(new String[] {"username", "passwordHash", "personalPlan"});
     private final MongoCollection<Document> collection;
     private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
     private entity.User currentApplicationUser;
@@ -53,7 +53,9 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      */
     private static Bson parseConditions(final Iterable<AbstractCondition<?>> conditions) {
         final List<Bson> filters = new ArrayList<>();
-        conditions.forEach((condition) -> filters.add(condition.getFilter()));
+        conditions.forEach((condition) -> {
+            filters.add(condition.getFilter());
+        });
         return filters.isEmpty() ? new Document() : Filters.and(filters);
     }
 
@@ -77,8 +79,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      * @return the user object constructed using that data
      */
     private static User createUser(final Document doc) {
-        return new User(value(doc, "unknown", "username", "name"),
-            value(doc, "", "passwordHash", "password"),
+        return new User(value(doc, "unknown", "username", "name"), value(doc, "", "passwordHash", "password"),
             value(doc, "", "personalPlan"), doc.getBoolean("isModerator", false));
     }
 
@@ -109,7 +110,9 @@ public class DBUserDataAccessObject extends DBDataAccessObject
     private static String value(final Document document, final String fallback, final String... fields) {
         for (final String field : fields) {
             final String value = document.getString(field);
-            if (value != null && !value.isBlank()) return value;
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
         }
         return fallback;
     }
@@ -158,7 +161,9 @@ public class DBUserDataAccessObject extends DBDataAccessObject
             .append("passwordHash", user.passwordHash())
             .append("personalPlan", user.personalPlan())
             .append("isModerator", user.isModerator());
-        if (washroomID != null && !washroomID.isBlank()) doc.append("washroomID", washroomID);
+        if (washroomID != null && !washroomID.isBlank()) {
+            doc.append("washroomID", washroomID);
+        }
         collection.replaceOne(Filters.or(Filters.eq("username", user.username()), Filters.eq("name", user.username())),
             doc, new ReplaceOptions().upsert(true));
         final Document persisted = collection
@@ -186,9 +191,9 @@ public class DBUserDataAccessObject extends DBDataAccessObject
             matches = getMatching(List.of(new Condition<>("username", Operator.EQ, username)));
         }
         if (matches.isEmpty() || matches
-                .getFirst()
-                .passwordHash()
-                .isBlank()) {
+            .getFirst()
+            .passwordHash()
+            .isBlank()) {
             return Optional.empty();
         }
         return Optional.of(matches.getFirst());
@@ -217,8 +222,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      * @param username the account to promote to moderator
      */
     public void ensureModerator(final String username) {
-        collection.updateOne(Filters.eq("username", username),
-            new Document("$set", new Document("isModerator", true)));
+        collection.updateOne(Filters.eq("username", username), new Document("$set", new Document("isModerator", true)));
     }
 
     @Override

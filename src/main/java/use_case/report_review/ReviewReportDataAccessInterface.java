@@ -1,10 +1,10 @@
 package use_case.report_review;
 
-import entity.Report;
-
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import entity.Report;
 
 /**
  * Stores reports filed against reviews and answers whether a user has already
@@ -28,7 +28,9 @@ public interface ReviewReportDataAccessInterface {
     default Set<String> reportedReviewIds(final Collection<String> reviewIds, final String username) {
         return reviewIds
             .stream()
-            .filter(reviewId -> hasReported(reviewId, username))
+            .filter(reviewId -> {
+                return hasReported(reviewId, username);
+            })
             .collect(Collectors.toUnmodifiableSet());
     }
 

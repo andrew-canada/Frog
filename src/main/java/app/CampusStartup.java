@@ -1,5 +1,12 @@
 package app;
 
+import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
@@ -8,12 +15,6 @@ import database.review.DBReviewDataAccessObject;
 import database.status.DBStatusReportDataAccessObject;
 import database.washroom.DBWashroomDataAccessObject;
 import entity.Washroom;
-import java.io.InputStream;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import views.MainView;
 
 /**
@@ -25,14 +26,19 @@ final class CampusStartup {
 
     static Set<String> loadWashroomNames() {
         final InputStream input = CampusStartup.class.getResourceAsStream("/data/washrooms.json");
-        if (input == null) throw new IllegalStateException("Missing data/washrooms.json resource.");
+        if (input == null) {
+            throw new IllegalStateException("Missing data/washrooms.json resource.");
+        }
         try (input; final JsonReader reader = Json.createReader(input)) {
             return Set.copyOf(reader
                 .readArray()
                 .stream()
-                .map(value -> ((JsonObject) value).getString("name"))
+                .map(value -> {
+                    return ((JsonObject) value).getString("name");
+                })
                 .toList());
-        } catch (final Exception failure) {
+        }
+        catch (final Exception failure) {
             throw new IllegalStateException("Could not load data/washrooms.json.", failure);
         }
     }
@@ -50,17 +56,22 @@ final class CampusStartup {
     static List<MainView.HeatmapData> heatmapData(final List<Washroom> washrooms,
                                                   final DBStatusReportDataAccessObject reports) {
         final LocalDateTime now = LocalDateTime.now();
-        final Map<String, entity.StatusReport> currentHour = reports.getCurrentHourForWashrooms(
-            washrooms
-                .stream()
-                .map(Washroom::id)
-                .toList(), now.getHour());
+        final Map<String, entity.StatusReport> currentHour = reports.getCurrentHourForWashrooms(washrooms
+            .stream()
+            .map(Washroom::id)
+            .toList(), now.getHour());
         return washrooms
             .stream()
-            .map(washroom -> Optional
-                .ofNullable(currentHour.get(washroom.id()))
-                .map(report -> new MainView.HeatmapData(washroom.id(), report.busyness(), report.cleanliness()))
-                .orElseGet(() -> new MainView.HeatmapData(washroom.id(), Double.NaN, Double.NaN)))
+            .map(washroom -> {
+                return Optional
+                    .ofNullable(currentHour.get(washroom.id()))
+                    .map(report -> {
+                        return new MainView.HeatmapData(washroom.id(), report.busyness(), report.cleanliness());
+                    })
+                    .orElseGet(() -> {
+                        return new MainView.HeatmapData(washroom.id(), Double.NaN, Double.NaN);
+                    });
+            })
             .toList();
     }
 }

@@ -16,14 +16,17 @@ final class SubmitStatusReportInteractorTest {
         class Fake implements StatusReportRepository {
             final List<StatusReport> saved = new ArrayList<>();
 
+            @Override
             public void save(final StatusReport r) {
                 saved.add(r);
             }
 
+            @Override
             public List<StatusReport> getRecentForWashroom(final String id, final LocalDateTime s) {
                 return saved;
             }
 
+            @Override
             public List<StatusReport> getForWashroom(final String id, final LocalDateTime f, final LocalDateTime t) {
                 return saved;
             }
@@ -31,7 +34,9 @@ final class SubmitStatusReportInteractorTest {
         final Fake fake = new Fake();
         final SubmitStatusReportOutputData[] out = new SubmitStatusReportOutputData[1];
         final Clock clock = Clock.fixed(Instant.parse("2026-07-23T12:00:00Z"), ZoneOffset.UTC);
-        new SubmitStatusReportInteractor(fake, d -> out[0] = d, clock).execute(
+        new SubmitStatusReportInteractor(fake, d -> {
+            out[0] = d;
+        }, clock).execute(
             new SubmitStatusReportInputData("w1", 4, 5, MaintenanceIssue.NONE, null));
         TestSupport.check(out[0].success() && fake.saved.size() == 1, "valid report should save");
         TestSupport.check(out[0].currentBusyness() == 4, "updated busyness");

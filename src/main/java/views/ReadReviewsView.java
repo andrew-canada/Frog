@@ -1,5 +1,13 @@
 package views;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.function.Consumer;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -12,13 +20,6 @@ import javax.swing.JTextArea;
 
 import interface_adapter.sort_reviews.SortReviewsController;
 import interface_adapter.view_reviews.ReviewsViewModel;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.function.Consumer;
 import use_case.view_reviews.ViewReviewsOutputData;
 
 
@@ -51,7 +52,9 @@ public final class ReadReviewsView extends JPanel {
         scroll
             .getVerticalScrollBar()
             .setValue(0);
-        reviewsViewModel.addPropertyChangeListener(e -> render(reviewsViewModel.getState()));
+        reviewsViewModel.addPropertyChangeListener(e -> {
+            render(reviewsViewModel.getState());
+        });
     }
 
     private JComponent header(final ReviewsViewModel s) {
@@ -71,17 +74,19 @@ public final class ReadReviewsView extends JPanel {
         final JButton write = Theme.primary("+ Write a review");
         final JButton back = Theme.button("← Back to map");
         final ReviewSortDropdownControl reviewSortDropdownControl = new ReviewSortDropdownControl();
-        write.addActionListener(e -> onWrite.run());
-        back.addActionListener(e -> onBack.run());
-        reviewSortDropdownControl.addActionListener(e ->
-            sortReviewsController.execute(
-                reviewSortDropdownControl
-                    .getSelectedItem()
-                    .toString(),
-                s
-                    .getState()
-                    .washroomId()
-            ));
+        write.addActionListener(e -> {
+            onWrite.run();
+        });
+        back.addActionListener(e -> {
+            onBack.run();
+        });
+        reviewSortDropdownControl.addActionListener(e -> {
+            sortReviewsController.execute(reviewSortDropdownControl
+                .getSelectedItem()
+                .toString(), s
+                .getState()
+                .washroomId());
+        });
         text.add(reviewSortDropdownControl);
         outer.add(text);
         buttons.add(write);
@@ -136,7 +141,9 @@ public final class ReadReviewsView extends JPanel {
                 helpful.setBackground(HELPFUL_GREEN);
                 helpful.setForeground(Color.WHITE);
             }
-            helpful.addActionListener(e -> onHelpful.accept(r.reviewId()));
+            helpful.addActionListener(e -> {
+                onHelpful.accept(r.reviewId());
+            });
             meta.add(helpful);
             meta.add(Box.createVerticalStrut(6));
             final JButton report = Theme.button(r.reportedByCurrentUser() ? "Reported" : "Report");
@@ -147,11 +154,15 @@ public final class ReadReviewsView extends JPanel {
                 report.setOpaque(true);
                 report.setBackground(Theme.BERRY);
                 report.setForeground(Color.WHITE);
-                report.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(Theme.BERRY.darker()), Theme.pad(8, 14, 8, 14)));
+                report.setBorder(
+                    BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.BERRY.darker()),
+                        Theme.pad(8, 14, 8, 14)));
                 report.setFocusable(false);
-            } else {
-                report.addActionListener(e -> onReport.accept(r.reviewId()));
+            }
+            else {
+                report.addActionListener(e -> {
+                    onReport.accept(r.reviewId());
+                });
             }
             meta.add(report);
             card.add(meta, BorderLayout.EAST);

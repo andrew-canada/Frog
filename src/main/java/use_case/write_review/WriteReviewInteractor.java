@@ -1,9 +1,10 @@
 package use_case.write_review;
 
-import entity.Review;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.UUID;
+
+import entity.Review;
 import use_case.port.ReviewRepository;
 
 /**
@@ -18,7 +19,8 @@ public final class WriteReviewInteractor implements WriteReviewInputBoundary {
         this(reviews, presenter, Clock.systemDefaultZone());
     }
 
-    public WriteReviewInteractor(final ReviewRepository reviews, final WriteReviewOutputBoundary presenter, final Clock clock) {
+    public WriteReviewInteractor(final ReviewRepository reviews, final WriteReviewOutputBoundary presenter,
+                                 final Clock clock) {
         this.reviews = reviews;
         this.presenter = presenter;
         this.clock = clock;
@@ -37,8 +39,8 @@ public final class WriteReviewInteractor implements WriteReviewInputBoundary {
             return;
         }
         final String comment = input.comment() == null ? "" : input
-                                                        .comment()
-                                                        .trim();
+                                                              .comment()
+                                                              .trim();
         if (comment.isBlank()) {
             presenter.present(new WriteReviewOutputData(false, "Write a short review before submitting."));
             return;
@@ -48,8 +50,8 @@ public final class WriteReviewInteractor implements WriteReviewInputBoundary {
             .isBlank() ? "Anonymous" : input.username();
         reviews.save(new Review(UUID
             .randomUUID()
-            .toString(), input.washroomId(), username, input.rating(),
-            input.cleanliness(), comment, 0, LocalDate.now(clock)));
+            .toString(), input.washroomId(), username, input.rating(), input.cleanliness(), comment, 0,
+            LocalDate.now(clock)));
         presenter.present(new WriteReviewOutputData(true, "Thanks — your review was posted."));
     }
 }

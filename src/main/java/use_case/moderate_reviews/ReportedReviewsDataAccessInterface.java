@@ -1,8 +1,8 @@
 package use_case.moderate_reviews;
 
-import entity.Report;
-
 import java.util.List;
+
+import entity.Report;
 
 /**
  * Read and clear access to filed reports, as needed by moderation to build the

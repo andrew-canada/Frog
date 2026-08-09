@@ -1,8 +1,8 @@
 package use_case.port;
 
-import entity.User;
-
 import java.util.Optional;
+
+import entity.User;
 
 public interface UserRepository {
     Optional<User> get(String username);

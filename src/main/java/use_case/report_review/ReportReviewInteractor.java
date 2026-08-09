@@ -1,10 +1,10 @@
 package use_case.report_review;
 
-import entity.Report;
-
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import entity.Report;
 
 /**
  * The interactor for the Report Review use case: validates that a reason was
@@ -41,8 +41,7 @@ public final class ReportReviewInteractor implements ReportReviewInputBoundary {
         }
         reports.save(new Report(UUID
             .randomUUID()
-            .toString(), input.reviewId(),
-            input.reporterUsername(), input.reasons(), input.details(),
+            .toString(), input.reviewId(), input.reporterUsername(), input.reasons(), input.details(),
             LocalDateTime.now(clock)));
         presenter.present(new ReportReviewOutputData(true, THANK_YOU));
     }

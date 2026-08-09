@@ -22,17 +22,23 @@ public class Condition<T extends Comparable<? super T>> extends AbstractConditio
     public Condition(final String fieldName, final Operator operator, final T value) {
         if (operator == Operator.EQ) {
             filter = Filters.eq(fieldName, value);
-        } else if (operator == Operator.NE) {
+        }
+        else if (operator == Operator.NE) {
             filter = Filters.ne(fieldName, value);
-        } else if (operator == Operator.LT) {
+        }
+        else if (operator == Operator.LT) {
             filter = Filters.lt(fieldName, value);
-        } else if (operator == Operator.GT) {
+        }
+        else if (operator == Operator.GT) {
             filter = Filters.gt(fieldName, value);
-        } else if (operator == Operator.LTE) {
+        }
+        else if (operator == Operator.LTE) {
             filter = Filters.lte(fieldName, value);
-        } else if (operator == Operator.GTE) {
+        }
+        else if (operator == Operator.GTE) {
             filter = Filters.gte(fieldName, value);
-        } else {
+        }
+        else {
             throw new IllegalArgumentException();
         }
 
@@ -41,18 +47,22 @@ public class Condition<T extends Comparable<? super T>> extends AbstractConditio
         this.value = value;
     }
 
+    @Override
     public Bson getFilter() {
         return filter;
     }
 
+    @Override
     public String getFieldName() {
         return fieldName;
     }
 
+    @Override
     public Operator getOperator() {
         return operator;
     }
 
+    @Override
     public T getValue() {
         return value;
     }

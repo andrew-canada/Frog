@@ -14,7 +14,6 @@ public final class ReviewScorer {
     }
 
     public static double score(final int helpfulVotes, final long ageInDays) {
-        return Math.log(1 + helpfulVotes)
-            + RECENCY_WEIGHT * Math.exp(-ageInDays / RECENCY_HALF_LIFE_DAYS);
+        return Math.log(1 + helpfulVotes) + RECENCY_WEIGHT * Math.exp(-ageInDays / RECENCY_HALF_LIFE_DAYS);
     }
 }

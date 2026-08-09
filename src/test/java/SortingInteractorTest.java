@@ -60,7 +60,9 @@ final class SortingInteractorTest {
         }
         final BulkWashrooms washrooms = new BulkWashrooms();
         final SortWashroomsOutputData[] result = new SortWashroomsOutputData[1];
-        final SortWashroomsOutputBoundary output = data -> result[0] = data;
+        final SortWashroomsOutputBoundary output = data -> {
+            result[0] = data;
+        };
 
         new SortWashroomInteractor(washrooms, output).execute(new SortWashroomInputData(
             WashroomSortOrder.HIGHEST_RATED, List.of("one", "two"), 0, 0));
@@ -79,7 +81,9 @@ final class SortingInteractorTest {
         final WashroomRepository washrooms = new SingleWashroomRepository(List.of(displayedAsZulu, displayedAsAlpha));
         final SortWashroomsOutputData[] result = new SortWashroomsOutputData[1];
 
-        new SortWashroomInteractor(washrooms, data -> result[0] = data).execute(new SortWashroomInputData(
+        new SortWashroomInteractor(washrooms, data -> {
+            result[0] = data;
+        }).execute(new SortWashroomInputData(
             WashroomSortOrder.ALPHABETICAL, List.of("zulu", "alpha"), 0, 0));
 
         TestSupport.check(result[0]
@@ -221,9 +225,11 @@ final class SortingInteractorTest {
         public Optional<Washroom> getById(final String id) {
             return washrooms
                 .stream()
-                .filter(washroom -> washroom
-                    .id()
-                    .equals(id))
+                .filter(washroom -> {
+                    return washroom
+                        .id()
+                        .equals(id);
+                })
                 .findFirst();
         }
 

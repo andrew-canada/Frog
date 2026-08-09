@@ -10,7 +10,8 @@ public final class WriteReviewController {
         this.interactor = interactor;
     }
 
-    public void execute(final String washroomId, final String username, final int rating, final int cleanliness, final String comment) {
+    public void execute(final String washroomId, final String username, final int rating, final int cleanliness,
+                        final String comment) {
         interactor.execute(new WriteReviewInputData(washroomId, username, rating, cleanliness, comment));
     }
 }

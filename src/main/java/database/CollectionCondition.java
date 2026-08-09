@@ -1,9 +1,10 @@
 package database;
 
+import java.util.Collection;
+
 import org.bson.conversions.Bson;
 
 import com.mongodb.client.model.Filters;
-import java.util.Collection;
 
 public class CollectionCondition<T extends Collection<?>> extends AbstractCondition<T> {
 
@@ -16,9 +17,11 @@ public class CollectionCondition<T extends Collection<?>> extends AbstractCondit
     public CollectionCondition(final String fieldName, final Operator operator, final T value) {
         if (operator == Operator.IN) {
             filter = Filters.in(fieldName, (Iterable<?>) value);
-        } else if (operator == Operator.NIN) {
+        }
+        else if (operator == Operator.NIN) {
             filter = Filters.nin(fieldName, (Iterable<?>) value);
-        } else {
+        }
+        else {
             throw new IllegalArgumentException();
         }
 
@@ -27,18 +30,22 @@ public class CollectionCondition<T extends Collection<?>> extends AbstractCondit
         this.value = value;
     }
 
+    @Override
     public Bson getFilter() {
         return filter;
     }
 
+    @Override
     public String getFieldName() {
         return fieldName;
     }
 
+    @Override
     public Operator getOperator() {
         return operator;
     }
 
+    @Override
     public T getValue() {
         return value;
     }

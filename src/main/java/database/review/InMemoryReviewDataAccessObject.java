@@ -1,8 +1,5 @@
 package database.review;
 
-import entity.Report;
-import entity.Review;
-import entity.ReviewSummary;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,15 +9,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import entity.Report;
+import entity.Review;
+import entity.ReviewSummary;
 import use_case.moderate_reviews.ReportedReviewsDataAccessInterface;
 import use_case.moderate_reviews.ReviewAdminDataAccessInterface;
 import use_case.port.ReviewRepository;
 import use_case.report_review.ReviewReportDataAccessInterface;
 import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
 
-public final class InMemoryReviewDataAccessObject implements ReviewRepository,
-    HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface, ReviewAdminDataAccessInterface,
-    ReportedReviewsDataAccessInterface {
+public final class InMemoryReviewDataAccessObject
+    implements ReviewRepository, HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface,
+    ReviewAdminDataAccessInterface, ReportedReviewsDataAccessInterface {
     private final List<Review> reviews = new ArrayList<>();
     private final Map<String, Set<String>> votesByReview = new HashMap<>();
     private final List<Report> reports = new ArrayList<>();
@@ -30,10 +31,12 @@ public final class InMemoryReviewDataAccessObject implements ReviewRepository,
             "Spotless and rarely busy. Good lighting and a spacious accessible stall.", 14, LocalDate.of(2026, 3, 12)));
         reviews.add(new Review("r2", "bahen-2", "andrew_p", 4, 4,
             "Clean most days but can get crowded between classes. Soap was full.", 6, LocalDate.of(2026, 2, 28)));
-        reviews.add(new Review("r3", "robarts-4", "eleanor_l", 4, 4,
-            "Reliable and easy to find, though busy after lunch.", 8, LocalDate.of(2026, 4, 3)));
-        reviews.add(new Review("r4", "gerstein-main", "ian_c", 3.5, 3,
-            "Quiet in the morning. One sink was out of service.", 4, LocalDate.of(2026, 4, 16)));
+        reviews.add(
+            new Review("r3", "robarts-4", "eleanor_l", 4, 4, "Reliable and easy to find, though busy after lunch.", 8,
+                LocalDate.of(2026, 4, 3)));
+        reviews.add(
+            new Review("r4", "gerstein-main", "ian_c", 3.5, 3, "Quiet in the morning. One sink was out of service.", 4,
+                LocalDate.of(2026, 4, 16)));
     }
 
     public InMemoryReviewDataAccessObject(final List<Review> seed) {
@@ -45,33 +48,38 @@ public final class InMemoryReviewDataAccessObject implements ReviewRepository,
     public List<Review> getReviewsForWashroom(final String id) {
         return reviews
             .stream()
-            .filter(r -> r
-                .washroomId()
-                .equals(id))
+            .filter(r -> {
+                return r
+                    .washroomId()
+                    .equals(id);
+            })
             .toList();
     }
 
     @Override
     public ReviewSummary getSummary(final String id) {
         final List<Review> found = getReviewsForWashroom(id);
-        if (found.isEmpty()) return ReviewSummary.empty();
+        if (found.isEmpty()) {
+            return ReviewSummary.empty();
+        }
         return new ReviewSummary(found
             .stream()
             .mapToDouble(Review::rating)
             .average()
-            .orElse(0),
-            found
-                .stream()
-                .mapToDouble(Review::cleanliness)
-                .average()
-                .orElse(0), found.size());
+            .orElse(0), found
+            .stream()
+            .mapToDouble(Review::cleanliness)
+            .average()
+            .orElse(0), found.size());
     }
 
     @Override
     public List<Review> getReviewsByUser(final String username) {
         return reviews
             .stream()
-            .filter(r -> username.equals(r.authorUsername()))
+            .filter(r -> {
+                return username.equals(r.authorUsername());
+            })
             .toList();
     }
 
@@ -92,14 +100,18 @@ public final class InMemoryReviewDataAccessObject implements ReviewRepository,
     public Set<String> votedReviewIds(final Collection<String> reviewIds, final String username) {
         return reviewIds
             .stream()
-            .filter(reviewId -> hasVoted(reviewId, username))
+            .filter(reviewId -> {
+                return hasVoted(reviewId, username);
+            })
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 
     @Override
     public void addVote(final String reviewId, final String username) {
         if (votesByReview
-            .computeIfAbsent(reviewId, key -> new HashSet<>())
+            .computeIfAbsent(reviewId, key -> {
+                return new HashSet<>();
+            })
             .add(username)) {
             adjustHelpful(reviewId, +1);
         }
@@ -121,8 +133,9 @@ public final class InMemoryReviewDataAccessObject implements ReviewRepository,
                 .id()
                 .equals(reviewId)) {
                 final int count = Math.max(0, r.helpfulCount() + delta);
-                reviews.set(i, new Review(r.id(), r.washroomId(), r.authorUsername(), r.rating(),
-                    r.cleanliness(), r.comment(), count, r.createdAt()));
+                reviews.set(i,
+                    new Review(r.id(), r.washroomId(), r.authorUsername(), r.rating(), r.cleanliness(), r.comment(),
+                        count, r.createdAt()));
                 return;
             }
         }
@@ -138,17 +151,23 @@ public final class InMemoryReviewDataAccessObject implements ReviewRepository,
     public boolean hasReported(final String reviewId, final String username) {
         return reports
             .stream()
-            .anyMatch(report -> report
-                .reviewId()
-                .equals(reviewId) && username.equals(report.reporterUsername()));
+            .anyMatch(report -> {
+                return report
+                    .reviewId()
+                    .equals(reviewId) && username.equals(report.reporterUsername());
+            });
     }
 
     @Override
     public Set<String> reportedReviewIds(final Collection<String> reviewIds, final String username) {
         return reports
             .stream()
-            .filter(report -> reviewIds.contains(report.reviewId()))
-            .filter(report -> username.equals(report.reporterUsername()))
+            .filter(report -> {
+                return reviewIds.contains(report.reviewId());
+            })
+            .filter(report -> {
+                return username.equals(report.reporterUsername());
+            })
             .map(Report::reviewId)
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
@@ -160,9 +179,11 @@ public final class InMemoryReviewDataAccessObject implements ReviewRepository,
 
     @Override
     public void deleteReportsForReview(final String reviewId) {
-        reports.removeIf(report -> report
-            .reviewId()
-            .equals(reviewId));
+        reports.removeIf(report -> {
+            return report
+                .reviewId()
+                .equals(reviewId);
+        });
     }
 
     // --- Review admin ----------------------------------------------------------
@@ -170,17 +191,21 @@ public final class InMemoryReviewDataAccessObject implements ReviewRepository,
     public Optional<Review> getById(final String reviewId) {
         return reviews
             .stream()
-            .filter(r -> r
-                .id()
-                .equals(reviewId))
+            .filter(r -> {
+                return r
+                    .id()
+                    .equals(reviewId);
+            })
             .findFirst();
     }
 
     @Override
     public void deleteReview(final String reviewId) {
-        reviews.removeIf(r -> r
-            .id()
-            .equals(reviewId));
+        reviews.removeIf(r -> {
+            return r
+                .id()
+                .equals(reviewId);
+        });
         votesByReview.remove(reviewId);
     }
 }

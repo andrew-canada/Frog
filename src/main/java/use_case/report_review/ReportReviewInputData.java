@@ -5,8 +5,7 @@ import java.util.List;
 /**
  * Input for reporting a review.
  */
-public record ReportReviewInputData(String reviewId, String reporterUsername, List<String> reasons,
-                                    String details) {
+public record ReportReviewInputData(String reviewId, String reporterUsername, List<String> reasons, String details) {
     public ReportReviewInputData {
         reasons = List.copyOf(reasons);
     }

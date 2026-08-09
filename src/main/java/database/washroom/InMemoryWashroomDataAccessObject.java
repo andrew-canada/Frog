@@ -1,8 +1,5 @@
 package database.washroom;
 
-import entity.Building;
-import entity.ReviewSummary;
-import entity.Washroom;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -10,6 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+
+import entity.Building;
+import entity.ReviewSummary;
+import entity.Washroom;
 import use_case.filter.WashroomFilterCriteria;
 import use_case.filter.WashroomFilterRepository;
 
@@ -20,15 +21,12 @@ public final class InMemoryWashroomDataAccessObject implements WashroomFilterRep
         final Building bahen = new Building("BA", "Bahen Centre", 43.6597, -79.3974);
         final Building robarts = new Building("RB", "Robarts Library", 43.6644, -79.3996);
         final Building gerstein = new Building("GE", "Gerstein Library", 43.6626, -79.3934);
-        add(new Washroom("bahen-2", "Bahen, 2nd floor", bahen, "2nd", true,
-            Washroom.Gender.ALL_GENDER, 3, 2, "Past the elevators",
-            new ReviewSummary(4.6, 4.7, 23)));
-        add(new Washroom("robarts-4", "Robarts, 4th floor", robarts, "4th", true,
-            Washroom.Gender.ALL_GENDER, 5, 3, "North elevators",
-            new ReviewSummary(4.1, 4.0, 16)));
-        add(new Washroom("gerstein-main", "Gerstein, main floor", gerstein, "Main", false,
-            Washroom.Gender.WOMEN, 4, 3, "East reading room",
-            new ReviewSummary(3.9, 3.8, 11)));
+        add(new Washroom("bahen-2", "Bahen, 2nd floor", bahen, "2nd", true, Washroom.Gender.ALL_GENDER, 3, 2,
+            "Past the elevators", new ReviewSummary(4.6, 4.7, 23)));
+        add(new Washroom("robarts-4", "Robarts, 4th floor", robarts, "4th", true, Washroom.Gender.ALL_GENDER, 5, 3,
+            "North elevators", new ReviewSummary(4.1, 4.0, 16)));
+        add(new Washroom("gerstein-main", "Gerstein, main floor", gerstein, "Main", false, Washroom.Gender.WOMEN, 4, 3,
+            "East reading room", new ReviewSummary(3.9, 3.8, 11)));
     }
 
     private static double distance(final double lat1, final double lon1, final double lat2, final double lon2) {
@@ -43,14 +41,18 @@ public final class InMemoryWashroomDataAccessObject implements WashroomFilterRep
             .values()
             .stream()
             .sorted(Comparator
-                .comparing((Washroom value) -> value
-                    .building()
-                    .name(), String.CASE_INSENSITIVE_ORDER)
+                .comparing((Washroom value) -> {
+                    return value
+                        .building()
+                        .name();
+                }, String.CASE_INSENSITIVE_ORDER)
                 .thenComparing(Washroom::name, String.CASE_INSENSITIVE_ORDER)
                 .thenComparing(Washroom::id))
             .toList();
         washrooms.clear();
-        ordered.forEach(value -> washrooms.put(value.id(), value));
+        ordered.forEach(value -> {
+            washrooms.put(value.id(), value);
+        });
     }
 
     @Override
@@ -77,12 +79,13 @@ public final class InMemoryWashroomDataAccessObject implements WashroomFilterRep
         return washrooms
             .values()
             .stream()
-            .filter(w -> distance(lat, lng,
-                w
+            .filter(w -> {
+                return distance(lat, lng, w
                     .building()
                     .latitude(), w
                     .building()
-                    .longitude()) <= radiusMeters)
+                    .longitude()) <= radiusMeters;
+            })
             .toList();
     }
 
@@ -91,20 +94,27 @@ public final class InMemoryWashroomDataAccessObject implements WashroomFilterRep
         return washrooms
             .values()
             .stream()
-            .filter(w -> !criteria.accessibleOnly() || w.accessible())
-            .filter(w -> criteria.gender() == null || w.gender() == criteria.gender())
-            .filter(w -> criteria.buildingCode() == null || criteria
-                .buildingCode()
-                .isBlank()
-                || w
-                .building()
-                .code()
-                .equals(criteria.buildingCode()))
-            .filter(w -> criteria
-                .permittedNames()
-                .isEmpty() || criteria
-                .permittedNames()
-                .contains(w.name()))
+            .filter(w -> {
+                return !criteria.accessibleOnly() || w.accessible();
+            })
+            .filter(w -> {
+                return criteria.gender() == null || w.gender() == criteria.gender();
+            })
+            .filter(w -> {
+                return criteria.buildingCode() == null || criteria
+                    .buildingCode()
+                    .isBlank() || w
+                    .building()
+                    .code()
+                    .equals(criteria.buildingCode());
+            })
+            .filter(w -> {
+                return criteria
+                    .permittedNames()
+                    .isEmpty() || criteria
+                    .permittedNames()
+                    .contains(w.name());
+            })
             .toList();
     }
 }

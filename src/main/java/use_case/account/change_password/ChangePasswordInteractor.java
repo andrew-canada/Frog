@@ -12,8 +12,8 @@ public final class ChangePasswordInteractor implements ChangePasswordInputBounda
     private final CurrentUserSession session;
     private final ChangePasswordOutputBoundary presenter;
 
-    public ChangePasswordInteractor(final UserRepository users, final CurrentUserSession session, final PasswordHasher passwords,
-                                    final ChangePasswordOutputBoundary presenter) {
+    public ChangePasswordInteractor(final UserRepository users, final CurrentUserSession session,
+                                    final PasswordHasher passwords, final ChangePasswordOutputBoundary presenter) {
         this.users = users;
         this.session = session;
         this.passwords = passwords;
@@ -29,15 +29,18 @@ public final class ChangePasswordInteractor implements ChangePasswordInputBounda
 
         if (user == null) {
             presenter.present(new ChangePasswordOutputData(false, "Not logged in"));
-        } else if (!input
+        }
+        else if (!input
             .newPassword()
             .equals(input.confirmNewPassword())) {
             presenter.present(new ChangePasswordOutputData(false, "Passwords do not match"));
-        } else if (input
+        }
+        else if (input
             .newPassword()
             .length() < 4) {
             presenter.present(new ChangePasswordOutputData(false, "Password needs 4+ characters"));
-        } else {
+        }
+        else {
             users.removeUser(user.username());
             final User newUser = new User(user.username(), passwords.hash(input.newPassword()), user.personalPlan());
             users.save(newUser);

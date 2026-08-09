@@ -1,6 +1,7 @@
 package interface_adapter.report_review;
 
 import java.util.List;
+
 import use_case.report_review.ReportReviewInputBoundary;
 import use_case.report_review.ReportReviewInputData;
 
@@ -15,7 +16,8 @@ public final class ReportReviewController {
         this.interactor = interactor;
     }
 
-    public void report(final String reviewId, final String reporterUsername, final List<String> reasons, final String details) {
+    public void report(final String reviewId, final String reporterUsername, final List<String> reasons,
+                       final String details) {
         interactor.report(new ReportReviewInputData(reviewId, reporterUsername, reasons, details));
     }
 }

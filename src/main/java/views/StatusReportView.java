@@ -1,5 +1,10 @@
 package views;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagLayout;
+
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -10,10 +15,6 @@ import javax.swing.JSlider;
 
 import entity.MaintenanceIssue;
 import interface_adapter.status_report.StatusReportViewModel;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagLayout;
 
 public final class StatusReportView extends JPanel {
     private final JSlider busyness = slider(), cleanliness = slider();
@@ -46,8 +47,12 @@ public final class StatusReportView extends JPanel {
         buttons.setOpaque(false);
         final JButton submit = Theme.primary("Submit status");
         final JButton cancel = Theme.button("Cancel");
-        submit.addActionListener(e -> onSubmit.run());
-        cancel.addActionListener(e -> onCancel.run());
+        submit.addActionListener(e -> {
+            onSubmit.run();
+        });
+        cancel.addActionListener(e -> {
+            onCancel.run();
+        });
         buttons.add(submit);
         buttons.add(cancel);
         card.add(buttons);

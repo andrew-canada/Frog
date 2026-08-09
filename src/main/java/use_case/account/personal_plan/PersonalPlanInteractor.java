@@ -1,13 +1,14 @@
 package use_case.account.personal_plan;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import entity.User;
-import entity.Washroom;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import entity.User;
+import entity.Washroom;
 import use_case.port.CurrentUserSession;
 import use_case.port.UserRepository;
 import use_case.port.WashroomRepository;
@@ -27,9 +28,9 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
     private final PersonalPlanGenerator generator;
     private final PersonalPlanOutputBoundary presenter;
 
-    public PersonalPlanInteractor(final UserRepository users, final CurrentUserSession session, final WashroomRepository washrooms,
-                                  final CalendarContentReader calendarReader, final PersonalPlanGenerator generator,
-                                  final PersonalPlanOutputBoundary presenter) {
+    public PersonalPlanInteractor(final UserRepository users, final CurrentUserSession session,
+                                  final WashroomRepository washrooms, final CalendarContentReader calendarReader,
+                                  final PersonalPlanGenerator generator, final PersonalPlanOutputBoundary presenter) {
         this.users = users;
         this.session = session;
         this.washrooms = washrooms;
@@ -57,8 +58,11 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
         final int tripsPerDay;
         try {
             tripsPerDay = Integer.parseInt(inputData.nTrips());
-            if (tripsPerDay < 1) throw new NumberFormatException();
-        } catch (final RuntimeException invalidTrips) {
+            if (tripsPerDay < 1) {
+                throw new NumberFormatException();
+            }
+        }
+        catch (final RuntimeException invalidTrips) {
             presenter.present(new PersonalPlanOutputData(false, "Please input a positive whole number of trips", ""));
             return;
         }
@@ -66,14 +70,16 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
         try {
             final List<Washroom> availableWashrooms = washrooms.getAll();
             final String calendar = calendarReader.read(inputData.calendarPath());
-            final String generatedPlan = generator.generate(calendar, tripsPerDay, inputData.semester(), availableWashrooms);
+            final String generatedPlan =
+                generator.generate(calendar, tripsPerDay, inputData.semester(), availableWashrooms);
             final String personalPlan = normalizePlan(generatedPlan, availableWashrooms);
             final User updatedUser = new User(user.username(), user.passwordHash(), personalPlan, user.moderator());
             users.removeUser(user.username());
             users.save(updatedUser);
             session.setCurrentUser(updatedUser);
             presenter.present(new PersonalPlanOutputData(true, "Personal plan generated", personalPlan));
-        } catch (final Exception failure) {
+        }
+        catch (final Exception failure) {
             presenter.present(
                 new PersonalPlanOutputData(false, "Could not generate a personal plan. Please try again.", ""));
         }
@@ -82,19 +88,24 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
     /**
      * Converts the model response to the compact format consumed by the plan viewer and filter.
      */
-    private static String normalizePlan(final String generatedPlan, final List<Washroom> availableWashrooms) throws Exception {
+    private static String normalizePlan(final String generatedPlan, final List<Washroom> availableWashrooms)
+        throws Exception {
         final ObjectMapper mapper = new ObjectMapper();
-        final List<Map<String, String>> suggestions = mapper.readValue(generatedPlan,
-            new TypeReference<List<Map<String, String>>>() {
+        final List<Map<String, String>> suggestions =
+            mapper.readValue(generatedPlan, new TypeReference<List<Map<String, String>>>() {
             });
         final Map<String, Washroom> washroomsById = new LinkedHashMap<>();
-        for (final Washroom washroom : availableWashrooms) washroomsById.put(washroom.id(), washroom);
+        for (final Washroom washroom : availableWashrooms) {
+            washroomsById.put(washroom.id(), washroom);
+        }
 
         final List<Map<String, String>> plan = new ArrayList<>();
         for (final Map<String, String> suggestion : suggestions) {
             final String washroomId = suggestion.get(WASHROOM_ID);
             final Washroom washroom = washroomsById.get(washroomId);
-            if (washroom == null) throw new IllegalArgumentException("Recommendation contains an unknown washroom");
+            if (washroom == null) {
+                throw new IllegalArgumentException("Recommendation contains an unknown washroom");
+            }
             final String day = suggestion.get(DAY);
             final String time = suggestion.get(TIME);
             if (day == null || day.isBlank() || time == null || time.isBlank()) {
@@ -107,7 +118,9 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
             entry.put("name", washroom.name());
             plan.add(entry);
         }
-        if (plan.isEmpty()) throw new IllegalArgumentException("Recommendation is empty");
+        if (plan.isEmpty()) {
+            throw new IllegalArgumentException("Recommendation is empty");
+        }
         return mapper.writeValueAsString(plan);
     }
 }

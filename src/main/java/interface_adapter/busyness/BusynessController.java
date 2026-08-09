@@ -1,6 +1,7 @@
 package interface_adapter.busyness;
 
 import java.time.DayOfWeek;
+
 import use_case.busyness.BusynessStatsInputBoundary;
 import use_case.busyness.BusynessStatsInputData;
 

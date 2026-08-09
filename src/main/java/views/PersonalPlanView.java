@@ -1,5 +1,14 @@
 package views;
 
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Window;
+import java.util.HashMap;
+import java.util.List;
+
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -10,14 +19,6 @@ import javax.swing.JTextArea;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Window;
-import java.util.HashMap;
-import java.util.List;
 
 public final class PersonalPlanView extends JDialog {
 
@@ -85,14 +86,17 @@ public final class PersonalPlanView extends JDialog {
             container.add(Box.createVerticalStrut(10));
             container.add(planPanel);
 
-        } catch (final Exception e) {
+        }
+        catch (final Exception e) {
 
             container.add(Theme.title("Error - Please try generating a new plan"));
 
         }
 
         final JButton back = Theme.button("Back");
-        back.addActionListener(e -> dispose());
+        back.addActionListener(e -> {
+            dispose();
+        });
         container.add(Box.createVerticalStrut(10));
         container.add(back);
         container.revalidate();

@@ -1,5 +1,13 @@
 package database.building;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -20,18 +28,11 @@ import database.DBDataAccessObject;
 import database.MongoDocuments;
 import database.Operator;
 import entity.Building;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class DBBuildingDataAccessObject extends DBDataAccessObject {
 
-    static final List<String> allowedAttributes = List.of(new String[] {
-        "buildingCode", "shortName", "longName", "location", "controlInfo"});
+    static final List<String> allowedAttributes =
+        List.of(new String[] {"buildingCode", "shortName", "longName", "location", "controlInfo"});
     private final MongoCollection<Document> collection;
 
     public DBBuildingDataAccessObject() {
@@ -114,7 +115,9 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      */
     private static Bson parseConditions(final Iterable<AbstractCondition<?>> conditions) {
         final List<Bson> filters = new ArrayList<>();
-        conditions.forEach((condition) -> filters.add(condition.getFilter()));
+        conditions.forEach((condition) -> {
+            filters.add(condition.getFilter());
+        });
         return filters.isEmpty() ? new Document() : Filters.and(filters);
     }
 
@@ -138,10 +141,9 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @return the Building object constructed using that data
      */
     private static entity.Building createBuilding(final Document doc) {
-        return new entity.Building(
-            MongoDocuments.string(doc, MongoDocuments.id(doc), "buildingCode", "code"),
-            MongoDocuments.string(doc, "Unknown building", "longName", "shortName", "name"),
-            getLatitude(doc), getLongitude(doc));
+        return new entity.Building(MongoDocuments.string(doc, MongoDocuments.id(doc), "buildingCode", "code"),
+            MongoDocuments.string(doc, "Unknown building", "longName", "shortName", "name"), getLatitude(doc),
+            getLongitude(doc));
     }
 
     /**
@@ -170,9 +172,10 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      */
     private static double getLongitude(final Document doc) {
         final Document location = doc.get("location", Document.class);
-        final List<?> coordinates = location == null ? List.of() : location.getList("coordinates", Object.class, List.of());
-        return coordinates.size() > 0 && coordinates.get(0) instanceof final Number coordinate
-            ? coordinate.doubleValue() : MongoDocuments.number(doc, 0, "longitude", "lng");
+        final List<?> coordinates =
+            location == null ? List.of() : location.getList("coordinates", Object.class, List.of());
+        return coordinates.size() > 0 && coordinates.get(0) instanceof final Number coordinate ?
+            coordinate.doubleValue() : MongoDocuments.number(doc, 0, "longitude", "lng");
     }
 
     /**
@@ -186,9 +189,10 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      */
     private static double getLatitude(final Document doc) {
         final Document location = doc.get("location", Document.class);
-        final List<?> coordinates = location == null ? List.of() : location.getList("coordinates", Object.class, List.of());
-        return coordinates.size() > 1 && coordinates.get(1) instanceof final Number coordinate
-            ? coordinate.doubleValue() : MongoDocuments.number(doc, 0, "latitude", "lat");
+        final List<?> coordinates =
+            location == null ? List.of() : location.getList("coordinates", Object.class, List.of());
+        return coordinates.size() > 1 && coordinates.get(1) instanceof final Number coordinate ?
+            coordinate.doubleValue() : MongoDocuments.number(doc, 0, "latitude", "lat");
     }
 
     /**
@@ -218,8 +222,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
     public static List<Building> loadBuildings(final String filename) throws Exception {
         final List<Building> buildings = new ArrayList<>();
 
-        try (final Reader reader = new FileReader(filename);
-             final JsonReader jsonReader = Json.createReader(reader)) {
+        try (final Reader reader = new FileReader(filename); final JsonReader jsonReader = Json.createReader(reader)) {
 
             final JsonArray jsonArray = jsonReader.readArray();
 
@@ -313,20 +316,23 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
     public List<entity.Building> ensureLocations(final List<entity.Building> locations) {
         final List<entity.Building> persisted = new ArrayList<>();
         for (final entity.Building location : locations) {
-            final List<entity.Building> existing = getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
-            if (existing.isEmpty()) write(location);
-            final Document geoPoint = new Document("type", "Point")
-                .append("coordinates", List.of(location.longitude(), location.latitude()));
+            final List<entity.Building> existing =
+                getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
+            if (existing.isEmpty()) {
+                write(location);
+            }
+            final Document geoPoint =
+                new Document("type", "Point").append("coordinates", List.of(location.longitude(), location.latitude()));
             collection.updateOne(Filters.eq("buildingCode", location.code()),
-                Updates.combine(
-                    Updates.set("longName", location.name()),
-                    Updates.set("location", geoPoint),
+                Updates.combine(Updates.set("longName", location.name()), Updates.set("location", geoPoint),
                     Updates.setOnInsert("shortName", location.name()),
-                    Updates.setOnInsert("controlInfo", "U of T St. George campus reference location")
-                ), new UpdateOptions().upsert(true));
+                    Updates.setOnInsert("controlInfo", "U of T St. George campus reference location")),
+                new UpdateOptions().upsert(true));
             final List<entity.Building> refreshed =
                 getMatching(new Condition<>("buildingCode", Operator.EQ, location.code()));
-            if (!refreshed.isEmpty()) persisted.add(refreshed.getFirst());
+            if (!refreshed.isEmpty()) {
+                persisted.add(refreshed.getFirst());
+            }
         }
         return List.copyOf(persisted);
     }

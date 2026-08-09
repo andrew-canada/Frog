@@ -1,15 +1,16 @@
 package database.personal_plan;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
 import com.google.genai.types.Schema;
 import com.google.genai.types.Type;
 import entity.Washroom;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import use_case.account.personal_plan.PersonalPlanGenerator;
 
 /**
@@ -37,20 +38,16 @@ public final class GeminiPersonalPlanGenerator implements PersonalPlanGenerator 
         final Schema washroomSchema = Schema
             .builder()
             .type(Type.Known.OBJECT)
-            .properties(Map.of(
-                DAY_PROMPT, Schema
-                    .builder()
-                    .type(Type.Known.STRING)
-                    .build(),
-                TIME_PROMPT, Schema
-                    .builder()
-                    .type(Type.Known.STRING)
-                    .build(),
-                WASHROOM_ID_PROMPT, Schema
-                    .builder()
-                    .type(Type.Known.STRING)
-                    .build()
-            ))
+            .properties(Map.of(DAY_PROMPT, Schema
+                .builder()
+                .type(Type.Known.STRING)
+                .build(), TIME_PROMPT, Schema
+                .builder()
+                .type(Type.Known.STRING)
+                .build(), WASHROOM_ID_PROMPT, Schema
+                .builder()
+                .type(Type.Known.STRING)
+                .build()))
             .required(List.of(DAY_PROMPT, TIME_PROMPT, WASHROOM_ID_PROMPT))
             .build();
         final Schema plan = Schema
@@ -69,15 +66,17 @@ public final class GeminiPersonalPlanGenerator implements PersonalPlanGenerator 
             .build();
         final String washroomChoices = availableWashrooms
             .stream()
-            .map(washroom -> washroom.id() + " — " + washroom.name() + " (" + washroom
-                .building()
-                .name() + ")")
+            .map(washroom -> {
+                return washroom.id() + " — " + washroom.name() + " (" + washroom
+                    .building()
+                    .name() + ")";
+            })
             .collect(Collectors.joining("\n"));
         final GenerateContentResponse response = client.models.generateContent("gemini-3.6-flash",
             "This is a UOFT timetable. Generate a " + semester + " semester schedule with " + tripsPerDay
                 + " washroom breaks per day the student is on campus. Use only the exact washroom IDs below in the "
-                + WASHROOM_ID_PROMPT + " field.\nTimetable:\n" + calendarContent
-                + "\nAllowed washrooms:\n" + washroomChoices, config);
+                + WASHROOM_ID_PROMPT + " field.\nTimetable:\n" + calendarContent + "\nAllowed washrooms:\n"
+                + washroomChoices, config);
         return response.text();
     }
 }
