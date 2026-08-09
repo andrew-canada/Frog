@@ -55,7 +55,11 @@ public final class LoginPanel extends JPanel {
         for (final JButton button : new JButton[] {login, signup, back}) button.setAlignmentX(Component.LEFT_ALIGNMENT);
         login.addActionListener(event -> controller.execute(username.getText(), new String(password.getPassword())));
         signup.addActionListener(event -> onSignup.run());
-        back.addActionListener(event -> onBack.run());
+        back.addActionListener(event -> {
+            username.setText("");
+            password.setText("");
+            onBack.run();
+        });
         card.add(login);
         card.add(Box.createVerticalStrut(8));
         card.add(signup);

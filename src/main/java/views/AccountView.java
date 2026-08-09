@@ -38,6 +38,8 @@ import java.util.function.Consumer;
 
 public final class AccountView extends JPanel {
 
+    private final AccountViewModel viewModel;
+    private final IsLoggedInViewModel isLoggedInViewModel;
     private final JPanel personalPlan = Theme.page();
     private final JPanel changeUsername = Theme.page();
     private final JPanel changePassword = Theme.page();
@@ -45,9 +47,7 @@ public final class AccountView extends JPanel {
     private final JButton back = Theme.button("← Back to Map");
     private final JLabel accountLabel = new JLabel();
     private final JLabel personalPlanStatusLabel = new JLabel();
-    private final JFileChooser icsChooser = new JFileChooser(); // TODO: make it so that it has to be an ics file
-    private final JTextField nTripField = new JTextField(10);
-
+    private final JFileChooser icsChooser = new JFileChooser();
 
     private final JTextField usernameField = new JTextField(10);
     private final JLabel usernameStatusLabel = new JLabel();
@@ -55,7 +55,6 @@ public final class AccountView extends JPanel {
     private final JPasswordField confirmPasswordField = new JPasswordField(10);
     private final JLabel passwordStatusLabel = new JLabel();
     private final JLabel deleteAccountLabel = new JLabel();
-    private final JButton personalPlanButton = Theme.button("Generate New Plan");
 
     private final JButton personalPlanUploadFileButton = Theme.button("Upload .ics File");
     private final JLabel personalPlanSelectedFileLabel = new JLabel("Selected File: ");
@@ -85,6 +84,9 @@ public final class AccountView extends JPanel {
                        final ChangePasswordController changePasswordController,
                        final DeleteAccountController deleteAccountController, final PersonalPlanController personalPlanController) {
 
+        this.viewModel = viewModel;
+        this.isLoggedInViewModel = isLoggedInViewModel;
+
         viewModel
             .getState()
             .addPropertyChangeListener(e -> render(viewModel.getState()));
@@ -103,7 +105,11 @@ public final class AccountView extends JPanel {
         titleWords.add(accountLabel, BorderLayout.SOUTH);
 
         title.add(titleWords, BorderLayout.WEST);
-        back.addActionListener(e -> onBack.run());
+        back.addActionListener(e -> {
+            viewModel.getState().exitResetState();
+            resetAccountView();
+            onBack.run();
+        });
         title.add(back, BorderLayout.EAST);
         add(title, BorderLayout.NORTH);
 
@@ -267,10 +273,7 @@ public final class AccountView extends JPanel {
                 @Override
                 protected String doInBackground() throws Exception {
 
-                    personalPlanController.execute(icsChooser
-                            .getSelectedFile()
-                            .getAbsolutePath(), personalPlanNumField.getText(),
-                        (String) personalPlanSemesterBox.getSelectedItem());
+                    personalPlanController.execute(personalPlanSelectedFilePath, personalPlanNumField.getText(), (String) personalPlanSemesterBox.getSelectedItem());
                     return "";
 
                 }
@@ -347,6 +350,7 @@ public final class AccountView extends JPanel {
             new ActionListener() {
                 public void actionPerformed(final ActionEvent evt) {
 
+                    usernameField.setText("");
                     changeUsernameContent.removeAll();
                     changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
                     changeUsernameContent.add(usernameStatusLabel);
@@ -368,6 +372,8 @@ public final class AccountView extends JPanel {
             new ActionListener() {
                 public void actionPerformed(final ActionEvent evt) {
 
+                    passwordField.setText("");
+                    confirmPasswordField.setText("");
                     changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
                     changePasswordContent.add(Theme.label("New Password:", 14, Theme.INK));
                     changePasswordContent.add(Box.createHorizontalStrut(10));
@@ -465,14 +471,13 @@ public final class AccountView extends JPanel {
             new ActionListener() {
                 public void actionPerformed(final ActionEvent evt) {
 
-                    deleteAccountContent.remove(0);
-
+                    deleteAccountContent.removeAll();
                     deleteAccountContent.revalidate();
                     deleteAccountContent.repaint();
 
                     deleteAccountButtons.remove(confirmDeleteAccountButton);
                     deleteAccountButtons.remove(cancelDeleteAccountButton);
-                    deleteAccountContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                    deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
                     deleteAccountButtons.add(deleteAccountButton);
 
                     deleteAccountButtons.revalidate();
@@ -517,6 +522,11 @@ public final class AccountView extends JPanel {
     private void render(final IsLoggedInState state) {
 
         accountLabel.setText(state.getUsername());
+        viewModel.getState().setUsername(state.getUsername());
+        if (!state.getIsLoggedIn()) {
+            resetAccountView();
+            viewModel.getState().logoutResetState();
+        }
 
     }
 
@@ -568,51 +578,24 @@ public final class AccountView extends JPanel {
             personalPlan.revalidate();
             personalPlan.repaint();
         } catch (final Exception e) {
-
+            personalPlanStatusLabel.setText("Unable to display plan");
         }
 
+    }
+
+    private void resetAccountView() {
+        personalPlanSelectedFilePath = "";
+        personalPlanSelectedFileLabel.setText("Selected File: ");
+        personalPlanNumField.setText("");
+        personalPlanSemesterBox.setSelectedIndex(0);
+        cancelUsernameButton.doClick();
+        cancelPasswordButton.doClick();
+        cancelDeleteAccountButton.doClick();
     }
 
     public void setOnViewPlan(final Consumer<String> c) {
         onViewPlan = c;
     }
-
-//    private void renderPlan(String plan) {
-//
-//        try {
-//            ObjectMapper mapper = new ObjectMapper();
-//            List<PersonalPlanInteractor.WashroomPlan> washroomList = mapper.readValue(plan, new
-//            TypeReference<List<PersonalPlanInteractor.WashroomPlan>>() {});
-//
-//            List<String> days = List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
-//
-//            JPanel planPanel = new JPanel();
-//            planPanel.setLayout(new BoxLayout(planPanel, BoxLayout.X_AXIS));
-//
-//            for (String day : days) {
-//                JPanel dayPanel = new JPanel();
-//                dayPanel.setMaximumSize(new Dimension(300, 124));
-//                dayPanel.setLayout(new BoxLayout(dayPanel, BoxLayout.Y_AXIS));
-//                dayPanel.add(Theme.label(day, 14, Theme.INK));
-//                for (PersonalPlanInteractor.WashroomPlan washroom : washroomList) {
-//                    if (washroom.day.contains(day)) {
-//                        JPanel card = new JPanel(new BorderLayout(4, 4));
-//                        card.add(Theme.label(washroom.time, 14,  Theme.INK), BorderLayout.WEST);
-//                        card.add(Theme.label(washroom.washroom, 14,  Theme.INK), BorderLayout.EAST);
-//                        dayPanel.add(card);
-//                    }
-//                }
-//                planPanel.add(dayPanel);
-//
-//            }
-//
-//            personalPlan.add(planPanel);
-//            personalPlan.revalidate();
-//            personalPlan.repaint();
-//        } catch (Exception e) {
-//
-//        }
-//    }
 
     public void setOnBack(final Runnable r) {
         onBack = r;
