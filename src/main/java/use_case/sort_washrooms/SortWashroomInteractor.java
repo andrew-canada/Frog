@@ -41,7 +41,10 @@ public class SortWashroomInteractor implements SortWashroomsInputBoundary{
                     (entity.Washroom washroom) ->
                             washroom.name().toString());
         }
-        ArrayList<Washroom> sortedWashroom = new ArrayList<>(washroomDAO.getAll());
+        ArrayList<Washroom> sortedWashroom = new ArrayList<>();
+        for(String id : inputData.washroomIdList()) {
+            sortedWashroom.add(washroomDAO.getById(id).get());
+        }
         sortedWashroom.sort(comparator);
         presenter.present(new SortWashroomsOutputData(
                 true,

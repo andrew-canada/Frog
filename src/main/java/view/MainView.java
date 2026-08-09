@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public final class MainView extends JPanel {
     /** Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies. */
@@ -203,10 +204,18 @@ public final class MainView extends JPanel {
         controls.add(new JLabel("Sort by:"));
         WashroomSortDropdownControl washroomSortDropdownControl = new WashroomSortDropdownControl();
         controls.add(washroomSortDropdownControl);
-        washroomSortDropdownControl.addActionListener(e -> sortWashroomController.execute(
+        washroomSortDropdownControl.addActionListener(e -> {
+                ArrayList<String> washroomIdList = new ArrayList<String>();
+                washroomIdList.addAll(
+                        washrooms.getState().items().stream()
+                                .map(washroom -> washroom.id())
+                                .toList()
+                );
+                sortWashroomController.execute(
                 washroomSortDropdownControl.getSelectedItem().toString(),
+                washroomIdList,
                 latitude,
-                longitude));
+                longitude);});
         controls.add(washroomSortDropdownControl);
         p.add(controls, BorderLayout.NORTH);
 
