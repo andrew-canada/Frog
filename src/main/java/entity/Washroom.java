@@ -13,6 +13,7 @@ public final class Washroom implements entity.washroom.Washroom {
     private final int numSinks;
     private final String locationDescription;
     private ReviewSummary reviewSummary;
+
     public Washroom(String id, String name, entity.Building building, String floor, boolean accessible,
                     Gender gender, int numToilets, int numSinks, String locationDescription,
                     ReviewSummary reviewSummary) {
@@ -55,7 +56,7 @@ public final class Washroom implements entity.washroom.Washroom {
     }
 
     @Override
-    public String getFloor() {
+    public String floor() {
         return floor;
     }
 

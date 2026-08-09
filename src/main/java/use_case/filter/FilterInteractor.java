@@ -4,6 +4,7 @@ import data_access.AbstractCondition;
 import data_access.CollectionCondition;
 import data_access.Condition;
 import data_access.Operator;
+import data_access.review.ReviewDataAccessInterface;
 import data_access.status.StatusReportDataAccessInterface;
 import data_access.user.UserDataAccessInterface;
 import data_access.washroom.WashroomDataAccessInterface;
@@ -11,7 +12,6 @@ import entity.Building;
 import entity.StatusReport;
 import entity.User;
 import entity.Washroom;
-import data_access.review.ReviewDataAccessInterface;
 
 import java.time.LocalDateTime;
 import java.util.*;

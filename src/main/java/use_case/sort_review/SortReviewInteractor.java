@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class SortReviewInteractor implements SortReviewInputBoundary{
+public class SortReviewInteractor implements SortReviewInputBoundary {
     private final ReviewDataAccessInterface reviewDAO;
     private final UserDataAccessInterface userDAO;
     private final WashroomDataAccessInterface washroomDAO;
@@ -40,6 +40,7 @@ public class SortReviewInteractor implements SortReviewInputBoundary{
         this.presenter = presenter;
 
     }
+
     private static String displayDescription(Washroom washroom) {
         String name = washroom.name();
         int separator = name.indexOf('|');
@@ -48,6 +49,7 @@ public class SortReviewInteractor implements SortReviewInputBoundary{
                 .replaceAll("\\s{2,}", " ")
                 .trim();
     }
+
     /**
      * Ranking score: helpfulness (log) + recency (exponential decay).
      */
@@ -66,23 +68,23 @@ public class SortReviewInteractor implements SortReviewInputBoundary{
 
         String sortingOrder = inputData.sortBy();
         Comparator<entity.Review> comparator;
-        switch(sortingOrder){
+        switch (sortingOrder) {
             case "Relevant":
                 comparator = Comparator.comparing(SortReviewInteractor::score);
-            case"Most Helpful":
+            case "Most Helpful":
                 comparator = Comparator.comparing(entity.Review::getHelpfuls).reversed();
                 break;
-            case"Highest Rated":
+            case "Highest Rated":
                 comparator = Comparator.comparing(entity.Review::getStars).reversed();
                 break;
-            case"Lowest Rated":
+            case "Lowest Rated":
                 comparator = Comparator.comparing(entity.Review::getStars);
                 break;
-            case"Newest":
+            case "Newest":
                 comparator = Comparator.comparing(entity.Review::createdAt).reversed();
                 break;
-            case"Voted by Me":
-                if(userDAO.getCurrentUser().isPresent()){
+            case "Voted by Me":
+                if (userDAO.getCurrentUser().isPresent()) {
                     comparator = Comparator.comparing((entity.Review review) ->
                             review.authorUsername().equals(userDAO.getCurrentUser().get().name())).reversed();
                 } else {
@@ -110,5 +112,5 @@ public class SortReviewInteractor implements SortReviewInputBoundary{
         presenter.present(new ViewReviewsOutputData(washroom.id(), washroom.building().name(), displayDescription(washroom),
                 summary.averageRating(), summary.averageCleanliness(), summary.reviewCount(),
                 washroom.numToilets(), washroom.numSinks(), display));
-        }
     }
+}

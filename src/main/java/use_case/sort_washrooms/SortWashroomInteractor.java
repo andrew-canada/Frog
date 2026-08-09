@@ -6,14 +6,16 @@ import entity.Washroom;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-public class SortWashroomInteractor implements SortWashroomsInputBoundary{
+public class SortWashroomInteractor implements SortWashroomsInputBoundary {
     private final WashroomDataAccessInterface washroomDAO;
     private final SortWashroomsOutputBoundary presenter;
+
     public SortWashroomInteractor(WashroomDataAccessInterface washroomDAO,
                                   SortWashroomsOutputBoundary presenter) {
         this.washroomDAO = washroomDAO;
         this.presenter = presenter;
     }
+
     private static double distance(double a, double b, double c, double d) {
         double x = Math.toRadians(d - b) * Math.cos(Math.toRadians((a + c) / 2));
         double y = Math.toRadians(c - a);
@@ -28,8 +30,8 @@ public class SortWashroomInteractor implements SortWashroomsInputBoundary{
             comparator = Comparator.comparing(
                     (entity.Washroom washroom) ->
                             washroom.reviewSummary().averageRating()).reversed();
-        } else if (sortingOrder.toString().equals("Nearest")) {
-            comparator =  Comparator.comparing(
+        } else if (sortingOrder.equals("Nearest")) {
+            comparator = Comparator.comparing(
                     (entity.Washroom washroom) ->
                             distance(inputData.lat(),
                                     inputData.lng(),
@@ -39,10 +41,10 @@ public class SortWashroomInteractor implements SortWashroomsInputBoundary{
         } else {
             comparator = Comparator.comparing(
                     (entity.Washroom washroom) ->
-                            washroom.name().toString());
+                            washroom.name());
         }
         ArrayList<Washroom> sortedWashroom = new ArrayList<>();
-        for(String id : inputData.washroomIdList()) {
+        for (String id : inputData.washroomIdList()) {
             sortedWashroom.add(washroomDAO.getById(id).get());
         }
         sortedWashroom.sort(comparator);

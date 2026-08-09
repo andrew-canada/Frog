@@ -2,7 +2,6 @@ package view;
 
 import org.jxmapviewer.viewer.GeoPosition;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.function.BiConsumer;
@@ -20,13 +19,14 @@ public class MapClicker implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         System.out.println("button clicked!");
         class MapClickListener extends MouseAdapter {
-            MainView.CampusMapPanel map;
-            BiConsumer<Double, Double> onSave;
+            final MainView.CampusMapPanel map;
+            final BiConsumer<Double, Double> onSave;
 
             public MapClickListener(MainView.CampusMapPanel map, BiConsumer<Double, Double> onSave) {
                 this.map = map;
                 this.onSave = onSave;
             }
+
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
@@ -37,7 +37,7 @@ public class MapClicker implements ActionListener {
                     map.removeMouseListener(this);
                 }
             }
-        };
+        }
 
         map.addMouseListener(new MapClickListener(map, onSave));
         map.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
@@ -51,4 +51,4 @@ public class MapClicker implements ActionListener {
     public void addFrame(Window frame) {
         this.frame = frame;
     }
-};
+}

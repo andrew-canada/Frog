@@ -1,6 +1,5 @@
 package interface_adapter.sort_reviews;
 
-import entity.Washroom;
 import use_case.sort_review.SortReviewInputBoundary;
 import use_case.sort_review.SortReviewInputData;
 

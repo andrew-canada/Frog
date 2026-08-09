@@ -79,7 +79,7 @@ public final class ReadReviewsView extends JPanel {
         reviews.repaint();
     }
 
-    public void renderReviews(List<ViewReviewsOutputData.ReviewDisplay> s){
+    public void renderReviews(List<ViewReviewsOutputData.ReviewDisplay> s) {
         for (ViewReviewsOutputData.ReviewDisplay r : s) {
             JPanel card = new JPanel(new BorderLayout(10, 10));
             card.setBackground(Theme.PAPER);
@@ -147,5 +147,7 @@ public final class ReadReviewsView extends JPanel {
         onReport = c;
     }
 
-    public void setSortReviewsController(SortReviewsController c){sortReviewsController = c;}
+    public void setSortReviewsController(SortReviewsController c) {
+        sortReviewsController = c;
+    }
 }

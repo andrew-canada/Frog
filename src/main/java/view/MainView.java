@@ -1,7 +1,6 @@
 package view;
 
 import data_access.user.DBUserDataAccessObject;
-import data_access.user.InMemoryUserDataAccessObject;
 import entity.GeoPoint;
 import entity.Washroom;
 import interface_adapter.account.IsLoggedInState;
@@ -17,7 +16,6 @@ import interface_adapter.logout.LogoutController;
 import interface_adapter.logout.LogoutPresenter;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import interface_adapter.sort_washrooms.SortWashroomController;
-import interface_adapter.sort_washrooms.SortWashroomViewModel;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
@@ -34,27 +32,24 @@ import use_case.logout.LogoutInteractor;
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.*;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.*;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public final class MainView extends JPanel {
-    /** Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies. */
+    private static final Color MAP_LOW = Theme.COLORBLIND_BLUE;
+    private static final Color MAP_HIGH = Theme.COLORBLIND_ORANGE;
+    /**
+     * Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies.
+     */
     private final LogoutController logoutController;
     private final CardLayout buttonsLayout = new CardLayout();
     private final JPanel buttonsPanel = new JPanel(buttonsLayout);
-    private IsLoggedInViewModel isLoggedIn =  new IsLoggedInViewModel();
-    private static final Color MAP_LOW = Theme.COLORBLIND_BLUE;
-    private static final Color MAP_HIGH = Theme.COLORBLIND_ORANGE;
     /**
      * Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies.
      */
@@ -63,6 +58,7 @@ public final class MainView extends JPanel {
     private final JLabel heatmapLegend = Theme.label("", 11, Theme.MUTED);
     private final CampusMapPanel map = new CampusMapPanel();
     private final Map<String, JPanel> cardsByWashroomId = new HashMap<>();
+    private IsLoggedInViewModel isLoggedIn = new IsLoggedInViewModel();
     private JButton moderatorNav;
     private JButton busynessHeatmap, cleanlinessHeatmap;
     private boolean busynessHeatmapVisible, cleanlinessHeatmapVisible;
@@ -94,7 +90,9 @@ public final class MainView extends JPanel {
     };
     private double latitude = 43.6629, longitude = -79.3957;
 
-    /** Retained for callers that do not provide filtering controls. */
+    /**
+     * Retained for callers that do not provide filtering controls.
+     */
     public MainView(WashroomListViewModel washrooms, MapViewModel route) { // TODO: why is this still here its being a pain
         this(washrooms,
                 route,
@@ -159,14 +157,14 @@ public final class MainView extends JPanel {
             nav.add(b);
         JButton logoutButton = Theme.button("Logout");
         logoutButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent evt) {
 
                     onLogout.run();
                     logoutController.execute();
 
+                    }
                 }
-            }
         );
         nav.add(logoutButton);
         p.add(nav, BorderLayout.EAST);
@@ -211,17 +209,18 @@ public final class MainView extends JPanel {
         WashroomSortDropdownControl washroomSortDropdownControl = new WashroomSortDropdownControl();
         controls.add(washroomSortDropdownControl);
         washroomSortDropdownControl.addActionListener(e -> {
-                ArrayList<String> washroomIdList = new ArrayList<String>();
-                washroomIdList.addAll(
-                        washrooms.getState().items().stream()
-                                .map(washroom -> washroom.id())
-                                .toList()
-                );
-                sortWashroomController.execute(
-                washroomSortDropdownControl.getSelectedItem().toString(),
-                washroomIdList,
-                latitude,
-                longitude);});
+            ArrayList<String> washroomIdList = new ArrayList<String>();
+            washroomIdList.addAll(
+                    washrooms.getState().items().stream()
+                            .map(washroom -> washroom.id())
+                            .toList()
+            );
+            sortWashroomController.execute(
+                    washroomSortDropdownControl.getSelectedItem().toString(),
+                    washroomIdList,
+                    latitude,
+                    longitude);
+        });
         controls.add(washroomSortDropdownControl);
         p.add(controls, BorderLayout.NORTH);
 
@@ -437,7 +436,9 @@ public final class MainView extends JPanel {
         sortWashroomController = controller;
     }
 
-    /** Shows the Moderator nav entry only for a user with moderator privileges. */
+    /**
+     * Shows the Moderator nav entry only for a user with moderator privileges.
+     */
     public void setModerator(boolean isModerator) {
         if (moderatorNav != null) {
             moderatorNav.setVisible(isModerator);

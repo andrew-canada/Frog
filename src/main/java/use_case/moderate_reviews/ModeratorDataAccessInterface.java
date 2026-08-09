@@ -6,6 +6,8 @@ package use_case.moderate_reviews;
  */
 public interface ModeratorDataAccessInterface {
 
-    /** @return whether the named user has moderator privileges. */
+    /**
+     * @return whether the named user has moderator privileges.
+     */
     boolean isModerator(String username);
 }

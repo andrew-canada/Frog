@@ -146,33 +146,6 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
     }
 
     /**
-     * Writes a single Washroom object to the database.
-     *
-     * @param washroom The Washroom object to be written.
-     */
-    public String write(Washroom washroom, String buildingID) {
-        if (washroom instanceof entity.Washroom applicationWashroom) {
-            Document doc = new Document();
-            doc.append("buildingID", buildingID);
-            doc.append("buildingCode", applicationWashroom.building().code());
-            doc.append("seedKey", "campus-" + applicationWashroom.building().code().toLowerCase(Locale.ROOT) + "-washroom");
-            doc.append("name", applicationWashroom.name());
-            doc.append("floor", applicationWashroom.floor());
-            doc.append("gender", applicationWashroom.gender().name());
-            doc.append("accessible", applicationWashroom.accessible());
-            doc.append("numToilets", applicationWashroom.numToilets());
-            doc.append("numSinks", applicationWashroom.numSinks());
-            doc.append("locationDescription", applicationWashroom.locationDescription());
-            return collection.insertOne(doc).getInsertedId().toString();
-        }
-        Document doc = new Document();
-        doc.append("buildingID", buildingID);
-        doc.append("floor", washroom.getFloor());
-
-        return collection.insertOne(doc).getInsertedId().toString();
-    }
-
-    /**
      * Deletes every entry in the database that matches the given conditions
      *
      * @param conditions List of AbstractCondition objects. An object must satisfy
@@ -257,10 +230,10 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
                     gender = entity.Washroom.Gender.MEN;
                 } else if (genderStr.equals(entity.Washroom.Gender.WOMEN.toString())) {
                     gender = entity.Washroom.Gender.WOMEN;
-                } else if (genderStr.equals("ALL_GENDER")){
+                } else if (genderStr.equals("ALL_GENDER")) {
                     gender = entity.Washroom.Gender.ALL_GENDER;
                 } else {
-                    gender = entity.Washroom.Gender.ALL_GENDER;;
+                    gender = entity.Washroom.Gender.ALL_GENDER;
                 }
 
                 boolean accessible = obj.getBoolean("accessible");
@@ -284,6 +257,33 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
         }
 
         return washroomList;
+    }
+
+    /**
+     * Writes a single Washroom object to the database.
+     *
+     * @param washroom The Washroom object to be written.
+     */
+    public String write(Washroom washroom, String buildingID) {
+        if (washroom instanceof entity.Washroom applicationWashroom) {
+            Document doc = new Document();
+            doc.append("buildingID", buildingID);
+            doc.append("buildingCode", applicationWashroom.building().code());
+            doc.append("seedKey", "campus-" + applicationWashroom.building().code().toLowerCase(Locale.ROOT) + "-washroom");
+            doc.append("name", applicationWashroom.name());
+            doc.append("floor", applicationWashroom.floor());
+            doc.append("gender", applicationWashroom.gender().name());
+            doc.append("accessible", applicationWashroom.accessible());
+            doc.append("numToilets", applicationWashroom.numToilets());
+            doc.append("numSinks", applicationWashroom.numSinks());
+            doc.append("locationDescription", applicationWashroom.locationDescription());
+            return collection.insertOne(doc).getInsertedId().toString();
+        }
+        Document doc = new Document();
+        doc.append("buildingID", buildingID);
+        doc.append("floor", washroom.floor());
+
+        return collection.insertOne(doc).getInsertedId().toString();
     }
 
     public void main(String[] args) {
