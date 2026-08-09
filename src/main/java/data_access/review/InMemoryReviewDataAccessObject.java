@@ -6,7 +6,8 @@ import entity.ReviewSummary;
 import use_case.moderate_reviews.ReportedReviewsDataAccessInterface;
 import use_case.moderate_reviews.ReviewAdminDataAccessInterface;
 import use_case.report_review.ReviewReportDataAccessInterface;
-import use_case.view_reviews.ReviewDataAccessInterface;
+
+import data_access.review.ReviewDataAccessInterface;
 import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
 
 import java.time.LocalDate;
