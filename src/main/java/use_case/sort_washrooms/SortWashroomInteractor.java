@@ -2,8 +2,6 @@ package use_case.sort_washrooms;
 
 import data_access.washroom.WashroomDataAccessInterface;
 import entity.Washroom;
-import interface_adapter.view_reviews.WashroomListViewModel;
-import use_case.filter.FilterOutputData;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -22,6 +20,7 @@ public class SortWashroomInteractor implements SortWashroomsInputBoundary{
         return Math.sqrt(x * x + y * y) * 6_371_000;
     }
 
+    @Override
     public void execute(SortWashroomInputData inputData) {
         String sortingOrder = inputData.sortBy();
         Comparator<entity.Washroom> comparator;

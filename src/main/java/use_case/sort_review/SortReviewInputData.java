@@ -1,4 +1,10 @@
 package use_case.sort_review;
 
-public class SortReviewInputData implements SortReviewInputBoundary{
+import entity.Washroom;
+import entity.review.Review;
+
+import java.util.Comparator;
+
+public record SortReviewInputData(String sortBy, String currentWashroom) {
+
 }

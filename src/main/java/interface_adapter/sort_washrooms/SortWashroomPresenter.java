@@ -1,10 +1,6 @@
 package interface_adapter.sort_washrooms;
 
-import entity.Washroom;
-import interface_adapter.filter.FilterViewModel;
-import interface_adapter.view_reviews.WashroomListViewModel;
-import use_case.filter.FilterOutputBoundary;
-import use_case.filter.FilterOutputData;
+import interface_adapter.WashroomListViewModel;
 import use_case.sort_washrooms.SortWashroomsOutputBoundary;
 import use_case.sort_washrooms.SortWashroomsOutputData;
 
