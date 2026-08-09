@@ -1,5 +1,6 @@
 package view;
 
+import data_access.user.DBUserDataAccessObject;
 import entity.GeoPoint;
 import entity.Washroom;
 import interface_adapter.account.IsLoggedInState;
@@ -23,34 +24,39 @@ import org.jxmapviewer.input.ZoomMouseWheelListenerCursor;
 import org.jxmapviewer.viewer.DefaultTileFactory;
 import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.viewer.TileFactoryInfo;
+import use_case.logout.LogoutInteractor;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.*;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class MainView extends JPanel {
+    /** Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies. */
+    private final LogoutController logoutController;
+    private final CardLayout buttonsLayout = new CardLayout();
+    private final JPanel buttonsPanel = new JPanel(buttonsLayout);
+    private IsLoggedInViewModel isLoggedIn =  new IsLoggedInViewModel();
     private static final Color MAP_LOW = Theme.COLORBLIND_BLUE;
     private static final Color MAP_HIGH = Theme.COLORBLIND_ORANGE;
     /**
      * Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies.
      */
-    private final CardLayout buttonsLayout = new CardLayout();
-    private final JPanel buttonsPanel = new JPanel(buttonsLayout);
     private final JPanel list = new JPanel();
     private final JLabel routeLabel = Theme.label("Select a washroom to explore", 13, Theme.MUTED);
     private final JLabel heatmapLegend = Theme.label("", 11, Theme.MUTED);
     private final CampusMapPanel map = new CampusMapPanel();
     private final Map<String, JPanel> cardsByWashroomId = new HashMap<>();
-    private IsLoggedInViewModel isLoggedIn = new IsLoggedInViewModel();
     private JButton moderatorNav;
     private JButton busynessHeatmap, cleanlinessHeatmap;
     private boolean busynessHeatmapVisible, cleanlinessHeatmapVisible;
@@ -86,6 +92,7 @@ public final class MainView extends JPanel {
 
     public MainView(WashroomListViewModel washrooms, MapViewModel route, FilterViewModel filter, IsLoggedInViewModel isLoggedIn, LogoutController logoutController) {
         this.isLoggedIn = isLoggedIn;
+        this.logoutController = logoutController;
         isLoggedIn.getState().addPropertyChangeListener(e -> render(isLoggedIn.getState()));
         setLayout(new BorderLayout());
         setBackground(Theme.PAPER);
@@ -136,6 +143,17 @@ public final class MainView extends JPanel {
         moderatorNav.setVisible(false); // hidden until a moderator logs in
         for (JButton b : new JButton[]{nav("Account", () -> onAccount.run()), nav("Report status", () -> onReport.run()), nav("View status", () -> onBusyness.run()), moderatorNav})
             nav.add(b);
+        JButton logoutButton = Theme.button("Logout");
+        logoutButton.addActionListener(
+            new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+
+                    logoutController.execute();
+
+                }
+            }
+        );
+        nav.add(logoutButton);
         p.add(nav, BorderLayout.EAST);
         return p;
     }
@@ -197,6 +215,8 @@ public final class MainView extends JPanel {
         });
         controls.add(washroomSortDropdownControl);
         p.add(controls, BorderLayout.NORTH);
+
+        MapClicker mapClicker = new MapClicker(map);
         location.addActionListener(e -> new LocationInputDialog(SwingUtilities.getWindowAncestor(this), addressLookup, (lat, lng) -> {
             latitude = lat;
             longitude = lng;
@@ -457,7 +477,7 @@ public final class MainView extends JPanel {
         }
     }
 
-    private static final class CampusMapPanel extends JPanel {
+    static final class CampusMapPanel extends JPanel {
         private final JXMapViewer viewer;
         private final Map<String, Rectangle> markerHitTargets = new HashMap<>();
         private List<GeoPoint> route = List.of();
@@ -720,6 +740,19 @@ public final class MainView extends JPanel {
             Set<GeoPosition> positions = new HashSet<>();
             for (GeoPoint point : route) positions.add(toPosition(point));
             viewer.zoomToBestFit(positions, .82);
+        }
+
+        public void addMouseListener(MouseListener m) {
+            System.out.println("added mouselistener");
+            viewer.addMouseListener(m);
+        }
+
+        public void removeMouseListener(MouseListener m) {
+            viewer.removeMouseListener(m);
+        }
+
+        public GeoPosition convertPointToGeoPosition(Point2D pt) {
+            return viewer.convertPointToGeoPosition(pt);
         }
     }
 }

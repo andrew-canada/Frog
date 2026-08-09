@@ -48,4 +48,19 @@ public final class JUnitBridgeTest {
     void uiRendering() {
         UiSmokeTest.run();
     }
+
+    @Test
+    void voteHelpful() {
+        VoteHelpfulInteractorTest.run();
+    }
+
+    @Test
+    void reportReview() {
+        ReportReviewInteractorTest.run();
+    }
+
+    @Test
+    void moderateReviews() {
+        ModerateReviewsInteractorTest.run();
+    }
 }

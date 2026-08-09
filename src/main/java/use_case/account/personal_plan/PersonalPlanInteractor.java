@@ -21,9 +21,9 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
 
     public static final String GEMINI_API_KEY_ENV = "GEMINI_API_KEY";
 
-    private static final String dayPrompt = "Day of week";
-    private static final String timePrompt = "Time (nearest hour) of washroom break";
-    private static final String washroomPrompt = "Washroom";
+    private static final String DAY_PROMPT = "Day of week";
+    private static final String TIME_PROMPT = "Time (nearest hour) of washroom break";
+    private static final String WASHROOM_PROMPT = "Washroom";
 
     private final UserDataAccessInterface users;
     private final PersonalPlanOutputBoundary presenter;
@@ -37,11 +37,12 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
     public void execute(PersonalPlanInputData inputData) {
 
         User user = users.getCurrentUser().orElse(null);
-        String calendar = getFile(inputData.calendarPath());
+        String path = inputData.calendarPath();
+        String calendar = getFile(path);
 
         if (user == null) {
             presenter.present(new PersonalPlanOutputData(false, "You need an account", ""));
-        } else if (calendar == null) {
+        } else if (!path.endsWith(".ics")) {
             presenter.present(new PersonalPlanOutputData(false, "Please upload a .ics file", ""));
         } else if (!isInt(inputData.nTrips())) {
             presenter.present(new PersonalPlanOutputData(false, "Please input an integer", ""));
@@ -54,30 +55,30 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
             try {
 
                 Schema washroom = Schema.builder().type(Type.Known.OBJECT).properties(Map.of(
-                        dayPrompt, Schema.builder().type(Type.Known.STRING).build(),
-                        timePrompt, Schema.builder().type(Type.Known.STRING).build(),
-                        washroomPrompt, Schema.builder().type(Type.Known.STRING).build()
-                )).required(List.of(dayPrompt, timePrompt, washroomPrompt)).build();
+                        DAY_PROMPT, Schema.builder().type(Type.Known.STRING).build(),
+                        TIME_PROMPT, Schema.builder().type(Type.Known.STRING).build(),
+                        WASHROOM_PROMPT, Schema.builder().type(Type.Known.STRING).build()
+                )).required(List.of(DAY_PROMPT, TIME_PROMPT, WASHROOM_PROMPT)).build();
 
                 Schema plan = Schema.builder().type(Type.Known.ARRAY).items(washroom).build();
 
                 GenerateContentConfig config = GenerateContentConfig.builder().responseMimeType("application/json").responseSchema(plan).build();
 
                 Client client = Client.builder().apiKey(apiKey).build();
+                System.out.println("hi !!");
                 GenerateContentResponse response = client.models.generateContent("gemini-3.6-flash", "This is a UOFT time table, generate a schedule of washroom breaks in the fall semester such that there are " + inputData.nTrips() + "washroom trips per day they are at school: " + calendar, config);
                 String personalPlanString = response.text();
-                if (checkValid(response.text(), Integer.parseInt(inputData.nTrips()))) {
-                    throw new Exception();
-                }
                 System.out.println(personalPlanString);
+                if (checkValid(response.text(), Integer.parseInt(inputData.nTrips()))) {
+                    throw new Exception("Invalid gemini response");
+                }
                 users.removeUser(user.username());
                 User newUser = new User(user.username(), user.passwordHash(), personalPlanString);
                 users.save(newUser);
                 users.setCurrentUser(newUser);
                 presenter.present(new PersonalPlanOutputData(true, "", personalPlanString));
             } catch (Exception e) {
-                System.out.println(e.getMessage());
-                presenter.present(new PersonalPlanOutputData(false, "Try again", ""));
+                presenter.present(new PersonalPlanOutputData(false, "Gemini error, please try again", ""));
             }
         }
 
@@ -108,33 +109,6 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
 
     }
 
-    private HashMap<String, List<List<String>>> extractPlan(String response) {
-
-        try {
-            HashMap<String, List<List<String>>> plan = new HashMap<>();
-            ObjectMapper mapper = new ObjectMapper();
-            EntirePlan entirePlan = mapper.readValue(response, EntirePlan.class);
-            HashMap<String, Integer> map = new HashMap<String, Integer>();
-            for (WashroomPlan washroomPlan : entirePlan.washrooms) {
-                map.put(washroomPlan.day, 1);
-            }
-            List<String> days = new ArrayList<String>(map.keySet());
-            for (String day : days) {
-                List<List<String>> dayPlan = new ArrayList<>();
-                for (WashroomPlan washroomPlan : entirePlan.washrooms) {
-                    if (washroomPlan.day.equals(day)) {
-                        dayPlan.add(List.of(washroomPlan.time, washroomPlan.washroom));
-                    }
-                }
-                plan.put(day, dayPlan);
-            }
-            return plan;
-        } catch (Exception e) {
-            return null;
-        }
-
-    }
-
     private boolean isInt(String str) {
 
         try {
@@ -157,11 +131,11 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
     }
 
     public static class WashroomPlan {
-        @JsonProperty(dayPrompt)
+        @JsonProperty(DAY_PROMPT)
         public String day;
-        @JsonProperty(timePrompt)
+        @JsonProperty(TIME_PROMPT)
         public String time;
-        @JsonProperty(washroomPrompt)
+        @JsonProperty(WASHROOM_PROMPT)
         public String washroom;
     }
 
