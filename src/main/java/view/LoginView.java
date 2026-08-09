@@ -15,9 +15,9 @@ public final class LoginView implements ActionListener {
     private final JPasswordField passwordField;
     private final JButton OKButton, cancelButton, continueAsGuestButton;
     private final JDialog dialog;
+    private final LoginViewModel loginViewModel;
     private JFrame windowFrame;
     private LoginController loginController;
-    private final LoginViewModel loginViewModel;
 
 
     public LoginView(LoginViewModel loginViewModel) {

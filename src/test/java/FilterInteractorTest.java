@@ -1,9 +1,9 @@
 import data_access.AbstractCondition;
+import data_access.review.ReviewDataAccessInterface;
 import data_access.status.StatusReportDataAccessInterface;
 import data_access.user.UserDataAccessInterface;
 import data_access.washroom.WashroomDataAccessInterface;
 import entity.*;
-import data_access.review.ReviewDataAccessInterface;
 import org.mindrot.jbcrypt.BCrypt;
 import use_case.filter.FilterInputData;
 import use_case.filter.FilterInteractor;
@@ -16,13 +16,13 @@ import java.util.*;
 final class FilterInteractorTest {
     static void run() {
         class FakeWashrooms implements WashroomDataAccessInterface {
-            private List<Washroom> washrooms = new ArrayList<>();
+            private final List<Washroom> washrooms = new ArrayList<>();
 
             public FakeWashrooms() {
                 washrooms.add(new Washroom(
                         "a",
                         "a",
-                        new Building("a","a",44.0,72.0),
+                        new Building("a", "a", 44.0, 72.0),
                         "1",
                         true,
                         Washroom.Gender.ALL_GENDER,
@@ -33,7 +33,7 @@ final class FilterInteractorTest {
                 washrooms.add(new Washroom(
                         "b",
                         "b",
-                        new Building("a","a",44.0,72.0),
+                        new Building("a", "a", 44.0, 72.0),
                         "1",
                         false,
                         Washroom.Gender.ALL_GENDER,
@@ -44,7 +44,7 @@ final class FilterInteractorTest {
                 washrooms.add(new Washroom(
                         "c",
                         "c",
-                        new Building("b","b",45.0,72.0),
+                        new Building("b", "b", 45.0, 72.0),
                         "1",
                         true,
                         Washroom.Gender.ALL_GENDER,
@@ -53,6 +53,7 @@ final class FilterInteractorTest {
                         "none",
                         new ReviewSummary(1.0, 1.0, 1)));
             }
+
             @Override
             public Optional<Washroom> getById(String Id) {
                 return Optional.of(washrooms.get(0));
@@ -83,7 +84,7 @@ final class FilterInteractorTest {
         }
 
         class FakeReviews implements ReviewDataAccessInterface {
-            private List<Review> reviews = new ArrayList<>();
+            private final List<Review> reviews = new ArrayList<>();
 
             public FakeReviews() {
                 reviews.add(new Review(
@@ -119,7 +120,7 @@ final class FilterInteractorTest {
 
         class FakeUser implements UserDataAccessInterface {
             User current;
-            User saved = new User("demo", BCrypt.hashpw("secret", BCrypt.gensalt()), "");
+            final User saved = new User("demo", BCrypt.hashpw("secret", BCrypt.gensalt()), "");
 
             @Override
             public Optional<User> get(String n) {
@@ -136,13 +137,13 @@ final class FilterInteractorTest {
             }
 
             @Override
-            public void setCurrentUser(User u) {
-                current = u;
+            public Optional<User> getCurrentUser() {
+                return Optional.ofNullable(current);
             }
 
             @Override
-            public Optional<User> getCurrentUser() {
-                return Optional.ofNullable(current);
+            public void setCurrentUser(User u) {
+                current = u;
             }
 
             @Override
@@ -153,7 +154,8 @@ final class FilterInteractorTest {
         class FakeStatus implements StatusReportDataAccessInterface {
 
             @Override
-            public void save(StatusReport report) {}
+            public void save(StatusReport report) {
+            }
 
             @Override
             public List<StatusReport> getRecentForWashroom(String washroomId, LocalDateTime since) {
@@ -177,6 +179,7 @@ final class FilterInteractorTest {
 
         class FakePresenter implements FilterOutputBoundary {
             public FilterOutputData out;
+
             @Override
             public void present(FilterOutputData data) {
                 out = data;
@@ -200,8 +203,8 @@ final class FilterInteractorTest {
                 status,
                 users,
                 output,
-        new HashSet<String>()).execute(
-                new FilterInputData(5.0F, 1.0F, false, null, "", false, false,1.0, 1.0)
+                new HashSet<String>()).execute(
+                new FilterInputData(5.0F, 1.0F, false, null, "", false, false, 1.0, 1.0)
         );
 
         TestSupport.check(output.out.success()

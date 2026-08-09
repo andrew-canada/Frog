@@ -29,12 +29,18 @@ import interface_adapter.filter.FilterController;
 import interface_adapter.filter.FilterPresenter;
 import interface_adapter.filter.FilterViewModel;
 import interface_adapter.login.*;
+import interface_adapter.logout.LogoutController;
+import interface_adapter.logout.LogoutPresenter;
 import interface_adapter.moderate_reviews.ModerateReviewsController;
 import interface_adapter.moderate_reviews.ModerateReviewsPresenter;
 import interface_adapter.moderate_reviews.ModerateReviewsViewModel;
 import interface_adapter.report_review.ReportReviewController;
 import interface_adapter.report_review.ReportReviewPresenter;
 import interface_adapter.report_review.ReportReviewViewModel;
+import interface_adapter.sort_reviews.SortReviewsController;
+import interface_adapter.sort_washrooms.SortWashroomController;
+import interface_adapter.sort_washrooms.SortWashroomPresenter;
+import interface_adapter.sort_washrooms.SortWashroomViewModel;
 import interface_adapter.status_report.StatusReportController;
 import interface_adapter.status_report.StatusReportPresenter;
 import interface_adapter.status_report.StatusReportViewModel;
@@ -46,8 +52,6 @@ import interface_adapter.vote_helpful.VoteHelpfulController;
 import interface_adapter.write_review.WriteReviewController;
 import interface_adapter.write_review.WriteReviewPresenter;
 import interface_adapter.write_review.WriteReviewViewModel;
-import interface_adapter.logout.LogoutController;
-import interface_adapter.logout.LogoutPresenter;
 import use_case.account.change_password.ChangePasswordInteractor;
 import use_case.account.change_username.ChangeUsernameInteractor;
 import use_case.account.delete_account.DeleteAccountInteractor;
@@ -60,6 +64,8 @@ import use_case.logout.LogoutInteractor;
 import use_case.moderate_reviews.ModerateReviewsInteractor;
 import use_case.report_review.ReportReviewInteractor;
 import use_case.signup.SignupInteractor;
+import use_case.sort_review.SortReviewInteractor;
+import use_case.sort_washrooms.SortWashroomInteractor;
 import use_case.status_report.SubmitStatusReportInteractor;
 import use_case.view_reviews.ViewReviewsInteractor;
 import use_case.vote_helpful.VoteHelpfulInteractor;
@@ -309,8 +315,10 @@ public final class AppBuilder {
         var reportReviewModel = new ReportReviewViewModel();
         var moderateModel = new ModerateReviewsViewModel();
         var filterModel = new FilterViewModel();
+        var sortWashroomModel = new SortWashroomViewModel();
 
-        var reviewController = new ViewReviewsController(new ViewReviewsInteractor(reviews, washrooms, reviews, reviews, new ViewReviewsPresenter(reviewsModel)));
+        ViewReviewsPresenter reviewsPresenter = new ViewReviewsPresenter(reviewsModel);
+        var reviewController = new ViewReviewsController(new ViewReviewsInteractor(reviews, washrooms, reviews, reviews, reviewsPresenter));
         var writeReviewController = new WriteReviewController(new WriteReviewInteractor(reviews, new WriteReviewPresenter(writeReviewModel)));
         var voteController = new VoteHelpfulController(new VoteHelpfulInteractor(reviews));
         var reportController = new ReportReviewController(new ReportReviewInteractor(reviews, new ReportReviewPresenter(reportReviewModel)));
@@ -324,10 +332,15 @@ public final class AppBuilder {
         var changeUsernameController = new ChangeUsernameController(new ChangeUsernameInteractor(users, new ChangeUsernamePresenter(accountModel, isLoggedIn)));
         var changePasswordController = new ChangePasswordController(new ChangePasswordInteractor(users, new ChangePasswordPresenter(accountModel)));
         var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel, isLoggedIn)));
-        var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, washrooms, new PersonalPlanPresenter(accountModel)));
-        var logoutController = new LogoutController(new LogoutInteractor(users, new LogoutPresenter(isLoggedIn)));
+        var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
+        var logoutController = new LogoutController(new LogoutInteractor(users,
+                new LogoutPresenter(isLoggedIn, loginModel, loggedInModel)));
         var filterController = new FilterController(new FilterInteractor(washrooms, reviews, reports, users,
                 new FilterPresenter(filterModel, listModel, mapModel), JSON_WASHROOM_NAMES));
+        var sortWashroomController = new SortWashroomController(
+                new SortWashroomInteractor(washrooms, new SortWashroomPresenter(listModel, sortWashroomModel)));
+        var sortReviewsController = new SortReviewsController(
+                new SortReviewInteractor(reviews, users, washrooms, reviews, reviews, reviewsPresenter));
 
         JFrame frame = new JFrame("FlushID — U of T washroom finder");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -382,6 +395,7 @@ public final class AppBuilder {
         });
         main.setOnDirections(id -> requestDirections(main, directionsController, id));
         main.setOnLogin(() -> layout.show(cards, LOGIN));
+        main.setOnLogout(() -> layout.show(cards, LOGIN));
         main.setOnAccount(() -> layout.show(cards, ACCOUNT));
 
         main.setOnReport(() -> selected(washrooms, main).ifPresentOrElse(
@@ -401,6 +415,7 @@ public final class AppBuilder {
                 () -> noWashroom(frame)
         ));
         main.setFilterController(filterController);
+        main.setSortWashroomController(sortWashroomController);
 
         readReviews.setOnBack(showMain);
 
@@ -415,7 +430,7 @@ public final class AppBuilder {
         ));
         readReviews.setOnHelpful(id -> {
             voteController.toggle(id, currentUser.get());
-            reviewController.execute(reviewsModel.getState().washroomId(), currentUser.get());
+            reviewsModel.toggleHelpfulVote(id);
         });
         readReviews.setOnReport(id -> {
             // Modal dialog: setVisible blocks until it closes, then refresh the review list (so the
@@ -424,6 +439,7 @@ public final class AppBuilder {
             reviewController.execute(reviewsModel.getState().washroomId(), currentUser.get());
             moderateController.load();
         });
+        readReviews.setSortReviewsController(sortReviewsController);
         moderate.setOnBack(showMain);
         moderate.setController(moderateController);
 

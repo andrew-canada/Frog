@@ -1,6 +1,8 @@
-import entity.User;
 import data_access.user.UserDataAccessInterface;
-import use_case.signup.*;
+import entity.User;
+import use_case.signup.SignupInputData;
+import use_case.signup.SignupInteractor;
+import use_case.signup.SignupOutputData;
 
 import java.util.Optional;
 
@@ -21,11 +23,11 @@ final class SignupInteractorTest {
                 saved = u;
             }
 
-            public void setCurrentUser(User u) {
-            }
-
             public Optional<User> getCurrentUser() {
                 return Optional.empty();
+            }
+
+            public void setCurrentUser(User u) {
             }
 
             public void removeUser(String n) {

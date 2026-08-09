@@ -1,4 +1,6 @@
-import entity.*;
+import entity.Building;
+import entity.ReviewSummary;
+import entity.Washroom;
 
 final class TestSupport {
     private TestSupport() {

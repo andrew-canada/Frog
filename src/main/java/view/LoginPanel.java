@@ -7,9 +7,11 @@ import javax.swing.*;
 import java.awt.*;
 
 public final class LoginPanel extends JPanel {
+    private static final String DEFAULT_MESSAGE = "Sign in with an account stored in MongoDB.";
     private final JTextField username = new JTextField(18);
     private final JPasswordField password = new JPasswordField(18);
-    private final JLabel message = Theme.label("Sign in with an account stored in MongoDB.", 12, Theme.MUTED);
+    private final JLabel message = Theme.label(DEFAULT_MESSAGE, 12, Theme.MUTED);
+    private final JButton back = Theme.button("Continue as guest");
     private Runnable onBack = () -> {
     };
     private Runnable onSignup = () -> {
@@ -41,7 +43,6 @@ public final class LoginPanel extends JPanel {
 
         JButton login = Theme.primary("Log in");
         JButton signup = Theme.button("Create account");
-        JButton back = Theme.button("Continue as guest");
         for (JButton button : new JButton[]{login, signup, back}) button.setAlignmentX(Component.LEFT_ALIGNMENT);
         login.addActionListener(event -> controller.execute(username.getText(), new String(password.getPassword())));
         signup.addActionListener(event -> onSignup.run());
@@ -57,9 +58,10 @@ public final class LoginPanel extends JPanel {
 
         model.addPropertyChangeListener(event -> {
             LoginViewModel.State state = model.getState();
-            message.setText(state.message());
-            message.setForeground(state.success() ? new Color(37, 125, 80) : Theme.BERRY);
-            back.setText(state.success() ? "Back to map" : "Continue as guest");
+            message.setText(state.message().isBlank() ? DEFAULT_MESSAGE : state.message());
+            message.setForeground(state.message().isBlank() ? Theme.MUTED
+                    : state.success() ? new Color(37, 125, 80) : Theme.BERRY);
+            back.setText(state.success() ? "View map" : "Continue as guest");
         });
     }
 

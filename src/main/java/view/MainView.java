@@ -1,6 +1,7 @@
 package view;
 
 import data_access.user.DBUserDataAccessObject;
+import data_access.user.InMemoryUserDataAccessObject;
 import entity.GeoPoint;
 import entity.Washroom;
 import interface_adapter.account.IsLoggedInState;
@@ -8,8 +9,14 @@ import interface_adapter.account.IsLoggedInViewModel;
 import interface_adapter.directions.MapViewModel;
 import interface_adapter.filter.FilterController;
 import interface_adapter.filter.FilterViewModel;
+import interface_adapter.login.LoggedInViewModel;
+import interface_adapter.login.LoginViewModel;
 import interface_adapter.logout.LogoutController;
 import interface_adapter.logout.LogoutPresenter;
+import interface_adapter.logout.LogoutController;
+import interface_adapter.logout.LogoutPresenter;
+import interface_adapter.view_reviews.WashroomListViewModel;
+import interface_adapter.sort_washrooms.SortWashroomController;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
@@ -26,26 +33,24 @@ import use_case.logout.LogoutInteractor;
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.*;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.*;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class MainView extends JPanel {
-    /** Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies. */
+    private static final Color MAP_LOW = Theme.COLORBLIND_BLUE;
+    private static final Color MAP_HIGH = Theme.COLORBLIND_ORANGE;
+    /**
+     * Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies.
+     */
     private final LogoutController logoutController;
     private final CardLayout buttonsLayout = new CardLayout();
     private final JPanel buttonsPanel = new JPanel(buttonsLayout);
-    private IsLoggedInViewModel isLoggedIn =  new IsLoggedInViewModel();
-    private static final Color MAP_LOW = Theme.COLORBLIND_BLUE;
-    private static final Color MAP_HIGH = Theme.COLORBLIND_ORANGE;
     /**
      * Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies.
      */
@@ -54,12 +59,14 @@ public final class MainView extends JPanel {
     private final JLabel heatmapLegend = Theme.label("", 11, Theme.MUTED);
     private final CampusMapPanel map = new CampusMapPanel();
     private final Map<String, JPanel> cardsByWashroomId = new HashMap<>();
+    private IsLoggedInViewModel isLoggedIn = new IsLoggedInViewModel();
     private JButton moderatorNav;
     private JButton busynessHeatmap, cleanlinessHeatmap;
     private boolean busynessHeatmapVisible, cleanlinessHeatmapVisible;
     private String selectedId = "";
     private List<WashroomListViewModel.Item> renderedItems = List.of();
     private FilterController filterController;
+    private SortWashroomController sortWashroomController;
 
     private Consumer<String> onReviews = id -> {
     };
@@ -75,6 +82,8 @@ public final class MainView extends JPanel {
             onAccount = () -> {
             },
             onModerator = () -> {
+            },
+            onLogout = () -> {
             };
 
     private Function<String, GeoPoint> addressLookup = address -> {
@@ -82,9 +91,16 @@ public final class MainView extends JPanel {
     };
     private double latitude = 43.6629, longitude = -79.3957;
 
-    /** Retained for callers that do not provide filtering controls. */
+    /**
+     * Retained for callers that do not provide filtering controls.
+     */
     public MainView(WashroomListViewModel washrooms, MapViewModel route) { // TODO: why is this still here its being a pain
-        this(washrooms, route, new FilterViewModel(), new IsLoggedInViewModel(), new LogoutController(new LogoutInteractor(new DBUserDataAccessObject(), new LogoutPresenter(new IsLoggedInViewModel()))));
+        this(washrooms,
+                route,
+                new FilterViewModel(),
+                new IsLoggedInViewModel(),
+                new LogoutController(new LogoutInteractor(new InMemoryUserDataAccessObject(),
+                        new LogoutPresenter(new IsLoggedInViewModel(), new LoginViewModel(), new LoggedInViewModel()))));
     }
 
     public MainView(WashroomListViewModel washrooms, MapViewModel route, FilterViewModel filter, IsLoggedInViewModel isLoggedIn, LogoutController logoutController) {
@@ -142,13 +158,14 @@ public final class MainView extends JPanel {
             nav.add(b);
         JButton logoutButton = Theme.button("Logout");
         logoutButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent evt) {
 
+                    onLogout.run();
                     logoutController.execute();
 
+                    }
                 }
-            }
         );
         nav.add(logoutButton);
         p.add(nav, BorderLayout.EAST);
@@ -191,24 +208,19 @@ public final class MainView extends JPanel {
         controls.add(clear);
         controls.add(new JLabel("Sort by:"));
         WashroomSortDropdownControl washroomSortDropdownControl = new WashroomSortDropdownControl();
+        controls.add(washroomSortDropdownControl);
         washroomSortDropdownControl.addActionListener(e -> {
-            WashroomListViewModel.State currState = washrooms.getState();
-            washrooms.setState(new WashroomListViewModel.State(
-                    currState.items(),
-                    currState.selectedId(),
+            ArrayList<String> washroomIdList = new ArrayList<String>();
+            washroomIdList.addAll(
+                    washrooms.getState().items().stream()
+                            .map(washroom -> washroom.id())
+                            .toList()
+            );
+            sortWashroomController.execute(
                     washroomSortDropdownControl.getSelectedItem().toString(),
-                    currState.routeVisible()));
-            Comparator<WashroomListViewModel.Item> comparator;
-            if (washroomSortDropdownControl.getSelectedItem().toString().equals("Highest Rated")) {
-                comparator = WashroomListViewModel.Item.BY_RATING;
-            } else if (washroomSortDropdownControl.getSelectedItem().toString().equals("Nearest")) {
-                comparator = WashroomListViewModel.Item.BY_DISTANCE;
-            } else {
-                comparator = WashroomListViewModel.Item.BY_ALPHABETICAL;
-            }
-            ArrayList<WashroomListViewModel.Item> sortedWashroom = new ArrayList<>(washrooms.getState().items());
-            sortedWashroom.sort(comparator);
-            renderList(sortedWashroom);
+                    washroomIdList,
+                    latitude,
+                    longitude);
         });
         controls.add(washroomSortDropdownControl);
         p.add(controls, BorderLayout.NORTH);
@@ -397,6 +409,10 @@ public final class MainView extends JPanel {
         onLogin = r;
     }
 
+    public void setOnLogout(Runnable r) {
+        onLogout = r;
+    }
+
     public void setOnAccount(Runnable r) {
         onAccount = r;
     }
@@ -417,7 +433,13 @@ public final class MainView extends JPanel {
         filterController = f;
     }
 
-    /** Shows the Moderator nav entry only for a user with moderator privileges. */
+    public void setSortWashroomController(SortWashroomController controller) {
+        sortWashroomController = controller;
+    }
+
+    /**
+     * Shows the Moderator nav entry only for a user with moderator privileges.
+     */
     public void setModerator(boolean isModerator) {
         if (moderatorNav != null) {
             moderatorNav.setVisible(isModerator);
@@ -474,7 +496,7 @@ public final class MainView extends JPanel {
         }
     }
 
-    static final class CampusMapPanel extends JPanel {
+    final class CampusMapPanel extends JPanel {
         private final JXMapViewer viewer;
         private final Map<String, Rectangle> markerHitTargets = new HashMap<>();
         private List<GeoPoint> route = List.of();
@@ -486,7 +508,7 @@ public final class MainView extends JPanel {
         };
         private GeoPoint origin = new GeoPoint(43.6629, -79.3957);
 
-        CampusMapPanel() {
+        public CampusMapPanel() {
             setLayout(new BorderLayout());
             setBorder(BorderFactory.createLineBorder(Theme.LINE));
             if (GraphicsEnvironment.isHeadless()) {
