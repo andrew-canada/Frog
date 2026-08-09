@@ -188,12 +188,12 @@ public final class AccountView extends JPanel {
         changeUsername.setBorder(
             BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
         final JPanel changeUsernameTitle = Theme.page();
-        changeUsernameTitle.setLayout(new BorderLayout());
-        changeUsernameTitle.add(Theme.title("Change Username"), BorderLayout.WEST);
+        changeUsernameTitle.setLayout(new FlowLayout(FlowLayout.LEFT));
+        changeUsernameTitle.add(Theme.title("Change Username"));
         final JPanel changeUsernameContent = Theme.page();
         final JPanel changeUsernameButtons = Theme.page();
-        changeUsernameButtons.setLayout(new BorderLayout());
-        changeUsernameButtons.add(changeUsernameButton, BorderLayout.WEST);
+        changeUsernameButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+        changeUsernameButtons.add(changeUsernameButton);
         changeUsername.add(changeUsernameTitle);
         changeUsername.add(changeUsernameContent);
         changeUsername.add(changeUsernameButtons);
@@ -202,12 +202,12 @@ public final class AccountView extends JPanel {
         changePassword.setBorder(
             BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
         final JPanel changePasswordTitle = Theme.page();
-        changePasswordTitle.setLayout(new BorderLayout());
-        changePasswordTitle.add(Theme.title("Change Password"), BorderLayout.WEST);
+        changePasswordTitle.setLayout(new FlowLayout(FlowLayout.LEFT));
+        changePasswordTitle.add(Theme.title("Change Password"));
         final JPanel changePasswordContent = Theme.page();
         final JPanel changePasswordButtons = Theme.page();
-        changePasswordButtons.setLayout(new BorderLayout());
-        changePasswordButtons.add(changePasswordButton, BorderLayout.WEST);
+        changePasswordButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+        changePasswordButtons.add(changePasswordButton);
         changePassword.add(changePasswordTitle);
         changePassword.add(changePasswordContent);
         changePassword.add(changePasswordButtons);
@@ -216,13 +216,13 @@ public final class AccountView extends JPanel {
         deleteAccount.setBorder(
             BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
         final JPanel deleteAccountTitle = Theme.page();
-        deleteAccountTitle.setLayout(new BorderLayout());
-        deleteAccountTitle.add(Theme.title("Delete Account"), BorderLayout.WEST);
+        deleteAccountTitle.setLayout(new FlowLayout(FlowLayout.LEFT));
+        deleteAccountTitle.add(Theme.title("Delete Account"));
         final JPanel deleteAccountContent = Theme.page();
-        deleteAccountContent.setLayout(new BorderLayout());
+        deleteAccountContent.setLayout(new FlowLayout(FlowLayout.LEFT));
         final JPanel deleteAccountButtons = Theme.page();
-        deleteAccountButtons.setLayout(new BorderLayout());
-        deleteAccountButtons.add(deleteAccountButton, BorderLayout.WEST);
+        deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+        deleteAccountButtons.add(deleteAccountButton);
         deleteAccount.add(deleteAccountTitle);
         deleteAccount.add(deleteAccountContent);
         deleteAccount.add(deleteAccountButtons);
@@ -327,7 +327,7 @@ public final class AccountView extends JPanel {
                     changeUsernameButtons.add(Box.createHorizontalStrut(10));
                     changeUsernameButtons.add(cancelUsernameButton);
                     changePasswordContent.add(Box.createHorizontalStrut(10));
-                    changeUsernameButtons.add(usernameStatusLabel, BorderLayout.EAST);
+                    changeUsernameButtons.add(usernameStatusLabel);
 
                     changeUsernameButtons.revalidate();
                     changeUsernameButtons.repaint();
@@ -475,8 +475,7 @@ public final class AccountView extends JPanel {
                     deleteAccountContent.revalidate();
                     deleteAccountContent.repaint();
 
-                    deleteAccountButtons.remove(confirmDeleteAccountButton);
-                    deleteAccountButtons.remove(cancelDeleteAccountButton);
+                    deleteAccountButtons.removeAll();
                     deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
                     deleteAccountButtons.add(deleteAccountButton);
 
@@ -526,59 +525,6 @@ public final class AccountView extends JPanel {
         if (!state.getIsLoggedIn()) {
             resetAccountView();
             viewModel.getState().logoutResetState();
-        }
-
-    }
-
-    private void renderPlan(final String plan) {
-
-        try {
-            final ObjectMapper mapper = new ObjectMapper();
-            final List<WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<WashroomPlan>>() {
-            });
-
-            final List<String> days = List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
-
-            final JPanel planPanel = new JPanel(new GridBagLayout());
-            final GridBagConstraints constraints = new GridBagConstraints();
-            constraints.fill = GridBagConstraints.BOTH;
-            constraints.insets = new Insets(5, 5, 5, 5);
-            constraints.weightx = 1.0;
-            constraints.weighty = 0.0;
-
-            for (int x = 0; x < days.size(); x++) {
-                final String day = days.get(x);
-                constraints.gridx = x;
-                constraints.gridy = 0;
-                final JPanel dayPanel = new JPanel();
-                dayPanel.add(Theme.label(day.toUpperCase(), 14, Theme.INK));
-                planPanel.add(dayPanel, constraints);
-                int y = 1;
-                for (final WashroomPlan washroom : washroomList) {
-                    if (washroom.day.contains(day)) {
-                        constraints.gridx = x;
-                        constraints.gridy = y;
-                        final JTextArea textArea = new JTextArea(washroom.washroom);
-                        textArea.setLineWrap(true);
-                        textArea.setWrapStyleWord(true);
-                        textArea.setEditable(false);
-                        textArea.setOpaque(false);
-                        textArea.setColumns(10);
-                        final JPanel card = new JPanel(new FlowLayout());
-                        card.add(Theme.label(washroom.time, 14, Theme.INK));
-                        card.add(textArea);
-                        planPanel.add(card, constraints);
-                        y++;
-                    }
-                }
-
-            }
-
-            personalPlan.add(planPanel);
-            personalPlan.revalidate();
-            personalPlan.repaint();
-        } catch (final Exception e) {
-            personalPlanStatusLabel.setText("Unable to display plan");
         }
 
     }

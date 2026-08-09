@@ -69,6 +69,7 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
             final String generatedPlan = generator.generate(calendar, tripsPerDay, inputData.semester(), availableWashrooms);
             final String personalPlan = normalizePlan(generatedPlan, availableWashrooms);
             final User updatedUser = new User(user.username(), user.passwordHash(), personalPlan, user.moderator());
+            users.removeUser(user.username());
             users.save(updatedUser);
             session.setCurrentUser(updatedUser);
             presenter.present(new PersonalPlanOutputData(true, "Personal plan generated", personalPlan));
