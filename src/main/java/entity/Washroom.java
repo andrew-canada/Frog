@@ -55,11 +55,6 @@ public final class Washroom implements entity.washroom.Washroom {
         return floor;
     }
 
-    @Override
-    public String floor() {
-        return floor;
-    }
-
     public boolean accessible() {
         return accessible;
     }

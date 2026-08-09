@@ -1,6 +1,7 @@
 package view;
 
 import data_access.user.DBUserDataAccessObject;
+import data_access.user.InMemoryUserDataAccessObject;
 import entity.GeoPoint;
 import entity.Washroom;
 import interface_adapter.account.IsLoggedInState;
