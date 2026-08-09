@@ -20,6 +20,9 @@ public final class PersonalPlanPresenter implements PersonalPlanOutputBoundary {
         state.setPersonalPlan(outputData.personalPlan());
         state.setPersonalPlanMessage(outputData.message());
 
+        System.out.println(outputData.message());
+        System.out.println(outputData.personalPlan());
+
     }
 
 }

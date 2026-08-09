@@ -1,7 +1,8 @@
 package use_case.write_review;
 
 import entity.Review;
-import data_access.review.ReviewDataAccessInterface;
+import use_case.view_reviews.ReviewDataAccessInterface;
+
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.UUID;
