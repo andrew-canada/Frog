@@ -1,5 +1,7 @@
 package use_case.filter;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import data_access.AbstractCondition;
 import data_access.CollectionCondition;
 import data_access.Condition;
@@ -91,6 +93,20 @@ public class FilterInteractor implements FilterInputBoundary {
             }
         }
 
+        if (inputData.personalPlan()) {
+            Optional<User> user = userDAO.getCurrentUser();
+            if (user.isEmpty()) {
+                presenter.presentError("Cannot filter on personal plan while the user is logged out.");
+                return;
+            } else if (user.map(entity.User::personalPlan).orElse("").equals("") || Objects.isNull(user.map(entity.User::personalPlan).orElse(""))) {
+                presenter.presentError("Please generate personal plan before filtering.");
+                return;
+            } else {
+                filterByPlan(initialWashrooms, user.get());
+            }
+        }
+
+
         filterByCurrentStatus(initialWashrooms, inputData);
 
         presenter.present(new FilterOutputData(
@@ -112,6 +128,28 @@ public class FilterInteractor implements FilterInputBoundary {
                 .map(entity.Review::washroomId)
                 .collect(java.util.stream.Collectors.toSet());
         washrooms.removeIf(washroom -> !washroomIds.contains(washroom.id()));
+    }
+
+    /**
+     * Filters washrooms, modifying the inputted list to remove washrooms which are not included in the user's
+     * personal plan
+     *
+     * @param washrooms A Map from washroomID to Washroom object of the washrooms to be filtered.
+     * @param user      The user whose personal plan is required for the washroom to pass the filter.
+     */
+    private void filterByPlan(List<Washroom> washrooms, User user) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<HashMap<String, String>> washroomList = mapper.readValue(user.personalPlan(), new TypeReference<List<HashMap<String, String>>>() {});
+            Set<String> washroomIds = new HashSet<>();
+            for (HashMap<String, String> washroom : washroomList) {
+                washroomIds.add(washroom.get("id"));
+            }
+            washrooms.removeIf(washroom -> !washroomIds.contains(washroom.id()));
+        } catch (Exception e) {
+            presenter.presentError("Please re-generate your personal plan.");
+        }
+
     }
 
     /**

@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public final class PersonalPlanView extends JDialog {
@@ -24,7 +25,7 @@ public final class PersonalPlanView extends JDialog {
 
         try {
             ObjectMapper mapper = new ObjectMapper();
-            List<PersonalPlanInteractor.WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<PersonalPlanInteractor.WashroomPlan>>() {});
+            List<HashMap<String, String>> washroomList = mapper.readValue(plan, new TypeReference<List<HashMap<String, String>>>() {});
 
             List<String> days = List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
 
@@ -44,12 +45,12 @@ public final class PersonalPlanView extends JDialog {
                 dayPanel.add(Theme.label(day.toUpperCase(), 14, Theme.INK));
                 planPanel.add(dayPanel, constraints);
                 int y = 1;
-                for (PersonalPlanInteractor.WashroomPlan washroom : washroomList) {
-                    if (washroom.day.contains(day)) {
+                for (HashMap<String, String> washroom : washroomList) {
+                    if (washroom.get("day").contains(day)) {
                         System.out.println(y);
                         constraints.gridx = x;
                         constraints.gridy = y;
-                        JTextArea textArea = new JTextArea(washroom.washroom);
+                        JTextArea textArea = new JTextArea(washroom.get("name"));
                         textArea.setLineWrap(true);
                         textArea.setWrapStyleWord(true);
                         textArea.setEditable(false);
@@ -57,7 +58,7 @@ public final class PersonalPlanView extends JDialog {
                         textArea.setColumns(10);
                         JPanel card = new JPanel(new FlowLayout());
                         card.setBackground(Theme.PAPER);
-                        card.add(Theme.label(washroom.time, 14,  Theme.INK));
+                        card.add(Theme.label(washroom.get("time"), 14,  Theme.INK));
                         card.add(textArea);
                         planPanel.add(card, constraints);
                         y++;

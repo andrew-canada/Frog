@@ -234,7 +234,7 @@ public final class AccountView extends JPanel {
                 @Override
                 protected String doInBackground() throws Exception {
 
-                    personalPlanController.execute(icsChooser.getSelectedFile().getAbsolutePath(), personalPlanNumField.getText());
+                    personalPlanController.execute(icsChooser.getSelectedFile().getAbsolutePath(), personalPlanNumField.getText(), (String) personalPlanSemesterBox.getSelectedItem());
                     return "";
 
                 }

@@ -201,7 +201,7 @@ final class FilterInteractorTest {
                 users,
                 output,
         new HashSet<String>()).execute(
-                new FilterInputData(5.0F, 1.0F, false, null, "", false, 1.0, 1.0)
+                new FilterInputData(5.0F, 1.0F, false, null, "", false, false,1.0, 1.0)
         );
 
         TestSupport.check(output.out.success()

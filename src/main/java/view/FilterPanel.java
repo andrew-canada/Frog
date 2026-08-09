@@ -14,6 +14,7 @@ public final class FilterPanel extends JPanel {
     private final JCheckBox ownReviews = new JCheckBox("Only washrooms that you've reviewed");
     private final JComboBox<String> gender = new JComboBox<>(new String[]{"Any gender", "All-gender", "Women", "Men"});
     private final JCheckBox filterSelectedBuilding = new JCheckBox("Filter to currently selected building");
+    private final JCheckBox personalPlan = new JCheckBox("Only washrooms in your personal plan");
 
     public FilterPanel(JFrame frame, String selected, Runnable onFilter) {
         this.frame = frame;
@@ -43,8 +44,12 @@ public final class FilterPanel extends JPanel {
         checkboxes.add(ownReviews);
         add(checkboxes);
 
+        JPanel checkboxes2 = new JPanel();
         filterSelectedBuilding.setBackground(Theme.PAPER);
-        add(filterSelectedBuilding);
+        checkboxes2.add(filterSelectedBuilding);
+        personalPlan.setBackground(Theme.PAPER);
+        checkboxes2.add(personalPlan);
+        add(checkboxes2);
 
         add(Box.createVerticalStrut(8));
         add(Theme.label("Washroom type", 12, Theme.MUTED));
@@ -81,6 +86,8 @@ public final class FilterPanel extends JPanel {
         return filterSelectedBuilding.isSelected();
     }
 
+    public boolean personalPlan() { return personalPlan.isSelected(); }
+
     public Washroom.Gender gender() {
         return switch (gender.getSelectedIndex()) {
             case 1 -> Washroom.Gender.ALL_GENDER;
@@ -89,4 +96,5 @@ public final class FilterPanel extends JPanel {
             default -> null;
         };
     }
+
 }

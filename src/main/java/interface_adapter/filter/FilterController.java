@@ -19,6 +19,7 @@ public class FilterController {
             boolean accessible,
             boolean ownReviews,
             boolean selectedBuilding,
+            boolean personalPlan,
             String selectedID,
             Washroom.Gender gender,
             double latitude,
@@ -43,6 +44,7 @@ public class FilterController {
                 inputGender,
                 inputID,
                 ownReviews,
+                personalPlan,
                 latitude,
                 longitude);
 

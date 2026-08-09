@@ -221,7 +221,7 @@ public final class MainView extends JPanel {
             routeLabel.setText("Location updated — choose directions");
         }, latitude, longitude, mapClicker).setVisible(true));
         filters.addActionListener(e -> new FilterView(SwingUtilities.getWindowAncestor(this), "Filter", selectedId(), filterController, latitude, longitude).setVisible(true));
-        clear.addActionListener(e -> filterController.execute(5, 1, false, false, false, selectedId(), null, latitude, longitude));
+        clear.addActionListener(e -> filterController.execute(5, 1, false, false, false, false, selectedId(), null, latitude, longitude));
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
         list.setBackground(Theme.PAPER);
         JScrollPane scroll = new JScrollPane(list);
