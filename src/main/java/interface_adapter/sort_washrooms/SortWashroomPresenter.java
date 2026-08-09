@@ -1,25 +1,22 @@
-package interface_adapter.filter;
+package interface_adapter.sort_washrooms;
 
-import interface_adapter.directions.MapViewModel;
 import interface_adapter.WashroomListViewModel;
-import use_case.filter.FilterOutputBoundary;
-import use_case.filter.FilterOutputData;
+import use_case.sort_washrooms.SortWashroomsOutputBoundary;
+import use_case.sort_washrooms.SortWashroomsOutputData;
 
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.List;
 
-public class FilterPresenter implements FilterOutputBoundary {
+public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
     private final WashroomListViewModel listModel;
-    private final MapViewModel mapModel;
-    private final FilterViewModel filterModel;
+    private final SortWashroomViewModel sortModel;
 
-    public FilterPresenter(FilterViewModel filterViewModel, WashroomListViewModel listModel, MapViewModel mapModel) {
-
-        this.filterModel = filterViewModel;
+    public SortWashroomPresenter(WashroomListViewModel listModel,
+                                 SortWashroomViewModel sortModel){
         this.listModel = listModel;
-        this.mapModel = mapModel;
+        this.sortModel = sortModel;
     }
+
 
     private static double distance(double a, double b, double c, double d) {
         double x = Math.toRadians(d - b) * Math.cos(Math.toRadians((a + c) / 2));
@@ -39,7 +36,7 @@ public class FilterPresenter implements FilterOutputBoundary {
     }
 
     @Override
-    public void present(FilterOutputData outputData) {
+    public void present(SortWashroomsOutputData outputData) {
         List<WashroomListViewModel.Item> items = outputData.washrooms().stream().map(
                 washroom -> new WashroomListViewModel.Item(
                         washroom.id(),
@@ -54,7 +51,8 @@ public class FilterPresenter implements FilterOutputBoundary {
                         washroom.accessible())).toList();
         Runnable update = () -> {
             listModel.setState(new WashroomListViewModel.State(items, null, "Sort by: Nearest", false));
-            filterModel.setState(new FilterViewModel.State(true, outputData.washrooms(), ""));
+            sortModel.setState(new
+                    interface_adapter.sort_washrooms.SortWashroomViewModel.State(true, outputData.washrooms()));
         };
         if (SwingUtilities.isEventDispatchThread()) update.run();
         else SwingUtilities.invokeLater(update);
@@ -68,12 +66,5 @@ public class FilterPresenter implements FilterOutputBoundary {
          if (SwingUtilities.isEventDispatchThread()) update.run();
          else SwingUtilities.invokeLater(update);
          */
-    }
-
-    @Override
-    public void presentError(String message) {
-        Runnable update = () -> filterModel.setState(new FilterViewModel.State(false, new ArrayList<>(), message));
-        if (SwingUtilities.isEventDispatchThread()) update.run();
-        else SwingUtilities.invokeLater(update);
     }
 }
