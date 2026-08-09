@@ -1,10 +1,10 @@
 package app;
 
-import data_access.review.DBReviewDataAccessObject;
-import data_access.status.DBStatusReportDataAccessObject;
-import data_access.washroom.DBWashroomDataAccessObject;
+import database.review.DBReviewDataAccessObject;
+import database.status.DBStatusReportDataAccessObject;
+import database.washroom.DBWashroomDataAccessObject;
 import entity.Washroom;
-import view.MainView;
+import views.MainView;
 
 import javax.json.Json;
 import javax.json.JsonObject;

@@ -1,5 +1,5 @@
 import com.sun.net.httpserver.HttpServer;
-import data_access.route.GraphhopperGeocodingDataAccessObject;
+import database.route.GraphhopperGeocodingDataAccessObject;
 import entity.GeoPoint;
 
 import java.net.InetSocketAddress;

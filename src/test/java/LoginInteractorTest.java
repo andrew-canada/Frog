@@ -1,4 +1,4 @@
-import data_access.security.BCryptPasswordHasher;
+import database.security.BCryptPasswordHasher;
 import entity.User;
 import org.mindrot.jbcrypt.BCrypt;
 import use_case.port.UserRepository;

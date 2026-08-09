@@ -1,5 +1,5 @@
 import com.sun.net.httpserver.HttpServer;
-import data_access.route.GraphhopperRouteDataAccessObject;
+import database.route.GraphhopperRouteDataAccessObject;
 import entity.GeoPoint;
 import entity.Route;
 

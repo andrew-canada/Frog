@@ -1,4 +1,4 @@
-import data_access.security.BCryptPasswordHasher;
+import database.security.BCryptPasswordHasher;
 import use_case.port.UserRepository;
 import use_case.port.CurrentUserSession;
 import entity.User;

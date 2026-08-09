@@ -1,16 +1,16 @@
 package app;
 
-import data_access.DBDataAccessObject;
-import data_access.enrollment.DBEnrollmentDataAccessObject;
-import data_access.personal_plan.FileCalendarContentReader;
-import data_access.personal_plan.GeminiPersonalPlanGenerator;
-import data_access.security.BCryptPasswordHasher;
-import data_access.review.DBReviewDataAccessObject;
-import data_access.route.GraphhopperGeocodingDataAccessObject;
-import data_access.route.GraphhopperRouteDataAccessObject;
-import data_access.status.DBStatusReportDataAccessObject;
-import data_access.user.DBUserDataAccessObject;
-import data_access.washroom.DBWashroomDataAccessObject;
+import database.DBDataAccessObject;
+import database.enrollment.DBEnrollmentDataAccessObject;
+import database.personal_plan.FileCalendarContentReader;
+import database.personal_plan.GeminiPersonalPlanGenerator;
+import database.security.BCryptPasswordHasher;
+import database.review.DBReviewDataAccessObject;
+import database.route.GraphhopperGeocodingDataAccessObject;
+import database.route.GraphhopperRouteDataAccessObject;
+import database.status.DBStatusReportDataAccessObject;
+import database.user.DBUserDataAccessObject;
+import database.washroom.DBWashroomDataAccessObject;
 import entity.Washroom;
 import interface_adapter.account.AccountViewModel;
 import interface_adapter.account.IsLoggedInViewModel;
@@ -73,7 +73,7 @@ import use_case.status_report.SubmitStatusReportInteractor;
 import use_case.view_reviews.ViewReviewsInteractor;
 import use_case.vote_helpful.VoteHelpfulInteractor;
 import use_case.write_review.WriteReviewInteractor;
-import view.*;
+import views.*;
 
 import javax.json.Json;
 import javax.json.JsonObject;
