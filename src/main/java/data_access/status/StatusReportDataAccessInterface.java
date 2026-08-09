@@ -3,10 +3,10 @@ package data_access.status;
 import entity.StatusReport;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Comparator;
 
 public interface StatusReportDataAccessInterface {
     void save(StatusReport report);
@@ -15,7 +15,9 @@ public interface StatusReportDataAccessInterface {
 
     List<StatusReport> getForWashroom(String washroomId, LocalDateTime from, LocalDateTime to);
 
-    /** Returns the newest report from the current clock hour for every requested washroom. */
+    /**
+     * Returns the newest report from the current clock hour for every requested washroom.
+     */
     default Map<String, StatusReport> getCurrentHourForWashrooms(List<String> washroomIds, int hour) {
         Map<String, StatusReport> result = new HashMap<>();
         LocalDateTime since = LocalDateTime.of(2000, 1, 1, 0, 0);

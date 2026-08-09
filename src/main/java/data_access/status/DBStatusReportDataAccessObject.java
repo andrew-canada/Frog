@@ -2,30 +2,28 @@ package data_access.status;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Indexes;
 import data_access.MongoDocuments;
 import entity.MaintenanceIssue;
 import entity.StatusReport;
 import org.bson.Document;
 
-import com.mongodb.client.model.Filters;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public final class DBStatusReportDataAccessObject implements StatusReportDataAccessInterface {
     private final MongoCollection<Document> reports;
 
     public DBStatusReportDataAccessObject(MongoDatabase database) {
         reports = database.getCollection("StatusReports");
+    }
+
+    private static int clamp(int value) {
+        return Math.max(1, Math.min(5, value));
     }
 
     @Override
@@ -37,7 +35,9 @@ public final class DBStatusReportDataAccessObject implements StatusReportDataAcc
                 .append("timestamp", Date.from(report.timestamp().atZone(ZoneId.systemDefault()).toInstant())));
     }
 
-    /** Adds one persistent, varied status report for every hour of every JSON-sourced washroom. */
+    /**
+     * Adds one persistent, varied status report for every hour of every JSON-sourced washroom.
+     */
     public void ensureJsonHourlyReports(List<entity.Washroom> washrooms) {
         LocalDate reportDay = LocalDate.now().minusDays(1);
         Set<String> existingSeedKeys = new HashSet<>();
@@ -83,7 +83,9 @@ public final class DBStatusReportDataAccessObject implements StatusReportDataAcc
         return List.copyOf(result);
     }
 
-    /** Returns each requested washroom's newest report in one current-hour aggregation. */
+    /**
+     * Returns each requested washroom's newest report in one current-hour aggregation.
+     */
     @Override
     public Map<String, StatusReport> getCurrentHourForWashrooms(List<String> washroomIds, int hour) {
         if (washroomIds.isEmpty()) return Map.of();
@@ -105,7 +107,9 @@ public final class DBStatusReportDataAccessObject implements StatusReportDataAcc
         return Map.copyOf(result);
     }
 
-    /** Backfills the hour bucket once, then indexes the current-hour heatmap query. */
+    /**
+     * Backfills the hour bucket once, then indexes the current-hour heatmap query.
+     */
     public void ensurePerformanceIndexes() {
         reports.updateMany(Filters.exists("hourOfDay", false), List.of(
                 new Document("$set", new Document("hourOfDay", new Document("$hour", "$timestamp")))));
@@ -126,9 +130,5 @@ public final class DBStatusReportDataAccessObject implements StatusReportDataAcc
                 clamp(MongoDocuments.integer(document, 1, "busyness")),
                 clamp(MongoDocuments.integer(document, 1, "cleanliness")), issue,
                 MongoDocuments.dateTime(document, LocalDateTime.now(), "timestamp", "createdAt"));
-    }
-
-    private static int clamp(int value) {
-        return Math.max(1, Math.min(5, value));
     }
 }

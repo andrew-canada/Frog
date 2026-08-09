@@ -1,4 +1,4 @@
-package use_case.view_reviews;
+package data_access.review;
 
 import entity.Review;
 import entity.ReviewSummary;
@@ -11,6 +11,7 @@ public interface ReviewDataAccessInterface {
     ReviewSummary getSummary(String washroomId);
 
     List<Review> getReviewsByUser(String username);
+
     default void save(Review review) {
         throw new UnsupportedOperationException("This review repository is read-only.");
     }

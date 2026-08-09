@@ -42,6 +42,19 @@ public class DBDataAccessObject implements AutoCloseable {
         return new DBDataAccessObject(requiredUri(), configuredDatabaseName());
     }
 
+    private static String requiredUri() {
+        String uri = System.getenv(URI_ENV);
+        if (uri == null || uri.isBlank()) {
+            throw new IllegalStateException("Set the " + URI_ENV + " environment variable before starting FlushID.");
+        }
+        return uri;
+    }
+
+    private static String configuredDatabaseName() {
+        String name = System.getenv(DATABASE_ENV);
+        return name == null || name.isBlank() ? "FlushID" : name;
+    }
+
     public MongoDatabase database() {
         return database;
     }
@@ -56,18 +69,5 @@ public class DBDataAccessObject implements AutoCloseable {
     @Override
     public void close() {
         if (ownsClient && client != null) client.close();
-    }
-
-    private static String requiredUri() {
-        String uri = System.getenv(URI_ENV);
-        if (uri == null || uri.isBlank()) {
-            throw new IllegalStateException("Set the " + URI_ENV + " environment variable before starting FlushID.");
-        }
-        return uri;
-    }
-
-    private static String configuredDatabaseName() {
-        String name = System.getenv(DATABASE_ENV);
-        return name == null || name.isBlank() ? "FlushID" : name;
     }
 }

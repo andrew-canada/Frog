@@ -9,4 +9,4 @@ public record FilterInputData(
         boolean ownReviews,
         double latitude,
         double longitude) {
-};
+}

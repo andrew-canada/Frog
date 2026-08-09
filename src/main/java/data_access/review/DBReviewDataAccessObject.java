@@ -1,42 +1,38 @@
 package data_access.review;
 
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Indexes;
 import data_access.AbstractCondition;
-import data_access.Condition;
-import data_access.MongoDocuments;
-import entity.review.WashroomReview;
-import org.bson.Document;
-import com.mongodb.client.MongoCollection;
-import org.bson.conversions.Bson;
 
-import entity.review.Review;
-import entity.review.WashroomReviewFactory;
-import entity.washroom.Washroom;
-import entity.Report;
 import data_access.DBDataAccessObject;
-import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
-import use_case.moderate_reviews.ReviewAdminDataAccessInterface;
+import data_access.MongoDocuments;
+import entity.Report;
+import entity.review.Review;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import use_case.moderate_reviews.ReportedReviewsDataAccessInterface;
+import use_case.moderate_reviews.ReviewAdminDataAccessInterface;
 import use_case.report_review.ReviewReportDataAccessInterface;
+import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 public class DBReviewDataAccessObject extends DBDataAccessObject
-        implements use_case.view_reviews.ReviewDataAccessInterface,
+        implements ReviewDataAccessInterface,
         HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface, ReviewAdminDataAccessInterface, ReportedReviewsDataAccessInterface {
 
+    static final List<String> allowedAttributes = List.of(new String[]{
+            "washroomID", "authorUsername", "rating", "cleanliness", "comment", "helpfulCount",
+            "createdAt", "seedKey"});
     static MongoCollection<Document> collection;
     private static MongoCollection<Document> users;
     private final MongoCollection<Document> reviewVotes;
     private final MongoCollection<Document> reviewReports;
-    static final List<String> allowedAttributes = List.of(new String[]{
-            "washroomID", "authorUsername", "rating", "cleanliness", "comment", "helpfulCount",
-            "createdAt", "seedKey"});
 
     public DBReviewDataAccessObject() {
         super();    // initializes the MongoClient and MongoDatabase from
@@ -53,32 +49,6 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
         users = database.getCollection("Users");
         reviewVotes = database.getCollection("ReviewVotes");
         reviewReports = database.getCollection("ReviewReports");
-    }
-
-    /**
-     * Returns all reviews who satisfy all the given conditions
-     *
-     * @param conditions a list of condition objects that the returned reviews must satisfy
-     * @return The reviews that match all the conditions
-     */
-    public List<Review> getMatching(Iterable<AbstractCondition<?>> conditions) {
-
-        return new ArrayList<>(getMatchingIDMap(conditions).values());
-
-    }
-
-    /**
-     * Returns all reviews who satisfy the condition
-     *
-     * @param condition a condition object that the returned reviews must satisfy
-     * @return The reviews that match the conditions
-     */
-    public List<Review> getMatching(AbstractCondition<?> condition) {
-
-        List<AbstractCondition<?>> conditions = new ArrayList<>();
-        conditions.add(condition);
-        return getMatching(conditions);
-
     }
 
     /**
@@ -144,6 +114,91 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     }
 
     /**
+     * Checks the condition against the list of allowed attributes, throwing a
+     * runtime exception if it's not a valid attribute.
+     *
+     * @param condition The condition to check.
+     */
+    private static void checkAttribute(AbstractCondition<?> condition) {
+        if (!allowedAttributes.contains(condition.getFieldName())) {
+            throw new RuntimeException("Not a valid attribute");
+        }
+    }
+
+    /**
+     * Checks the conditions against the list of allowed attributes, throwing a
+     * runtime exception if it's not a valid attribute.
+     *
+     * @param conditions The conditions to check.
+     */
+    private static void checkAttribute(Iterable<AbstractCondition<?>> conditions) {
+        for (AbstractCondition<?> condition : conditions) {
+            checkAttribute(condition);
+        }
+    }
+
+    private static String author(Document review) {
+        String direct = MongoDocuments.string(review, "", "authorUsername", "username");
+        if (!direct.isBlank()) return direct;
+        String userId = MongoDocuments.string(review, "", "userId", "userID");
+        Document user = MongoDocuments.findById(users, userId);
+        return user == null ? "Anonymous" : MongoDocuments.string(user, "Anonymous", "username", "name");
+    }
+
+    private static Document documentFor(entity.Review review) {
+        return new Document("washroomId", review.washroomId())
+                .append("authorUsername", review.authorUsername())
+                .append("rating", review.rating()).append("cleanliness", review.cleanliness())
+                .append("comment", review.comment()).append("helpfulCount", review.helpfulCount())
+                .append("createdAt", Date.from(review.createdAt().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+    }
+
+    private static SeedReview seedReviewFor(int washroomIndex, int reviewIndex) {
+        double rating = 1 + .5 * Math.floorMod(washroomIndex * 2 + reviewIndex * 3, 9);
+        double cleanliness = 1 + .5 * Math.floorMod(washroomIndex * 3 + reviewIndex * 2, 9);
+        String comment = rating <= 1.5
+                ? "The supplies were low and the space needed more attention during this visit."
+                : rating <= 3
+                  ? "It was usable, but cleanliness and availability could be more consistent."
+                  : rating <= 4
+                    ? "A solid option that was easy to find and reasonably well maintained."
+                    : "Clean, well stocked, and convenient for a quick stop between classes.";
+        String author = reviewIndex == 0 ? "Campus visitor" : "Student reviewer";
+        return new SeedReview(author, rating, cleanliness, comment, Math.floorMod(washroomIndex + reviewIndex * 3, 9),
+                LocalDate.of(2026, 7, 1).minusDays(washroomIndex * 2L + reviewIndex));
+    }
+
+    private static double clamp(double rating) {
+        return Math.max(1, Math.min(5, rating));
+    }
+
+    /**
+     * Returns all reviews who satisfy all the given conditions
+     *
+     * @param conditions a list of condition objects that the returned reviews must satisfy
+     * @return The reviews that match all the conditions
+     */
+    public List<Review> getMatching(Iterable<AbstractCondition<?>> conditions) {
+
+        return new ArrayList<>(getMatchingIDMap(conditions).values());
+
+    }
+
+    /**
+     * Returns all reviews who satisfy the condition
+     *
+     * @param condition a condition object that the returned reviews must satisfy
+     * @return The reviews that match the conditions
+     */
+    public List<Review> getMatching(AbstractCondition<?> condition) {
+
+        List<AbstractCondition<?>> conditions = new ArrayList<>();
+        conditions.add(condition);
+        return getMatching(conditions);
+
+    }
+
+    /**
      * Writes a single Review object to the database.
      *
      * @param review The Review object to be written.
@@ -187,30 +242,6 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
         delete(conditions);
     }
 
-    /**
-     * Checks the condition against the list of allowed attributes, throwing a
-     * runtime exception if it's not a valid attribute.
-     *
-     * @param condition The condition to check.
-     */
-    private static void checkAttribute(AbstractCondition<?> condition) {
-        if (!allowedAttributes.contains(condition.getFieldName())) {
-            throw new RuntimeException("Not a valid attribute");
-        }
-    }
-
-    /**
-     * Checks the conditions against the list of allowed attributes, throwing a
-     * runtime exception if it's not a valid attribute.
-     *
-     * @param conditions The conditions to check.
-     */
-    private static void checkAttribute(Iterable<AbstractCondition<?>> conditions) {
-        for (AbstractCondition<?> condition : conditions) {
-            checkAttribute(condition);
-        }
-    }
-
     @Override
     public List<entity.Review> getReviewsForWashroom(String washroomId) {
         List<entity.Review> result = new ArrayList<>();
@@ -239,11 +270,14 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
         return List.copyOf(result);
     }
 
-    @Override public void save(entity.Review review) {
+    @Override
+    public void save(entity.Review review) {
         write(review, review.authorUsername(), review.washroomId());
     }
 
-    /** Adds two persistent written reviews to every JSON-sourced washroom without duplicating them. */
+    /**
+     * Adds two persistent written reviews to every JSON-sourced washroom without duplicating them.
+     */
     public void ensureJsonReviews(List<entity.Washroom> washrooms) {
         Set<String> existingSeedKeys = new HashSet<>();
         for (Document review : collection.find(Filters.regex("seedKey", "^json-review-"))) {
@@ -264,46 +298,13 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
         if (!newReviews.isEmpty()) collection.insertMany(newReviews);
     }
 
-    /** Creates indexes used by grouped summaries and the "my reviews" filter. */
+    /**
+     * Creates indexes used by grouped summaries and the "my reviews" filter.
+     */
     public void ensurePerformanceIndexes() {
         collection.createIndex(Indexes.ascending("washroomId"));
         collection.createIndex(Indexes.ascending("washroomID"));
         collection.createIndex(Indexes.ascending("authorUsername"));
-    }
-
-    private static String author(Document review) {
-        String direct = MongoDocuments.string(review, "", "authorUsername", "username");
-        if (!direct.isBlank()) return direct;
-        String userId = MongoDocuments.string(review, "", "userId", "userID");
-        Document user = MongoDocuments.findById(users, userId);
-        return user == null ? "Anonymous" : MongoDocuments.string(user, "Anonymous", "username", "name");
-    }
-
-    private static Document documentFor(entity.Review review) {
-        return new Document("washroomId", review.washroomId())
-                .append("authorUsername", review.authorUsername())
-                .append("rating", review.rating()).append("cleanliness", review.cleanliness())
-                .append("comment", review.comment()).append("helpfulCount", review.helpfulCount())
-                .append("createdAt", Date.from(review.createdAt().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-    }
-
-    private static SeedReview seedReviewFor(int washroomIndex, int reviewIndex) {
-        double rating = 1 + .5 * Math.floorMod(washroomIndex * 2 + reviewIndex * 3, 9);
-        double cleanliness = 1 + .5 * Math.floorMod(washroomIndex * 3 + reviewIndex * 2, 9);
-        String comment = rating <= 1.5
-                ? "The supplies were low and the space needed more attention during this visit."
-                : rating <= 3
-                ? "It was usable, but cleanliness and availability could be more consistent."
-                : rating <= 4
-                ? "A solid option that was easy to find and reasonably well maintained."
-                : "Clean, well stocked, and convenient for a quick stop between classes.";
-        String author = reviewIndex == 0 ? "Campus visitor" : "Student reviewer";
-        return new SeedReview(author, rating, cleanliness, comment, Math.floorMod(washroomIndex + reviewIndex * 3, 9),
-                LocalDate.of(2026, 7, 1).minusDays(washroomIndex * 2L + reviewIndex));
-    }
-
-    private static double clamp(double rating) {
-        return Math.max(1, Math.min(5, rating));
     }
 
     // --- Helpful votes ---------------------------------------------------------
@@ -388,6 +389,8 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
             collection.deleteOne(Filters.eq("_id", document.get("_id")));
         }
     }
+
     private record SeedReview(String author, double rating, double cleanliness, String comment, int helpfulCount,
-                              LocalDate createdAt) { }
+                              LocalDate createdAt) {
+    }
 }

@@ -1,9 +1,9 @@
 package interface_adapter.directions;
 
-import javax.swing.SwingUtilities;
-
 import use_case.directions.GetDirectionsOutputBoundary;
 import use_case.directions.GetDirectionsOutputData;
+
+import javax.swing.*;
 
 public final class DirectionsPresenter implements GetDirectionsOutputBoundary {
     private final MapViewModel model;

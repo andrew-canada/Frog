@@ -1,8 +1,8 @@
 package use_case.login;
 
+import data_access.user.UserDataAccessInterface;
 import entity.User;
 import org.mindrot.jbcrypt.BCrypt;
-import data_access.user.UserDataAccessInterface;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -14,21 +14,6 @@ public final class LoginInteractor implements LoginInputBoundary {
     public LoginInteractor(UserDataAccessInterface users, LoginOutputBoundary presenter) {
         this.users = users;
         this.presenter = presenter;
-    }
-
-    @Override
-    public void execute(LoginInputData input) {
-        User user = users.get(input.username()).orElse(null);
-        if (user == null || !passwordMatches(input.password(), user.passwordHash())) {
-            presenter.present(new LoginOutputData(false, null, "Incorrect username or password"));
-            return;
-        }
-        if (!isBcryptHash(user.passwordHash())) {
-            user = new User(user.username(), BCrypt.hashpw(input.password(), BCrypt.gensalt()), user.personalPlan());
-            users.save(user);
-        }
-        users.setCurrentUser(user);
-        presenter.present(new LoginOutputData(true, user.username(), "Welcome back, " + user.username()));
     }
 
     private static boolean passwordMatches(String password, String stored) {
@@ -46,5 +31,20 @@ public final class LoginInteractor implements LoginInputBoundary {
 
     private static boolean isBcryptHash(String value) {
         return value.startsWith("$2");
+    }
+
+    @Override
+    public void execute(LoginInputData input) {
+        User user = users.get(input.username()).orElse(null);
+        if (user == null || !passwordMatches(input.password(), user.passwordHash())) {
+            presenter.present(new LoginOutputData(false, null, false, "Incorrect username or password"));
+            return;
+        }
+        if (!isBcryptHash(user.passwordHash())) {
+            user = new User(user.username(), BCrypt.hashpw(input.password(), BCrypt.gensalt()), user.personalPlan());
+            users.save(user);
+        }
+        users.setCurrentUser(user);
+        presenter.present(new LoginOutputData(true, user.username(), user.isModerator(), "Welcome back, " + user.username()));
     }
 }

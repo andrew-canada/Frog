@@ -1,18 +1,21 @@
 package use_case.account.personal_plan;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.genai.Client;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
-import entity.User;
-import data_access.user.UserDataAccessInterface;
-import com.google.genai.Client;
 import com.google.genai.types.Schema;
 import com.google.genai.types.Type;
+import data_access.user.UserDataAccessInterface;
+import entity.User;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
 
@@ -81,19 +84,6 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
 
     }
 
-    public static class WashroomPlan {
-        @JsonProperty(DAY_PROMPT)
-        public String day;
-        @JsonProperty(TIME_PROMPT)
-        public String time;
-        @JsonProperty(WASHROOM_PROMPT)
-        public String washroom;
-    }
-
-    public static class EntirePlan {
-        public List<WashroomPlan> washrooms;
-    }
-
     private boolean checkValid(String response, int n) {
 
         try {
@@ -138,6 +128,19 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
             return null;
         }
 
+    }
+
+    public static class WashroomPlan {
+        @JsonProperty(DAY_PROMPT)
+        public String day;
+        @JsonProperty(TIME_PROMPT)
+        public String time;
+        @JsonProperty(WASHROOM_PROMPT)
+        public String washroom;
+    }
+
+    public static class EntirePlan {
+        public List<WashroomPlan> washrooms;
     }
 
 }

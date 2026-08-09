@@ -4,5 +4,5 @@ import entity.Washroom;
 
 import java.util.List;
 
-public record FilterOutputData (boolean success, List<Washroom> washrooms, double latitude, double longitude) {
+public record FilterOutputData(boolean success, List<Washroom> washrooms, double latitude, double longitude) {
 }

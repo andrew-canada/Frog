@@ -1,7 +1,7 @@
 package use_case.account.delete_account;
 
-import entity.User;
 import data_access.user.UserDataAccessInterface;
+import entity.User;
 
 public final class DeleteAccountInteractor implements DeleteAccountInputBoundary {
 

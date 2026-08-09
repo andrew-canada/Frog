@@ -18,7 +18,7 @@ public final class LoginPresenter implements LoginOutputBoundary {
     @Override
     public void present(LoginOutputData d) {
         login.setState(new LoginViewModel.State(d.success(), d.username(), d.message()));
-        if (d.success()) loggedIn.setState(new LoggedInViewModel.State(true, d.username()));
+        if (d.success()) loggedIn.setState(new LoggedInViewModel.State(true, d.username(), d.moderator()));
         if (d.success()) {
             isLoggedIn.getState().setIsLoggedIn(true);
             isLoggedIn.getState().setUsername(d.username());

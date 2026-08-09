@@ -1,12 +1,14 @@
 package use_case.write_review;
 
 import entity.Review;
-import use_case.view_reviews.ReviewDataAccessInterface;
+import data_access.review.ReviewDataAccessInterface;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.UUID;
 
-/** Validates and stores a review through the same repository used to display it. */
+/**
+ * Validates and stores a review through the same repository used to display it.
+ */
 public final class WriteReviewInteractor implements WriteReviewInputBoundary {
     private final ReviewDataAccessInterface reviews;
     private final WriteReviewOutputBoundary presenter;
@@ -22,7 +24,8 @@ public final class WriteReviewInteractor implements WriteReviewInputBoundary {
         this.clock = clock;
     }
 
-    @Override public void execute(WriteReviewInputData input) {
+    @Override
+    public void execute(WriteReviewInputData input) {
         if (input.washroomId() == null || input.washroomId().isBlank()) {
             presenter.present(new WriteReviewOutputData(false, "Choose a washroom before writing a review."));
             return;

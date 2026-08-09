@@ -2,12 +2,13 @@ package data_access.user;
 
 import entity.User;
 import org.mindrot.jbcrypt.BCrypt;
+import use_case.moderate_reviews.ModeratorDataAccessInterface;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public final class InMemoryUserDataAccessObject implements UserDataAccessInterface {
+public final class InMemoryUserDataAccessObject implements UserDataAccessInterface, ModeratorDataAccessInterface {
     private final Map<String, User> users = new LinkedHashMap<>();
     private User currentUser;
 
@@ -31,17 +32,22 @@ public final class InMemoryUserDataAccessObject implements UserDataAccessInterfa
     }
 
     @Override
-    public void setCurrentUser(User user) {
-        currentUser = user;
-    }
-
-    @Override
     public Optional<User> getCurrentUser() {
         return Optional.ofNullable(currentUser);
     }
 
     @Override
+    public void setCurrentUser(User user) {
+        currentUser = user;
+    }
+
+    @Override
     public void removeUser(String username) {
         users.remove(username);
+    }
+
+    @Override
+    public boolean isModerator(String username) {
+        return get(username).map(User::isModerator).orElse(false);
     }
 }

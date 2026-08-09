@@ -1,10 +1,10 @@
 package use_case.directions;
 
+import data_access.route.RouteDataAccessInterface;
+import data_access.washroom.WashroomDataAccessInterface;
 import entity.GeoPoint;
 import entity.Route;
 import entity.Washroom;
-import data_access.route.RouteDataAccessInterface;
-import data_access.washroom.WashroomDataAccessInterface;
 
 import java.util.List;
 

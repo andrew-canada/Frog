@@ -1,7 +1,6 @@
 package data_access.washroom;
 
 import data_access.AbstractCondition;
-import data_access.Condition;
 import entity.Washroom;
 
 import java.util.List;
@@ -21,6 +20,10 @@ public interface WashroomDataAccessInterface {
 
     default Map<String, Washroom> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
         throw new UnsupportedOperationException("Matching washrooms by ID is not supported by this data source");
+    }
+
+    default String write(Washroom washroom, String buildingID) {
+        throw new UnsupportedOperationException("Writing washrooms is not supported by this data source");
     }
 
 }
