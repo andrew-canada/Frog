@@ -1,22 +1,26 @@
 package use_case.account.change_username;
 
-import data_access.user.UserDataAccessInterface;
+import use_case.port.UserRepository;
+import use_case.port.CurrentUserSession;
 import entity.User;
 
 public final class ChangeUsernameInteractor implements ChangeUsernameInputBoundary {
 
-    private final UserDataAccessInterface users;
+    private final UserRepository users;
+    private final CurrentUserSession session;
     private final ChangeUsernameOutputBoundary presenter;
 
-    public ChangeUsernameInteractor(UserDataAccessInterface users, ChangeUsernameOutputBoundary presenter) {
+    public ChangeUsernameInteractor(UserRepository users, CurrentUserSession session,
+                                    ChangeUsernameOutputBoundary presenter) {
         this.users = users;
+        this.session = session;
         this.presenter = presenter;
     }
 
     @Override
     public void execute(ChangeUsernameInputData input) {
 
-        User user = users.getCurrentUser().orElse(null);
+        User user = session.currentUser().orElse(null);
 
         if (user == null) {
             presenter.present(new ChangeUsernameOutputData(false, "Not logged in", null));
@@ -26,7 +30,7 @@ public final class ChangeUsernameInteractor implements ChangeUsernameInputBounda
             users.removeUser(user.username());
             User newUser = new User(input.newUsername(), user.passwordHash(), user.personalPlan());
             users.save(newUser);
-            users.setCurrentUser(newUser);
+            session.setCurrentUser(newUser);
             presenter.present(new ChangeUsernameOutputData(true, "Changed username to " + input.newUsername(), input.newUsername()));
         }
 

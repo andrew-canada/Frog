@@ -1,21 +1,21 @@
 package use_case.logout;
 
-import data_access.user.UserDataAccessInterface;
+import use_case.port.CurrentUserSession;
 
 public final class LogoutInteractor implements LogoutInputBoundary {
 
-    private final UserDataAccessInterface users;
+    private final CurrentUserSession session;
     private final LogoutOutputBoundary presenter;
 
-    public LogoutInteractor(UserDataAccessInterface users, LogoutOutputBoundary presenter) {
-        this.users = users;
+    public LogoutInteractor(CurrentUserSession session, LogoutOutputBoundary presenter) {
+        this.session = session;
         this.presenter = presenter;
     }
 
     @Override
     public void execute() {
 
-        users.setCurrentUser(null);
+        session.clear();
         presenter.present();
 
     }

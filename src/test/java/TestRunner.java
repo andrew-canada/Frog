@@ -13,7 +13,9 @@ public final class TestRunner {
         run("VoteHelpfulInteractorTest", VoteHelpfulInteractorTest::run);
         run("ReportReviewInteractorTest", ReportReviewInteractorTest::run);
         run("ModerateReviewsInteractorTest", ModerateReviewsInteractorTest::run);
-        System.out.println("All 10 interactor tests, the GraphHopper adapter test, and the UI smoke test passed.");
+        run("SortingInteractorTest", SortingInteractorTest::run);
+        run("PersonalPlanInteractorTest", PersonalPlanInteractorTest::run);
+        System.out.println("All interactor, adapter, sorting, and UI smoke tests passed.");
     }
 
     private static void run(String name, Runnable test) {

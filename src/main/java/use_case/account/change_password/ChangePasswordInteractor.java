@@ -1,23 +1,29 @@
 package use_case.account.change_password;
 
-import data_access.user.UserDataAccessInterface;
+import use_case.port.UserRepository;
+import use_case.port.PasswordHasher;
+import use_case.port.CurrentUserSession;
 import entity.User;
-import org.mindrot.jbcrypt.BCrypt;
 
 public final class ChangePasswordInteractor implements ChangePasswordInputBoundary {
 
-    private final UserDataAccessInterface users;
+    private final UserRepository users;
+    private final PasswordHasher passwords;
+    private final CurrentUserSession session;
     private final ChangePasswordOutputBoundary presenter;
 
-    public ChangePasswordInteractor(UserDataAccessInterface users, ChangePasswordOutputBoundary presenter) {
+    public ChangePasswordInteractor(UserRepository users, CurrentUserSession session, PasswordHasher passwords,
+                                    ChangePasswordOutputBoundary presenter) {
         this.users = users;
+        this.session = session;
+        this.passwords = passwords;
         this.presenter = presenter;
     }
 
     @Override
     public void execute(ChangePasswordInputData input) {
 
-        User user = users.getCurrentUser().orElse(null);
+        User user = session.currentUser().orElse(null);
 
         if (user == null) {
             presenter.present(new ChangePasswordOutputData(false, "Not logged in"));
@@ -27,9 +33,9 @@ public final class ChangePasswordInteractor implements ChangePasswordInputBounda
             presenter.present(new ChangePasswordOutputData(false, "Password needs 4+ characters"));
         } else {
             users.removeUser(user.username());
-            User newUser = new User(user.username(), BCrypt.hashpw(input.newPassword(), BCrypt.gensalt()), user.personalPlan());
+            User newUser = new User(user.username(), passwords.hash(input.newPassword()), user.personalPlan());
             users.save(newUser);
-            users.setCurrentUser(newUser);
+            session.setCurrentUser(newUser);
             presenter.present(new ChangePasswordOutputData(true, "Changed password"));
         }
 

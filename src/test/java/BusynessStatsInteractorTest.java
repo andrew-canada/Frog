@@ -1,5 +1,5 @@
-import data_access.enrollment.EnrollmentDataAccessInterface;
-import data_access.status.StatusReportDataAccessInterface;
+import use_case.port.EnrollmentScheduleGateway;
+import use_case.port.StatusReportRepository;
 import entity.EnrollmentMeeting;
 import entity.MaintenanceIssue;
 import entity.StatusReport;
@@ -13,7 +13,7 @@ import java.util.List;
 
 final class BusynessStatsInteractorTest {
     static void run() {
-        StatusReportDataAccessInterface reports = new StatusReportDataAccessInterface() {
+        StatusReportRepository reports = new StatusReportRepository() {
             public void save(StatusReport r) {
             }
 
@@ -27,7 +27,7 @@ final class BusynessStatsInteractorTest {
                         new StatusReport(id, "newer", 5, 2, MaintenanceIssue.NONE, LocalDateTime.of(2026, 8, 5, 9, 0)));
             }
         };
-        EnrollmentDataAccessInterface enrollment = (code, day) -> List.of(new EnrollmentMeeting(9, 11, 300));
+        EnrollmentScheduleGateway enrollment = (code, day) -> List.of(new EnrollmentMeeting(9, 11, 300));
         final BusynessStatsOutputData[] out = new BusynessStatsOutputData[1];
         new BusynessStatsInteractor(reports, enrollment, d -> out[0] = d).execute(new BusynessStatsInputData("w1", "BA", DayOfWeek.THURSDAY));
         TestSupport.check(out[0].buckets().size() == 24, "hourly buckets");

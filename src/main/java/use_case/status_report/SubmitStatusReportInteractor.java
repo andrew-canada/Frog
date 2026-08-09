@@ -1,21 +1,21 @@
 package use_case.status_report;
 
-import data_access.status.StatusReportDataAccessInterface;
+import use_case.port.StatusReportRepository;
 import entity.StatusReport;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 
 public final class SubmitStatusReportInteractor implements SubmitStatusReportInputBoundary {
-    private final StatusReportDataAccessInterface reports;
+    private final StatusReportRepository reports;
     private final SubmitStatusReportOutputBoundary presenter;
     private final Clock clock;
 
-    public SubmitStatusReportInteractor(StatusReportDataAccessInterface reports, SubmitStatusReportOutputBoundary presenter) {
+    public SubmitStatusReportInteractor(StatusReportRepository reports, SubmitStatusReportOutputBoundary presenter) {
         this(reports, presenter, Clock.systemDefaultZone());
     }
 
-    public SubmitStatusReportInteractor(StatusReportDataAccessInterface reports, SubmitStatusReportOutputBoundary presenter, Clock clock) {
+    public SubmitStatusReportInteractor(StatusReportRepository reports, SubmitStatusReportOutputBoundary presenter, Clock clock) {
         this.reports = reports;
         this.presenter = presenter;
         this.clock = clock;

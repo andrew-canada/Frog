@@ -1,4 +1,4 @@
-import data_access.washroom.WashroomDataAccessInterface;
+import use_case.port.WashroomRepository;
 import entity.Report;
 import entity.Review;
 import entity.Washroom;
@@ -68,7 +68,7 @@ final class ModerateReviewsInteractorTest {
             }
         };
         Washroom w = TestSupport.washroom(); // "Test washroom", floor "2nd"
-        WashroomDataAccessInterface washrooms = new WashroomDataAccessInterface() {
+        WashroomRepository washrooms = new WashroomRepository() {
             public Optional<Washroom> getById(String id) {
                 return Optional.of(w);
             }
@@ -172,8 +172,8 @@ final class ModerateReviewsInteractorTest {
         return username -> allowed;
     }
 
-    private static WashroomDataAccessInterface noWashrooms() {
-        return new WashroomDataAccessInterface() {
+    private static WashroomRepository noWashrooms() {
+        return new WashroomRepository() {
             public Optional<Washroom> getById(String id) {
                 return Optional.empty();
             }

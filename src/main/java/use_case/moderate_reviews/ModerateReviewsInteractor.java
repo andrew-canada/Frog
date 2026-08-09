@@ -1,6 +1,6 @@
 package use_case.moderate_reviews;
 
-import data_access.washroom.WashroomDataAccessInterface;
+import use_case.port.WashroomRepository;
 import entity.Report;
 import entity.Review;
 
@@ -17,13 +17,13 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
 
     private final ReportedReviewsDataAccessInterface reports;
     private final ReviewAdminDataAccessInterface reviews;
-    private final WashroomDataAccessInterface washrooms;
+    private final WashroomRepository washrooms;
     private final ModeratorDataAccessInterface moderators;
     private final ModerateReviewsOutputBoundary presenter;
 
     public ModerateReviewsInteractor(ReportedReviewsDataAccessInterface reports,
                                      ReviewAdminDataAccessInterface reviews,
-                                     WashroomDataAccessInterface washrooms,
+                                     WashroomRepository washrooms,
                                      ModeratorDataAccessInterface moderators,
                                      ModerateReviewsOutputBoundary presenter) {
         this.reports = reports;

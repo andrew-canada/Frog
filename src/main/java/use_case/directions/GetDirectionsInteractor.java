@@ -1,7 +1,7 @@
 package use_case.directions;
 
-import data_access.route.RouteDataAccessInterface;
-import data_access.washroom.WashroomDataAccessInterface;
+import use_case.port.RouteGateway;
+import use_case.port.WashroomRepository;
 import entity.GeoPoint;
 import entity.Route;
 import entity.Washroom;
@@ -9,11 +9,11 @@ import entity.Washroom;
 import java.util.List;
 
 public final class GetDirectionsInteractor implements GetDirectionsInputBoundary {
-    private final WashroomDataAccessInterface washrooms;
-    private final RouteDataAccessInterface routes;
+    private final WashroomRepository washrooms;
+    private final RouteGateway routes;
     private final GetDirectionsOutputBoundary presenter;
 
-    public GetDirectionsInteractor(WashroomDataAccessInterface washrooms, RouteDataAccessInterface routes,
+    public GetDirectionsInteractor(WashroomRepository washrooms, RouteGateway routes,
                                    GetDirectionsOutputBoundary presenter) {
         this.washrooms = washrooms;
         this.routes = routes;

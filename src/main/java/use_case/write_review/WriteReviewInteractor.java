@@ -1,6 +1,6 @@
 package use_case.write_review;
 
-import data_access.review.ReviewDataAccessInterface;
+import use_case.port.ReviewRepository;
 import entity.Review;
 
 import java.time.Clock;
@@ -11,15 +11,15 @@ import java.util.UUID;
  * Validates and stores a review through the same repository used to display it.
  */
 public final class WriteReviewInteractor implements WriteReviewInputBoundary {
-    private final ReviewDataAccessInterface reviews;
+    private final ReviewRepository reviews;
     private final WriteReviewOutputBoundary presenter;
     private final Clock clock;
 
-    public WriteReviewInteractor(ReviewDataAccessInterface reviews, WriteReviewOutputBoundary presenter) {
+    public WriteReviewInteractor(ReviewRepository reviews, WriteReviewOutputBoundary presenter) {
         this(reviews, presenter, Clock.systemDefaultZone());
     }
 
-    public WriteReviewInteractor(ReviewDataAccessInterface reviews, WriteReviewOutputBoundary presenter, Clock clock) {
+    public WriteReviewInteractor(ReviewRepository reviews, WriteReviewOutputBoundary presenter, Clock clock) {
         this.reviews = reviews;
         this.presenter = presenter;
         this.clock = clock;

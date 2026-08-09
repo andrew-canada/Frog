@@ -9,7 +9,7 @@ import interface_adapter.status_report.StatusReportViewModel;
 import interface_adapter.view_reviews.ReviewsViewModel;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import use_case.busyness.BusynessStatsOutputData;
-import view.*;
+import views.*;
 
 import javax.swing.*;
 import java.awt.*;

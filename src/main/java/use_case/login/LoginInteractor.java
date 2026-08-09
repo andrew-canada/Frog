@@ -1,50 +1,36 @@
 package use_case.login;
 
-import data_access.user.UserDataAccessInterface;
+import use_case.port.UserRepository;
+import use_case.port.PasswordHasher;
+import use_case.port.CurrentUserSession;
 import entity.User;
-import org.mindrot.jbcrypt.BCrypt;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 
 public final class LoginInteractor implements LoginInputBoundary {
-    private final UserDataAccessInterface users;
+    private final UserRepository users;
+    private final PasswordHasher passwords;
+    private final CurrentUserSession session;
     private final LoginOutputBoundary presenter;
 
-    public LoginInteractor(UserDataAccessInterface users, LoginOutputBoundary presenter) {
+    public LoginInteractor(UserRepository users, CurrentUserSession session, PasswordHasher passwords,
+                           LoginOutputBoundary presenter) {
         this.users = users;
+        this.session = session;
+        this.passwords = passwords;
         this.presenter = presenter;
-    }
-
-    private static boolean passwordMatches(String password, String stored) {
-        if (password == null || stored == null || stored.isBlank()) return false;
-        if (isBcryptHash(stored)) {
-            try {
-                return BCrypt.checkpw(password, stored);
-            } catch (IllegalArgumentException malformedHash) {
-                return false;
-            }
-        }
-        if (stored.matches("\\d+:.*")) return Passwords.matches(password, stored);
-        return MessageDigest.isEqual(password.getBytes(StandardCharsets.UTF_8), stored.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private static boolean isBcryptHash(String value) {
-        return value.startsWith("$2");
     }
 
     @Override
     public void execute(LoginInputData input) {
         User user = users.get(input.username()).orElse(null);
-        if (user == null || !passwordMatches(input.password(), user.passwordHash())) {
+        if (user == null || !passwords.matches(input.password(), user.passwordHash())) {
             presenter.present(new LoginOutputData(false, null, false, "Incorrect username or password"));
             return;
         }
-        if (!isBcryptHash(user.passwordHash())) {
-            user = new User(user.username(), BCrypt.hashpw(input.password(), BCrypt.gensalt()), user.personalPlan());
+        if (!passwords.isCurrentHash(user.passwordHash())) {
+            user = new User(user.username(), passwords.hash(input.password()), user.personalPlan());
             users.save(user);
         }
-        users.setCurrentUser(user);
+        session.setCurrentUser(user);
         presenter.present(new LoginOutputData(true, user.username(), user.isModerator(), "Welcome back, " + user.username()));
     }
 }

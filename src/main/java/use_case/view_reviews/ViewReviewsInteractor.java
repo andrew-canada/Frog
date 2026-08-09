@@ -1,7 +1,7 @@
 package use_case.view_reviews;
 
-import data_access.review.ReviewDataAccessInterface;
-import data_access.washroom.WashroomDataAccessInterface;
+import use_case.port.ReviewRepository;
+import use_case.port.WashroomRepository;
 import entity.Review;
 import entity.ReviewSummary;
 import entity.Washroom;
@@ -13,15 +13,16 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
-    private final ReviewDataAccessInterface reviews;
-    private final WashroomDataAccessInterface washrooms;
+    private final ReviewRepository reviews;
+    private final WashroomRepository washrooms;
     private final HelpfulVoteDataAccessInterface votes;
     private final ReviewReportDataAccessInterface reports;
     private final ViewReviewsOutputBoundary presenter;
 
-    public ViewReviewsInteractor(ReviewDataAccessInterface reviews, WashroomDataAccessInterface washrooms,
+    public ViewReviewsInteractor(ReviewRepository reviews, WashroomRepository washrooms,
                                  HelpfulVoteDataAccessInterface votes, ReviewReportDataAccessInterface reports,
                                  ViewReviewsOutputBoundary presenter) {
         this.reviews = reviews;
@@ -55,12 +56,16 @@ public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
             presenter.presentError("Washroom not found");
             return;
         }
-        ReviewSummary summary = reviews.getSummary(washroom.id());
-        List<ViewReviewsOutputData.ReviewDisplay> display = reviews.getReviewsForWashroom(washroom.id()).stream()
+        List<Review> washroomReviews = reviews.getReviewsForWashroom(washroom.id());
+        ReviewSummary summary = ReviewSummary.fromReviews(washroomReviews);
+        Set<String> reviewIds = washroomReviews.stream().map(Review::id).collect(java.util.stream.Collectors.toUnmodifiableSet());
+        Set<String> votedReviewIds = votes.votedReviewIds(reviewIds, input.username());
+        Set<String> reportedReviewIds = reports.reportedReviewIds(reviewIds, input.username());
+        List<ViewReviewsOutputData.ReviewDisplay> display = washroomReviews.stream()
                 .sorted(Comparator.comparingDouble(ViewReviewsInteractor::score).reversed())
                 .map(r -> new ViewReviewsOutputData.ReviewDisplay(r.id(), r.rating(), r.comment(), r.helpfulCount(),
-                        r.createdAt(), r.authorUsername(), votes.hasVoted(r.id(), input.username()),
-                        reports.hasReported(r.id(), input.username()))).toList();
+                        r.createdAt(), r.authorUsername(), votedReviewIds.contains(r.id()),
+                        reportedReviewIds.contains(r.id()))).toList();
         presenter.present(new ViewReviewsOutputData(washroom.id(), washroom.building().name(), displayDescription(washroom),
                 summary.averageRating(), summary.averageCleanliness(), summary.reviewCount(),
                 washroom.numToilets(), washroom.numSinks(), display));

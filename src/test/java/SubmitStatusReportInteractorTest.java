@@ -1,4 +1,4 @@
-import data_access.status.StatusReportDataAccessInterface;
+import use_case.port.StatusReportRepository;
 import entity.MaintenanceIssue;
 import entity.StatusReport;
 import use_case.status_report.SubmitStatusReportInputData;
@@ -14,7 +14,7 @@ import java.util.List;
 
 final class SubmitStatusReportInteractorTest {
     static void run() {
-        class Fake implements StatusReportDataAccessInterface {
+        class Fake implements StatusReportRepository {
             final List<StatusReport> saved = new ArrayList<>();
 
             public void save(StatusReport r) {
