@@ -1,8 +1,8 @@
 package use_case.sort_review;
 
-import data_access.review.ReviewDataAccessInterface;
-import data_access.user.UserDataAccessInterface;
-import data_access.washroom.WashroomDataAccessInterface;
+import use_case.port.ReviewRepository;
+import use_case.port.CurrentUserSession;
+import use_case.port.WashroomRepository;
 import entity.Review;
 import entity.ReviewSummary;
 import entity.Washroom;
@@ -17,23 +17,24 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 public class SortReviewInteractor implements SortReviewInputBoundary {
-    private final ReviewDataAccessInterface reviewDAO;
-    private final UserDataAccessInterface userDAO;
-    private final WashroomDataAccessInterface washroomDAO;
+    private final ReviewRepository reviewDAO;
+    private final CurrentUserSession session;
+    private final WashroomRepository washroomDAO;
     private final HelpfulVoteDataAccessInterface helpfulVoteDAO;
     private final ReviewReportDataAccessInterface reportDAO;
     private final ViewReviewsOutputBoundary presenter;
 
-    public SortReviewInteractor(ReviewDataAccessInterface reviewDAO,
-                                UserDataAccessInterface userDAO,
-                                WashroomDataAccessInterface washroomDAO,
+    public SortReviewInteractor(ReviewRepository reviewDAO,
+                                CurrentUserSession session,
+                                WashroomRepository washroomDAO,
                                 HelpfulVoteDataAccessInterface helpfulVoteDAO,
                                 ReviewReportDataAccessInterface reportDAO,
                                 ViewReviewsOutputBoundary presenter) {
         this.reviewDAO = reviewDAO;
-        this.userDAO = userDAO;
+        this.session = session;
         this.washroomDAO = washroomDAO;
         this.helpfulVoteDAO = helpfulVoteDAO;
         this.reportDAO = reportDAO;
@@ -66,39 +67,26 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
             return;
         }
 
-        String sortingOrder = inputData.sortBy();
-        Comparator<entity.Review> comparator;
-        switch (sortingOrder) {
-            case "Relevant":
-                comparator = Comparator.comparing(SortReviewInteractor::score);
-            case "Most Helpful":
-                comparator = Comparator.comparing(entity.Review::getHelpfuls).reversed();
-                break;
-            case "Highest Rated":
-                comparator = Comparator.comparing(entity.Review::getStars).reversed();
-                break;
-            case "Lowest Rated":
-                comparator = Comparator.comparing(entity.Review::getStars);
-                break;
-            case "Newest":
-                comparator = Comparator.comparing(entity.Review::createdAt).reversed();
-                break;
-            case "Voted by Me":
-                if (userDAO.getCurrentUser().isPresent()) {
-                    comparator = Comparator.comparing((entity.Review review) ->
-                            review.authorUsername().equals(userDAO.getCurrentUser().get().name())).reversed();
-                } else {
-                    comparator = Comparator.comparing(entity.Review::getHelpfuls);
-                }
-                break;
-            case null, default:
-                comparator = Comparator.comparing(SortReviewInteractor::score).reversed();
-        }
-        ArrayList<Review> sortedReviews = new ArrayList<>(reviewDAO.getReviewsForWashroom(inputData.currentWashroom()));
+        ReviewSortOrder sortOrder = inputData.sortOrder() == null ? ReviewSortOrder.RELEVANCE : inputData.sortOrder();
+        Comparator<entity.Review> comparator = switch (sortOrder) {
+            case RELEVANCE -> Comparator.comparing(SortReviewInteractor::score).reversed();
+            case MOST_HELPFUL -> Comparator.comparing(entity.Review::getHelpfuls).reversed();
+            case HIGHEST_RATED -> Comparator.comparing(entity.Review::getStars).reversed();
+            case LOWEST_RATED -> Comparator.comparing(entity.Review::getStars);
+            case NEWEST -> Comparator.comparing(entity.Review::createdAt).reversed();
+            case VOTED_BY_ME -> session.currentUser()
+                    .<Comparator<entity.Review>>map(user -> Comparator.comparing(
+                            (entity.Review review) -> review.authorUsername().equals(user.name())).reversed())
+                    .orElseGet(() -> Comparator.comparing(entity.Review::getHelpfuls));
+        };
+        ArrayList<Review> sortedReviews = new ArrayList<>(reviewDAO.getReviewsForWashroom(washroom.id()));
         sortedReviews.sort(comparator);
-        ReviewSummary summary = reviewDAO.getSummary(washroom.id());
-        List<ViewReviewsOutputData.ReviewDisplay> display = reviewDAO.getReviewsForWashroom(washroom.id()).stream()
-                .sorted(comparator)
+        ReviewSummary summary = ReviewSummary.fromReviews(sortedReviews);
+        String username = session.currentUser().map(entity.User::username).orElse("");
+        Set<String> reviewIds = sortedReviews.stream().map(Review::id).collect(java.util.stream.Collectors.toUnmodifiableSet());
+        Set<String> votedReviewIds = helpfulVoteDAO.votedReviewIds(reviewIds, username);
+        Set<String> reportedReviewIds = reportDAO.reportedReviewIds(reviewIds, username);
+        List<ViewReviewsOutputData.ReviewDisplay> display = sortedReviews.stream()
                 .map(r -> new ViewReviewsOutputData.ReviewDisplay(
                         r.id(),
                         r.rating(),
@@ -106,8 +94,8 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
                         r.helpfulCount(),
                         r.createdAt(),
                         r.authorUsername(),
-                        helpfulVoteDAO.hasVoted(r.id(), userDAO.getCurrentUser().toString()),
-                        reportDAO.hasReported(r.id(), userDAO.getCurrentUser().toString())
+                        votedReviewIds.contains(r.id()),
+                        reportedReviewIds.contains(r.id())
                 )).toList();
         presenter.present(new ViewReviewsOutputData(washroom.id(), washroom.building().name(), displayDescription(washroom),
                 summary.averageRating(), summary.averageCleanliness(), summary.reviewCount(),

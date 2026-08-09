@@ -9,13 +9,14 @@ import data_access.AbstractCondition;
 import data_access.DBDataAccessObject;
 import data_access.MongoDocuments;
 import entity.Report;
-import entity.review.Review;
+import entity.Review;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import use_case.moderate_reviews.ReportedReviewsDataAccessInterface;
 import use_case.moderate_reviews.ReviewAdminDataAccessInterface;
 import use_case.report_review.ReviewReportDataAccessInterface;
 import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
+import use_case.port.ReviewRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,14 +24,14 @@ import java.time.ZoneId;
 import java.util.*;
 
 public class DBReviewDataAccessObject extends DBDataAccessObject
-        implements ReviewDataAccessInterface,
+        implements ReviewRepository,
         HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface, ReviewAdminDataAccessInterface, ReportedReviewsDataAccessInterface {
 
     static final List<String> allowedAttributes = List.of(new String[]{
             "washroomID", "authorUsername", "rating", "cleanliness", "comment", "helpfulCount",
             "createdAt", "seedKey"});
-    static MongoCollection<Document> collection;
-    private static MongoCollection<Document> users;
+    private final MongoCollection<Document> collection;
+    private final MongoCollection<Document> users;
     private final MongoCollection<Document> reviewVotes;
     private final MongoCollection<Document> reviewReports;
 
@@ -57,7 +58,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
      * @param conditions a list of condition objects that the returned reviews must satisfy
      * @return The reviews that match all the conditions mapped to their IDs in the database.
      */
-    public static Map<String, Review> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
+    public Map<String, Review> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
 
         checkAttribute(conditions);
 
@@ -91,7 +92,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
      * @param filter the filter that must be satisfied for the Document to be returned
      * @return The list of valid documents
      */
-    private static <T> List<Document> getAll(Bson filter) {
+    private List<Document> getAll(Bson filter) {
         List<Document> docs = new ArrayList<>();
         return collection.find(filter).into(docs);
     }
@@ -102,7 +103,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
      * @param doc Document containing review data for a specific review
      * @return the review object constructed using that data
      */
-    private static Review createReview(Document doc) {
+    private Review createReview(Document doc) {
         double rating = clamp(MongoDocuments.number(doc, 1, "rating", "stars"));
         double cleanliness = clamp(MongoDocuments.number(doc, rating, "cleanliness"));
         return new entity.Review(MongoDocuments.id(doc),
@@ -137,7 +138,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
         }
     }
 
-    private static String author(Document review) {
+    private String author(Document review) {
         String direct = MongoDocuments.string(review, "", "authorUsername", "username");
         if (!direct.isBlank()) return direct;
         String userId = MongoDocuments.string(review, "", "userId", "userID");
@@ -305,6 +306,8 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
         collection.createIndex(Indexes.ascending("washroomId"));
         collection.createIndex(Indexes.ascending("washroomID"));
         collection.createIndex(Indexes.ascending("authorUsername"));
+        reviewVotes.createIndex(Indexes.compoundIndex(Indexes.ascending("username"), Indexes.ascending("reviewId")));
+        reviewReports.createIndex(Indexes.compoundIndex(Indexes.ascending("reporterUsername"), Indexes.ascending("reviewId")));
     }
 
     // --- Helpful votes ---------------------------------------------------------
@@ -312,6 +315,17 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     public boolean hasVoted(String reviewId, String username) {
         return reviewVotes.find(Filters.and(Filters.eq("reviewId", reviewId),
                 Filters.eq("username", username))).first() != null;
+    }
+
+    @Override
+    public Set<String> votedReviewIds(Collection<String> reviewIds, String username) {
+        if (reviewIds.isEmpty() || username == null || username.isBlank()) return Set.of();
+        Set<String> votedIds = new HashSet<>();
+        for (Document vote : reviewVotes.find(Filters.and(Filters.in("reviewId", reviewIds),
+                Filters.eq("username", username)))) {
+            votedIds.add(MongoDocuments.string(vote, "", "reviewId"));
+        }
+        return Set.copyOf(votedIds);
     }
 
     @Override
@@ -353,6 +367,17 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     public boolean hasReported(String reviewId, String username) {
         return reviewReports.find(Filters.and(Filters.eq("reviewId", reviewId),
                 Filters.eq("reporterUsername", username))).first() != null;
+    }
+
+    @Override
+    public Set<String> reportedReviewIds(Collection<String> reviewIds, String username) {
+        if (reviewIds.isEmpty() || username == null || username.isBlank()) return Set.of();
+        Set<String> reportedIds = new HashSet<>();
+        for (Document report : reviewReports.find(Filters.and(Filters.in("reviewId", reviewIds),
+                Filters.eq("reporterUsername", username)))) {
+            reportedIds.add(MongoDocuments.string(report, "", "reviewId"));
+        }
+        return Set.copyOf(reportedIds);
     }
 
     @Override

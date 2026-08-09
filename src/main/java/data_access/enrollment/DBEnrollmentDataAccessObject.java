@@ -5,6 +5,7 @@ import com.mongodb.client.MongoDatabase;
 import data_access.MongoDocuments;
 import entity.EnrollmentMeeting;
 import org.bson.Document;
+import use_case.port.EnrollmentScheduleGateway;
 
 import java.time.DayOfWeek;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.List;
 /**
  * Reads timetable-derived meeting rows from MongoDB; an absent collection means no prediction signal.
  */
-public final class DBEnrollmentDataAccessObject implements EnrollmentDataAccessInterface {
+public final class DBEnrollmentDataAccessObject implements EnrollmentScheduleGateway {
     private final MongoCollection<Document> meetings;
 
     public DBEnrollmentDataAccessObject(MongoDatabase database) {

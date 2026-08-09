@@ -1,7 +1,7 @@
 package use_case.busyness;
 
-import data_access.enrollment.EnrollmentDataAccessInterface;
-import data_access.status.StatusReportDataAccessInterface;
+import use_case.port.EnrollmentScheduleGateway;
+import use_case.port.StatusReportRepository;
 import entity.EnrollmentMeeting;
 import entity.StatusReport;
 
@@ -11,11 +11,11 @@ import java.util.Comparator;
 import java.util.List;
 
 public final class BusynessStatsInteractor implements BusynessStatsInputBoundary {
-    private final StatusReportDataAccessInterface reports;
-    private final EnrollmentDataAccessInterface enrollment;
+    private final StatusReportRepository reports;
+    private final EnrollmentScheduleGateway enrollment;
     private final BusynessStatsOutputBoundary presenter;
 
-    public BusynessStatsInteractor(StatusReportDataAccessInterface reports, EnrollmentDataAccessInterface enrollment,
+    public BusynessStatsInteractor(StatusReportRepository reports, EnrollmentScheduleGateway enrollment,
                                    BusynessStatsOutputBoundary presenter) {
         this.reports = reports;
         this.enrollment = enrollment;

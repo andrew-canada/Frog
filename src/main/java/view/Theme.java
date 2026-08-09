@@ -9,7 +9,8 @@ final class Theme {
             MUTED = new Color(108, 107, 99), LINE = new Color(228, 226, 218), BLUE = new Color(24, 95, 165),
             PALE_BLUE = new Color(230, 241, 251), GOLD = new Color(239, 159, 39), BERRY = new Color(153, 53, 86),
             COLORBLIND_BLUE = new Color(0, 114, 178), COLORBLIND_ORANGE = new Color(230, 159, 0),
-            NO_DATA = new Color(216, 210, 196);
+            NO_DATA = new Color(216, 210, 196), BRIGHT_GREEN = new Color(22, 181, 78),
+            PALE_GREEN = new Color(223, 247, 231);
 
     private Theme() {
     }

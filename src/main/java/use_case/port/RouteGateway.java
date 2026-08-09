@@ -1,8 +1,8 @@
-package data_access.route;
+package use_case.port;
 
 import entity.GeoPoint;
 import entity.Route;
 
-public interface RouteDataAccessInterface {
+public interface RouteGateway {
     Route getRoute(GeoPoint origin, GeoPoint destination);
 }

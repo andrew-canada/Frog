@@ -8,20 +8,23 @@ import data_access.AbstractCondition;
 import data_access.Condition;
 import data_access.DBDataAccessObject;
 import data_access.MongoDocuments;
-import entity.user.LoggedInUser;
+import entity.User;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import use_case.moderate_reviews.ModeratorDataAccessInterface;
+import use_case.port.UserRepository;
+import use_case.port.CurrentUserSession;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.*;
 
-public class DBUserDataAccessObject extends DBDataAccessObject implements UserDataAccessInterface, ModeratorDataAccessInterface {
+public class DBUserDataAccessObject extends DBDataAccessObject
+        implements UserRepository, CurrentUserSession, ModeratorDataAccessInterface {
 
     static final List<String> allowedAttributes = List.of(new String[]{
             "username", "passwordHash", "personalPlan"});
-    static MongoCollection<Document> collection;
+    private final MongoCollection<Document> collection;
     private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
     private entity.User currentApplicationUser;
 
@@ -54,7 +57,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
      * @param filter the filter that must be satisfied for the Document to be returned
      * @return The list of valid documents
      */
-    private static <T> List<Document> getAll(Bson filter) {
+    private List<Document> getAll(Bson filter) {
         List<Document> docs = new ArrayList<>();
         return collection.find(filter).into(docs);
     }
@@ -65,9 +68,9 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
      * @param doc Document containing user data for a specific user
      * @return the user object constructed using that data
      */
-    private static LoggedInUser createUser(Document doc) {
-        return new LoggedInUser(value(doc, "unknown", "username", "name"),
-                value(doc, "", "passwordHash", "password"), List.of(),
+    private static User createUser(Document doc) {
+        return new User(value(doc, "unknown", "username", "name"),
+                value(doc, "", "passwordHash", "password"),
                 value(doc, "", "personalPlan"), doc.getBoolean("isModerator", false));
     }
 
@@ -113,7 +116,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
      * @param conditions a list of condition objects that the returned users must satisfy
      * @return The users that match all the conditions
      */
-    public List<LoggedInUser> getMatching(Iterable<AbstractCondition<?>> conditions) {
+    public List<User> getMatching(Iterable<AbstractCondition<?>> conditions) {
         return new ArrayList<>(getMatchingIDMap(conditions).values());
     }
 
@@ -123,33 +126,33 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
      * @param conditions a list of condition objects that the returned users must satisfy
      * @return The users that match all the conditions mapped to their IDs in the database.
      */
-    public Map<String, LoggedInUser> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
+    public Map<String, User> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
 
         Bson filter = parseConditions(conditions);
         List<Document> docs = getAll(filter);
 
-        Map<String, LoggedInUser> users = new HashMap<>();
+        Map<String, User> users = new HashMap<>();
         for (Document doc : docs) {
-            LoggedInUser user = createUser(doc);
+            User user = createUser(doc);
             users.put(MongoDocuments.id(doc), user);
         }
         return users;
     }
 
     /**
-     * Writes a single LoggedInUser object to the database.
+     * Writes a single application user to the database.
      *
-     * @param user The LoggedInUser object to be written.
+     * @param user The user object to be written.
      */
-    public String write(LoggedInUser user, String washroomID) {
-        Document doc = new Document("username", user.name()).append("passwordHash", user.getPassword())
-                .append("personalPlan", user.getPersonalPlan()).append("isModerator", user.isModerator());
+    public String write(User user, String washroomID) {
+        Document doc = new Document("username", user.username()).append("passwordHash", user.passwordHash())
+                .append("personalPlan", user.personalPlan()).append("isModerator", user.isModerator());
         if (washroomID != null && !washroomID.isBlank()) doc.append("washroomID", washroomID);
-        collection.replaceOne(Filters.or(Filters.eq("username", user.name()), Filters.eq("name", user.name())),
+        collection.replaceOne(Filters.or(Filters.eq("username", user.username()), Filters.eq("name", user.username())),
                 doc, new ReplaceOptions().upsert(true));
-        Document persisted = collection.find(Filters.eq("username", user.name())).first();
-        return persisted == null ? user.name() : MongoDocuments.id(persisted);
+        Document persisted = collection.find(Filters.eq("username", user.username())).first();
+        return persisted == null ? user.username() : MongoDocuments.id(persisted);
     }
 
     /**
@@ -166,12 +169,11 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
 
     @Override
     public Optional<entity.User> get(String username) {
-        List<LoggedInUser> matches = getMatching(List.of(new Condition<>("username", data_access.Operator.EQ, username)));
+        List<User> matches = getMatching(List.of(new Condition<>("username", data_access.Operator.EQ, username)));
         if (matches.isEmpty())
             matches = getMatching(List.of(new Condition<>("username", data_access.Operator.EQ, username)));
-        if (matches.isEmpty() || matches.getFirst().getPassword().isBlank()) return Optional.empty();
-        LoggedInUser user = matches.getFirst();
-        return Optional.of(new entity.User(user.name(), user.getPassword(), user.getPersonalPlan(), user.isModerator()));
+        if (matches.isEmpty() || matches.getFirst().passwordHash().isBlank()) return Optional.empty();
+        return Optional.of(matches.getFirst());
     }
 
     @Override
@@ -181,7 +183,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
 
     @Override
     public void save(entity.User user) {
-        write(new LoggedInUser(user.username(), user.passwordHash(), List.of(), user.personalPlan(), user.isModerator()), null);
+        write(user, null);
     }
 
     @Override
@@ -200,7 +202,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
     }
 
     @Override
-    public Optional<entity.User> getCurrentUser() {
+    public Optional<entity.User> currentUser() {
         return Optional.ofNullable(currentApplicationUser);
     }
 
@@ -211,6 +213,11 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
         if (Objects.isNull(prev) || Objects.isNull(user)) {
             changes.firePropertyChange("state", prev, user);
         }
+    }
+
+    @Override
+    public void clear() {
+        setCurrentUser(null);
     }
 
     @Override

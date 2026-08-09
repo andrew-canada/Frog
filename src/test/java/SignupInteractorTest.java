@@ -1,4 +1,6 @@
-import data_access.user.UserDataAccessInterface;
+import data_access.security.BCryptPasswordHasher;
+import use_case.port.UserRepository;
+import use_case.port.CurrentUserSession;
 import entity.User;
 import use_case.signup.SignupInputData;
 import use_case.signup.SignupInteractor;
@@ -8,7 +10,7 @@ import java.util.Optional;
 
 final class SignupInteractorTest {
     static void run() {
-        class Fake implements UserDataAccessInterface {
+        class Fake implements UserRepository, CurrentUserSession {
             User saved;
 
             public Optional<User> get(String n) {
@@ -23,11 +25,14 @@ final class SignupInteractorTest {
                 saved = u;
             }
 
-            public Optional<User> getCurrentUser() {
+            public Optional<User> currentUser() {
                 return Optional.empty();
             }
 
             public void setCurrentUser(User u) {
+            }
+
+            public void clear() {
             }
 
             public void removeUser(String n) {
@@ -35,7 +40,7 @@ final class SignupInteractorTest {
         }
         Fake fake = new Fake();
         final SignupOutputData[] out = new SignupOutputData[1];
-        new SignupInteractor(fake, d -> out[0] = d).execute(new SignupInputData("new_user", "pass"));
+        new SignupInteractor(fake, fake, new BCryptPasswordHasher(), d -> out[0] = d).execute(new SignupInputData("new_user", "pass"));
         TestSupport.check(out[0].success() && fake.saved != null, "signup should save user");
         TestSupport.check(!fake.saved.passwordHash().equals("pass"), "password must be hashed");
     }

@@ -2,6 +2,9 @@ package app;
 
 import data_access.DBDataAccessObject;
 import data_access.enrollment.DBEnrollmentDataAccessObject;
+import data_access.personal_plan.FileCalendarContentReader;
+import data_access.personal_plan.GeminiPersonalPlanGenerator;
+import data_access.security.BCryptPasswordHasher;
 import data_access.review.DBReviewDataAccessObject;
 import data_access.route.GraphhopperGeocodingDataAccessObject;
 import data_access.route.GraphhopperRouteDataAccessObject;
@@ -96,7 +99,7 @@ import java.util.function.Supplier;
  */
 public final class AppBuilder {
     private static final String MAIN = "main", REVIEWS = "reviews", LOGIN = "login", STATUS = "status", BUSYNESS = "busyness", ACCOUNT = "account", MODERATE = "moderate";
-    private static final Set<String> JSON_WASHROOM_NAMES = loadJsonWashroomNames();
+    private static final Set<String> JSON_WASHROOM_NAMES = CampusStartup.loadWashroomNames();
 
     private static void showLoadedFrame(JFrame frame) {
         frame.setLocationRelativeTo(null);
@@ -158,12 +161,7 @@ public final class AppBuilder {
      */
     private static void seedInitialData(DBWashroomDataAccessObject washrooms, DBReviewDataAccessObject reviews,
                                         DBStatusReportDataAccessObject reports) {
-        washrooms.ensurePerformanceIndexes();
-        reviews.ensurePerformanceIndexes();
-        reports.ensurePerformanceIndexes();
-        List<Washroom> jsonWashrooms = jsonWashrooms(washrooms);
-        reviews.ensureJsonReviews(jsonWashrooms);
-        reports.ensureJsonHourlyReports(jsonWashrooms);
+        CampusStartup.seedInitialData(washrooms, reviews, reports, JSON_WASHROOM_NAMES);
     }
 
     private static void refreshMainWashrooms(List<Washroom> availableWashrooms, MainView main,
@@ -182,7 +180,7 @@ public final class AppBuilder {
      */
     private static void refreshHeatmapAsync(List<Washroom> washrooms,
                                             DBStatusReportDataAccessObject reports, MainView main) {
-        CompletableFuture.supplyAsync(() -> heatmapData(washrooms, reports))
+        CompletableFuture.supplyAsync(() -> CampusStartup.heatmapData(washrooms, reports))
                 .thenAccept(data -> SwingUtilities.invokeLater(() -> main.setHeatmapData(data)));
     }
 
@@ -191,14 +189,7 @@ public final class AppBuilder {
      */
     private static List<MainView.HeatmapData> heatmapData(List<Washroom> washrooms,
                                                           DBStatusReportDataAccessObject reports) {
-        LocalDateTime now = LocalDateTime.now();
-        Map<String, entity.StatusReport> currentHour = reports.getCurrentHourForWashrooms(
-                washrooms.stream().map(Washroom::id).toList(), now.getHour());
-        return washrooms.stream().map(washroom ->
-                        Optional.ofNullable(currentHour.get(washroom.id()))
-                                .map(report -> new MainView.HeatmapData(washroom.id(), report.busyness(), report.cleanliness()))
-                                .orElseGet(() -> new MainView.HeatmapData(washroom.id(), Double.NaN, Double.NaN)))
-                .toList();
+        return CampusStartup.heatmapData(washrooms, reports);
     }
 
     /**
@@ -238,15 +229,7 @@ public final class AppBuilder {
     }
 
     private static Set<String> loadJsonWashroomNames() {
-        InputStream input = AppBuilder.class.getResourceAsStream("/data/washrooms.json");
-        if (input == null) throw new IllegalStateException("Missing data/washrooms.json resource.");
-        try (input; JsonReader reader = Json.createReader(input)) {
-            return Set.copyOf(reader.readArray().stream()
-                    .map(value -> ((JsonObject) value).getString("name"))
-                    .toList());
-        } catch (Exception failure) {
-            throw new IllegalStateException("Could not load data/washrooms.json.", failure);
-        }
+        return CampusStartup.loadWashroomNames();
     }
 
     private static List<Washroom> jsonWashrooms(DBWashroomDataAccessObject washrooms) {
@@ -324,21 +307,32 @@ public final class AppBuilder {
         var reportController = new ReportReviewController(new ReportReviewInteractor(reviews, new ReportReviewPresenter(reportReviewModel)));
         var moderateController = new ModerateReviewsController(new ModerateReviewsInteractor(reviews, reviews, washrooms, users, new ModerateReviewsPresenter(moderateModel)));
         Supplier<String> currentUser = () -> loggedInModel.getState().username();
-        var loginController = new LoginController(new LoginInteractor(users, new LoginPresenter(loginModel, loggedInModel, isLoggedIn)));
-        var signupController = new SignupController(new SignupInteractor(users, new SignupPresenter(loginModel, loggedInModel)));
+        var passwordHasher = new BCryptPasswordHasher();
+        var loginController = new LoginController(new LoginInteractor(users, users, passwordHasher,
+                new LoginPresenter(loginModel, loggedInModel, isLoggedIn)));
+        var signupController = new SignupController(new SignupInteractor(users, users, passwordHasher,
+                new SignupPresenter(loginModel, loggedInModel)));
         var statusController = new StatusReportController(new SubmitStatusReportInteractor(reports, new StatusReportPresenter(statusModel)));
         var busynessController = new BusynessController(new BusynessStatsInteractor(reports, enrollment, new BusynessPresenter(busynessModel)));
-        var directionsController = new DirectionsController(new GetDirectionsInteractor(washrooms, routes, new DirectionsPresenter(mapModel)));
-        var changeUsernameController = new ChangeUsernameController(new ChangeUsernameInteractor(users, new ChangeUsernamePresenter(accountModel, isLoggedIn)));
-        var changePasswordController = new ChangePasswordController(new ChangePasswordInteractor(users, new ChangePasswordPresenter(accountModel)));
-        var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel, isLoggedIn)));
-        var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
+        var ui = new SwingUiDispatcher();
+        var directionsController = new DirectionsController(new GetDirectionsInteractor(washrooms, routes,
+                new DirectionsPresenter(mapModel, ui)));
+        var changeUsernameController = new ChangeUsernameController(new ChangeUsernameInteractor(users, users,
+                new ChangeUsernamePresenter(accountModel, isLoggedIn)));
+        var changePasswordController = new ChangePasswordController(new ChangePasswordInteractor(users, users, passwordHasher,
+                new ChangePasswordPresenter(accountModel)));
+        var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, users,
+                new DeleteAccountPresenter(accountModel, isLoggedIn)));
+        var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, users,
+                new FileCalendarContentReader(), new GeminiPersonalPlanGenerator(
+                () -> System.getenv(GeminiPersonalPlanGenerator.API_KEY_ENV)),
+                new PersonalPlanPresenter(accountModel)));
         var logoutController = new LogoutController(new LogoutInteractor(users,
                 new LogoutPresenter(isLoggedIn, loginModel, loggedInModel)));
         var filterController = new FilterController(new FilterInteractor(washrooms, reviews, reports, users,
-                new FilterPresenter(filterModel, listModel, mapModel), JSON_WASHROOM_NAMES));
+                new FilterPresenter(filterModel, listModel, ui), JSON_WASHROOM_NAMES));
         var sortWashroomController = new SortWashroomController(
-                new SortWashroomInteractor(washrooms, new SortWashroomPresenter(listModel, sortWashroomModel)));
+                new SortWashroomInteractor(washrooms, new SortWashroomPresenter(listModel, sortWashroomModel, ui)));
         var sortReviewsController = new SortReviewsController(
                 new SortReviewInteractor(reviews, users, washrooms, reviews, reviews, reviewsPresenter));
 

@@ -1,5 +1,5 @@
-import data_access.route.RouteDataAccessInterface;
-import data_access.washroom.WashroomDataAccessInterface;
+import use_case.port.RouteGateway;
+import use_case.port.WashroomRepository;
 import entity.Route;
 import entity.Washroom;
 import use_case.directions.GetDirectionsInputData;
@@ -12,7 +12,7 @@ import java.util.Optional;
 final class GetDirectionsInteractorTest {
     static void run() {
         Washroom w = TestSupport.washroom();
-        WashroomDataAccessInterface washrooms = new WashroomDataAccessInterface() {
+        WashroomRepository washrooms = new WashroomRepository() {
             public Optional<Washroom> getById(String id) {
                 return Optional.of(w);
             }
@@ -25,7 +25,7 @@ final class GetDirectionsInteractorTest {
                 return List.of(w);
             }
         };
-        RouteDataAccessInterface routes = (a, b) -> new Route(List.of(a, b), 480, 360);
+        RouteGateway routes = (a, b) -> new Route(List.of(a, b), 480, 360);
         final GetDirectionsOutputData[] out = new GetDirectionsOutputData[1];
         new GetDirectionsInteractor(washrooms, routes, d -> out[0] = d).execute(new GetDirectionsInputData(43.65, -79.38, "w1"));
         TestSupport.check(out[0].success() && out[0].distanceMeters() == 480 && out[0].routePoints().size() == 2, "route output");

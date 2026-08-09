@@ -2,12 +2,13 @@ package data_access.status;
 
 import entity.MaintenanceIssue;
 import entity.StatusReport;
+import use_case.port.StatusReportRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class InMemoryStatusReportDataAccessObject implements StatusReportDataAccessInterface {
+public final class InMemoryStatusReportDataAccessObject implements StatusReportRepository {
     private final List<StatusReport> reports = new ArrayList<>();
 
     public InMemoryStatusReportDataAccessObject() {

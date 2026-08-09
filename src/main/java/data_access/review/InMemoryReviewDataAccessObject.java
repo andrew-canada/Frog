@@ -7,11 +7,12 @@ import use_case.moderate_reviews.ReportedReviewsDataAccessInterface;
 import use_case.moderate_reviews.ReviewAdminDataAccessInterface;
 import use_case.report_review.ReviewReportDataAccessInterface;
 import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
+import use_case.port.ReviewRepository;
 
 import java.time.LocalDate;
 import java.util.*;
 
-public final class InMemoryReviewDataAccessObject implements ReviewDataAccessInterface,
+public final class InMemoryReviewDataAccessObject implements ReviewRepository,
         HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface, ReviewAdminDataAccessInterface, ReportedReviewsDataAccessInterface {
     private final List<Review> reviews = new ArrayList<>();
     private final Map<String, Set<String>> votesByReview = new HashMap<>();
@@ -51,10 +52,20 @@ public final class InMemoryReviewDataAccessObject implements ReviewDataAccessInt
         return reviews.stream().filter(r -> username.equals(r.authorUsername())).toList();
     }
 
+    @Override
+    public void save(Review review) {
+        reviews.add(review);
+    }
+
     // --- Helpful votes ---------------------------------------------------------
     @Override
     public boolean hasVoted(String reviewId, String username) {
         return votesByReview.getOrDefault(reviewId, Set.of()).contains(username);
+    }
+
+    @Override
+    public Set<String> votedReviewIds(Collection<String> reviewIds, String username) {
+        return reviewIds.stream().filter(reviewId -> hasVoted(reviewId, username)).collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 
     @Override
@@ -93,6 +104,13 @@ public final class InMemoryReviewDataAccessObject implements ReviewDataAccessInt
     public boolean hasReported(String reviewId, String username) {
         return reports.stream()
                 .anyMatch(report -> report.reviewId().equals(reviewId) && username.equals(report.reporterUsername()));
+    }
+
+    @Override
+    public Set<String> reportedReviewIds(Collection<String> reviewIds, String username) {
+        return reports.stream().filter(report -> reviewIds.contains(report.reviewId()))
+                .filter(report -> username.equals(report.reporterUsername())).map(Report::reviewId)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 
     @Override

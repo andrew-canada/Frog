@@ -1,21 +1,22 @@
-import data_access.AbstractCondition;
-import data_access.review.ReviewDataAccessInterface;
-import data_access.status.StatusReportDataAccessInterface;
-import data_access.user.UserDataAccessInterface;
-import data_access.washroom.WashroomDataAccessInterface;
 import entity.*;
 import org.mindrot.jbcrypt.BCrypt;
 import use_case.filter.FilterInputData;
 import use_case.filter.FilterInteractor;
 import use_case.filter.FilterOutputBoundary;
 import use_case.filter.FilterOutputData;
+import use_case.filter.WashroomFilterCriteria;
+import use_case.filter.WashroomFilterRepository;
+import use_case.port.ReviewRepository;
+import use_case.port.StatusReportRepository;
+import use_case.port.UserRepository;
+import use_case.port.CurrentUserSession;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
 final class FilterInteractorTest {
     static void run() {
-        class FakeWashrooms implements WashroomDataAccessInterface {
+        class FakeWashrooms implements WashroomFilterRepository {
             private final List<Washroom> washrooms = new ArrayList<>();
 
             public FakeWashrooms() {
@@ -70,20 +71,12 @@ final class FilterInteractorTest {
             }
 
             @Override
-            public List<Washroom> getMatching(Iterable<AbstractCondition<?>> conditions) {
+            public List<Washroom> findMatching(WashroomFilterCriteria criteria) {
                 return new ArrayList<>(Collections.singleton(washrooms.get(2)));
-            }
-
-            @Override
-            public Map<String, Washroom> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
-                Washroom washroom = washrooms.get(2);
-                Map<String, Washroom> map = new HashMap<>();
-                map.put(washroom.id(), washroom);
-                return map;
             }
         }
 
-        class FakeReviews implements ReviewDataAccessInterface {
+        class FakeReviews implements ReviewRepository {
             private final List<Review> reviews = new ArrayList<>();
 
             public FakeReviews() {
@@ -116,9 +109,14 @@ final class FilterInteractorTest {
 
                 return byUser;
             }
+
+            @Override
+            public void save(Review review) {
+                reviews.add(review);
+            }
         }
 
-        class FakeUser implements UserDataAccessInterface {
+        class FakeUser implements UserRepository, CurrentUserSession {
             User current;
             final User saved = new User("demo", BCrypt.hashpw("secret", BCrypt.gensalt()), "");
 
@@ -137,7 +135,7 @@ final class FilterInteractorTest {
             }
 
             @Override
-            public Optional<User> getCurrentUser() {
+            public Optional<User> currentUser() {
                 return Optional.ofNullable(current);
             }
 
@@ -147,11 +145,16 @@ final class FilterInteractorTest {
             }
 
             @Override
+            public void clear() {
+                current = null;
+            }
+
+            @Override
             public void removeUser(String n) {
             }
         }
 
-        class FakeStatus implements StatusReportDataAccessInterface {
+        class FakeStatus implements StatusReportRepository {
 
             @Override
             public void save(StatusReport report) {

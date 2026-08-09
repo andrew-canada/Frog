@@ -3,10 +3,12 @@ package data_access.washroom;
 import entity.Building;
 import entity.ReviewSummary;
 import entity.Washroom;
+import use_case.filter.WashroomFilterCriteria;
+import use_case.filter.WashroomFilterRepository;
 
 import java.util.*;
 
-public final class InMemoryWashroomDataAccessObject {
+public final class InMemoryWashroomDataAccessObject implements WashroomFilterRepository {
     private final Map<String, Washroom> washrooms = new LinkedHashMap<>();
 
     public InMemoryWashroomDataAccessObject() {
@@ -41,16 +43,35 @@ public final class InMemoryWashroomDataAccessObject {
         ordered.forEach(value -> washrooms.put(value.id(), value));
     }
 
+    @Override
     public Optional<Washroom> getById(String id) {
         return Optional.ofNullable(washrooms.get(id));
     }
 
+    @Override
+    public List<Washroom> getByIds(Collection<String> ids) {
+        return ids.stream().map(washrooms::get).filter(Objects::nonNull).toList();
+    }
+
+    @Override
     public List<Washroom> getAll() {
         return List.copyOf(washrooms.values());
     }
 
+    @Override
     public List<Washroom> getNearby(double lat, double lng, double radiusMeters) {
         return washrooms.values().stream().filter(w -> distance(lat, lng,
                 w.building().latitude(), w.building().longitude()) <= radiusMeters).toList();
+    }
+
+    @Override
+    public List<Washroom> findMatching(WashroomFilterCriteria criteria) {
+        return washrooms.values().stream()
+                .filter(w -> !criteria.accessibleOnly() || w.accessible())
+                .filter(w -> criteria.gender() == null || w.gender() == criteria.gender())
+                .filter(w -> criteria.buildingCode() == null || criteria.buildingCode().isBlank()
+                        || w.building().code().equals(criteria.buildingCode()))
+                .filter(w -> criteria.permittedNames().isEmpty() || criteria.permittedNames().contains(w.name()))
+                .toList();
     }
 }

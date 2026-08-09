@@ -1,18 +1,16 @@
-package data_access.review;
+package use_case.port;
 
 import entity.Review;
 import entity.ReviewSummary;
 
 import java.util.List;
 
-public interface ReviewDataAccessInterface {
+public interface ReviewRepository {
     List<Review> getReviewsForWashroom(String washroomId);
 
     ReviewSummary getSummary(String washroomId);
 
     List<Review> getReviewsByUser(String username);
 
-    default void save(Review review) {
-        throw new UnsupportedOperationException("This review repository is read-only.");
-    }
+    void save(Review review);
 }

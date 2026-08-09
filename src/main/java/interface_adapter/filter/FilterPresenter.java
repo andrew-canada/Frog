@@ -1,24 +1,23 @@
 package interface_adapter.filter;
 
-import interface_adapter.directions.MapViewModel;
+import interface_adapter.common.UiDispatcher;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import use_case.filter.FilterOutputBoundary;
 import use_case.filter.FilterOutputData;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FilterPresenter implements FilterOutputBoundary {
     private final WashroomListViewModel listModel;
-    private final MapViewModel mapModel;
     private final FilterViewModel filterModel;
+    private final UiDispatcher ui;
 
-    public FilterPresenter(FilterViewModel filterViewModel, WashroomListViewModel listModel, MapViewModel mapModel) {
+    public FilterPresenter(FilterViewModel filterViewModel, WashroomListViewModel listModel, UiDispatcher ui) {
 
         this.filterModel = filterViewModel;
         this.listModel = listModel;
-        this.mapModel = mapModel;
+        this.ui = ui;
     }
 
     private static double distance(double a, double b, double c, double d) {
@@ -56,24 +55,13 @@ public class FilterPresenter implements FilterOutputBoundary {
             listModel.setState(new WashroomListViewModel.State(items, null, "Sort by: Nearest", false));
             filterModel.setState(new FilterViewModel.State(true, outputData.washrooms(), ""));
         };
-        if (SwingUtilities.isEventDispatchThread()) update.run();
-        else SwingUtilities.invokeLater(update);
+        ui.dispatch(update);
 
-        /**
-         List<GeoPoint> points = outputData.washrooms().stream().map(
-         washroom -> new GeoPoint(washroom.building().latitude(), washroom.building().longitude())).toList();
-         Runnable update = () -> mapModel.setState(new MapViewModel.State(outputData.success(),
-         points,
-         "", "", ""));
-         if (SwingUtilities.isEventDispatchThread()) update.run();
-         else SwingUtilities.invokeLater(update);
-         */
     }
 
     @Override
     public void presentError(String message) {
         Runnable update = () -> filterModel.setState(new FilterViewModel.State(false, new ArrayList<>(), message));
-        if (SwingUtilities.isEventDispatchThread()) update.run();
-        else SwingUtilities.invokeLater(update);
+        ui.dispatch(update);
     }
 }

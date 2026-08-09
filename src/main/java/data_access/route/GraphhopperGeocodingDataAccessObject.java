@@ -2,6 +2,7 @@ package data_access.route;
 
 import entity.GeoPoint;
 import org.bson.Document;
+import use_case.port.AddressLookupGateway;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,7 +17,7 @@ import java.util.List;
 /**
  * Live GraphHopper forward-geocoding adapter used for address-based map origins.
  */
-public final class GraphhopperGeocodingDataAccessObject implements AddressLookupDataAccessInterface {
+public final class GraphhopperGeocodingDataAccessObject implements AddressLookupGateway {
     private static final URI DEFAULT_ENDPOINT = URI.create("https://graphhopper.com/api/1/geocode");
     private final HttpClient httpClient;
     private final URI endpoint;

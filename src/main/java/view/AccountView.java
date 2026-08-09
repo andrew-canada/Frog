@@ -1,5 +1,6 @@
 package view;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import interface_adapter.account.AccountState;
@@ -10,7 +11,6 @@ import interface_adapter.account.change_password.ChangePasswordController;
 import interface_adapter.account.change_username.ChangeUsernameController;
 import interface_adapter.account.delete_account.DeleteAccountController;
 import interface_adapter.account.personal_plan.PersonalPlanController;
-import use_case.account.personal_plan.PersonalPlanInteractor;
 
 import javax.swing.*;
 import java.awt.*;
@@ -422,7 +422,7 @@ public final class AccountView extends JPanel {
 
         try {
             ObjectMapper mapper = new ObjectMapper();
-            List<PersonalPlanInteractor.WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<PersonalPlanInteractor.WashroomPlan>>() {
+            List<WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<WashroomPlan>>() {
             });
 
             List<String> days = List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
@@ -442,9 +442,8 @@ public final class AccountView extends JPanel {
                 dayPanel.add(Theme.label(day.toUpperCase(), 14, Theme.INK));
                 planPanel.add(dayPanel, constraints);
                 int y = 1;
-                for (PersonalPlanInteractor.WashroomPlan washroom : washroomList) {
+                for (WashroomPlan washroom : washroomList) {
                     if (washroom.day.contains(day)) {
-                        System.out.println(y);
                         constraints.gridx = x;
                         constraints.gridy = y;
                         JTextArea textArea = new JTextArea(washroom.washroom);
@@ -470,6 +469,16 @@ public final class AccountView extends JPanel {
 
         }
 
+    }
+
+    /** JSON view model for the Gemini response; parsing is kept in the UI layer. */
+    public static final class WashroomPlan {
+        @JsonProperty("Day of week")
+        public String day;
+        @JsonProperty("Time (nearest hour) of washroom break")
+        public String time;
+        @JsonProperty("Washroom")
+        public String washroom;
     }
 
 //    private void renderPlan(String plan) {

@@ -8,6 +8,7 @@ import data_access.MongoDocuments;
 import entity.MaintenanceIssue;
 import entity.StatusReport;
 import org.bson.Document;
+import use_case.port.StatusReportRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,7 +16,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
 
-public final class DBStatusReportDataAccessObject implements StatusReportDataAccessInterface {
+public final class DBStatusReportDataAccessObject implements StatusReportRepository {
     private final MongoCollection<Document> reports;
 
     public DBStatusReportDataAccessObject(MongoDatabase database) {

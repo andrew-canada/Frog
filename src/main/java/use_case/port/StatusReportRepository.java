@@ -1,4 +1,4 @@
-package data_access.status;
+package use_case.port;
 
 import entity.StatusReport;
 
@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public interface StatusReportDataAccessInterface {
+public interface StatusReportRepository {
     void save(StatusReport report);
 
     List<StatusReport> getRecentForWashroom(String washroomId, LocalDateTime since);

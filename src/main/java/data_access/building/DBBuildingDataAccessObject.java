@@ -23,7 +23,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
 
     static final List<String> allowedAttributes = List.of(new String[]{
             "buildingCode", "shortName", "longName", "location", "controlInfo"});
-    static MongoCollection<Document> collection;
+    private final MongoCollection<Document> collection;
 
     public DBBuildingDataAccessObject() {
         super();    // initializes the MongoClient and MongoDatabase from
@@ -42,7 +42,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param conditions a list of condition objects that the returned buildings must satisfy
      * @return The buildings that match all the conditions
      */
-    public static List<entity.Building> getMatching(Iterable<AbstractCondition<?>> conditions) {
+    public List<entity.Building> getMatching(Iterable<AbstractCondition<?>> conditions) {
         return new ArrayList<>(getMatchingIDMap(conditions).values());
 
     }
@@ -53,7 +53,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the conditions
      */
-    public static List<entity.Building> getMatching(AbstractCondition<?> condition) {
+    public List<entity.Building> getMatching(AbstractCondition<?> condition) {
 
         List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
@@ -67,7 +67,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param conditions a list of condition objects that the returned buildings must satisfy
      * @return The buildings that match all the conditions mapped to their IDs in the database.
      */
-    public static Map<String, entity.Building> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
+    public Map<String, entity.Building> getMatchingIDMap(Iterable<AbstractCondition<?>> conditions) {
 
         checkAttribute(conditions);
 
@@ -89,7 +89,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param condition a condition object that the returned buildings must satisfy
      * @return The buildings that match the condition mapped to their IDs in the database.
      */
-    public static Map<String, entity.Building> getMatchingIDMap(AbstractCondition<?> condition) {
+    public Map<String, entity.Building> getMatchingIDMap(AbstractCondition<?> condition) {
 
         List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
@@ -115,7 +115,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
      * @param filter the filter that must be satisfied for the Document to be returned
      * @return The list of valid documents
      */
-    private static <T> List<Document> getAll(Bson filter) {
+    private List<Document> getAll(Bson filter) {
         List<Document> docs = new ArrayList<>();
         return collection.find(filter).into(docs);
     }
@@ -246,7 +246,7 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
          */
         DBBuildingDataAccessObject buildingDAO = new DBBuildingDataAccessObject();
         Condition condition = new Condition<>("buildingCode", Operator.NE, "00");
-        System.out.println(getMatching(condition));
+        System.out.println(buildingDAO.getMatching(condition));
 
 
     }

@@ -1,13 +1,8 @@
 package use_case.filter;
 
-import data_access.AbstractCondition;
-import data_access.CollectionCondition;
-import data_access.Condition;
-import data_access.Operator;
-import data_access.review.ReviewDataAccessInterface;
-import data_access.status.StatusReportDataAccessInterface;
-import data_access.user.UserDataAccessInterface;
-import data_access.washroom.WashroomDataAccessInterface;
+import use_case.port.ReviewRepository;
+import use_case.port.StatusReportRepository;
+import use_case.port.CurrentUserSession;
 import entity.Building;
 import entity.StatusReport;
 import entity.User;
@@ -18,52 +13,36 @@ import java.util.*;
 
 public class FilterInteractor implements FilterInputBoundary {
     private final Set<String> permittedWashroomNames;
-    WashroomDataAccessInterface washroomDAO;
-    ReviewDataAccessInterface reviewDAO;
-    StatusReportDataAccessInterface statusReports;
-    UserDataAccessInterface userDAO;
+    WashroomFilterRepository washroomDAO;
+    ReviewRepository reviewDAO;
+    StatusReportRepository statusReports;
+    CurrentUserSession session;
     FilterOutputBoundary presenter;
 
-    public FilterInteractor(WashroomDataAccessInterface washroomDAO,
-                            ReviewDataAccessInterface reviewDAO,
-                            UserDataAccessInterface userDAO,
+    public FilterInteractor(WashroomFilterRepository washroomDAO,
+                            ReviewRepository reviewDAO,
+                            CurrentUserSession session,
                             FilterOutputBoundary presenter) {
-        this(washroomDAO, reviewDAO, null, userDAO, presenter, Set.of());
+        this(washroomDAO, reviewDAO, null, session, presenter, Set.of());
     }
 
-    public FilterInteractor(WashroomDataAccessInterface washroomDAO,
-                            ReviewDataAccessInterface reviewDAO,
-                            StatusReportDataAccessInterface statusReports,
-                            UserDataAccessInterface userDAO,
+    public FilterInteractor(WashroomFilterRepository washroomDAO,
+                            ReviewRepository reviewDAO,
+                            StatusReportRepository statusReports,
+                            CurrentUserSession session,
                             FilterOutputBoundary presenter,
                             Set<String> permittedWashroomNames) {
         this.washroomDAO = washroomDAO;
         this.reviewDAO = reviewDAO;
         this.statusReports = statusReports;
-        this.userDAO = userDAO;
+        this.session = session;
         this.presenter = presenter;
         this.permittedWashroomNames = Set.copyOf(permittedWashroomNames);
     }
 
     @Override
     public void execute(FilterInputData inputData) {
-        List<AbstractCondition<?>> conditions = new ArrayList<>();
-
-        if (inputData.accessible()) {
-            conditions.add(
-                    new Condition<Boolean>(
-                            "accessible", Operator.EQ, true));
-        }
-
-        if (inputData.gender() != null) {
-            conditions.add(
-                    new Condition<String>(
-                            "gender", Operator.EQ, inputData.gender()));
-        }
-
-        if (!permittedWashroomNames.isEmpty()) {
-            conditions.add(new CollectionCondition<>("name", Operator.IN, permittedWashroomNames));
-        }
+        String buildingCode = null;
 
         if (!inputData.washroomID().isEmpty()) {
             Optional<Washroom> washroom = washroomDAO.getById(inputData.washroomID());
@@ -72,17 +51,24 @@ public class FilterInteractor implements FilterInputBoundary {
                 return;
             } else {
                 Building building = washroom.get().building();
-                conditions.add(
-                        new Condition<>(
-                                "buildingCode", Operator.EQ, building.getBuildingCode())
-                );
+                buildingCode = building.getBuildingCode();
             }
         }
 
-        List<Washroom> initialWashrooms = washroomDAO.getMatching(conditions);
+        Washroom.Gender gender = null;
+        if (inputData.gender() != null) {
+            try {
+                gender = Washroom.Gender.valueOf(inputData.gender());
+            } catch (IllegalArgumentException invalidGender) {
+                presenter.presentError("Invalid washroom category.");
+                return;
+            }
+        }
+        List<Washroom> initialWashrooms = washroomDAO.findMatching(new WashroomFilterCriteria(
+                inputData.accessible(), gender, buildingCode, permittedWashroomNames));
 
         if (inputData.ownReviews()) {
-            Optional<User> user = userDAO.getCurrentUser();
+            Optional<User> user = session.currentUser();
             if (user.isEmpty()) {
                 presenter.presentError("Cannot filter on own reviews while the user is logged out.");
                 return;

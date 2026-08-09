@@ -1,20 +1,22 @@
 package interface_adapter.sort_washrooms;
 
+import interface_adapter.common.UiDispatcher;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import use_case.sort_washrooms.SortWashroomsOutputBoundary;
 import use_case.sort_washrooms.SortWashroomsOutputData;
 
-import javax.swing.*;
 import java.util.List;
 
 public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
     private final WashroomListViewModel listModel;
     private final SortWashroomViewModel sortModel;
+    private final UiDispatcher ui;
 
     public SortWashroomPresenter(WashroomListViewModel listModel,
-                                 SortWashroomViewModel sortModel) {
+                                 SortWashroomViewModel sortModel, UiDispatcher ui) {
         this.listModel = listModel;
         this.sortModel = sortModel;
+        this.ui = ui;
     }
 
 
@@ -54,8 +56,7 @@ public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
             sortModel.setState(new
                     interface_adapter.sort_washrooms.SortWashroomViewModel.State(true, outputData.washrooms()));
         };
-        if (SwingUtilities.isEventDispatchThread()) update.run();
-        else SwingUtilities.invokeLater(update);
+        ui.dispatch(update);
 
     }
 }

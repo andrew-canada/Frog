@@ -1,28 +1,32 @@
 package use_case.account.delete_account;
 
-import data_access.user.UserDataAccessInterface;
+import use_case.port.UserRepository;
+import use_case.port.CurrentUserSession;
 import entity.User;
 
 public final class DeleteAccountInteractor implements DeleteAccountInputBoundary {
 
-    private final UserDataAccessInterface users;
+    private final UserRepository users;
+    private final CurrentUserSession session;
     private final DeleteAccountOutputBoundary presenter;
 
-    public DeleteAccountInteractor(UserDataAccessInterface users, DeleteAccountOutputBoundary presenter) {
+    public DeleteAccountInteractor(UserRepository users, CurrentUserSession session,
+                                   DeleteAccountOutputBoundary presenter) {
         this.users = users;
+        this.session = session;
         this.presenter = presenter;
     }
 
     @Override
     public void execute() {
 
-        User user = users.getCurrentUser().orElse(null);
+        User user = session.currentUser().orElse(null);
 
         if (user == null) {
             presenter.present(new DeleteAccountOutputData(false, "You are not logged in"));
         } else {
             users.removeUser(user.username());
-            users.setCurrentUser(null);
+            session.clear();
             presenter.present(new DeleteAccountOutputData(true, ""));
         }
 

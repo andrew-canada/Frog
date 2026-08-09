@@ -1,5 +1,5 @@
-import data_access.review.ReviewDataAccessInterface;
-import data_access.washroom.WashroomDataAccessInterface;
+import use_case.port.ReviewRepository;
+import use_case.port.WashroomRepository;
 import entity.Report;
 import entity.Review;
 import entity.ReviewSummary;
@@ -16,7 +16,7 @@ import java.util.Optional;
 final class ViewReviewsInteractorTest {
     static void run() {
         Washroom w = TestSupport.washroom();
-        ReviewDataAccessInterface reviews = new ReviewDataAccessInterface() {
+        ReviewRepository reviews = new ReviewRepository() {
             public List<Review> getReviewsForWashroom(String id) {
                 return List.of(new Review("1", id, "a", 4, 4, "less helpful", 2, LocalDate.now()), new Review("2", id, "b", 5, 5, "most helpful", 9, LocalDate.now()));
             }
@@ -28,8 +28,11 @@ final class ViewReviewsInteractorTest {
             public List<Review> getReviewsByUser(String u) {
                 return List.of();
             }
+
+            public void save(Review review) {
+            }
         };
-        WashroomDataAccessInterface washrooms = new WashroomDataAccessInterface() {
+        WashroomRepository washrooms = new WashroomRepository() {
             public Optional<Washroom> getById(String id) {
                 return Optional.of(w);
             }

@@ -1,6 +1,7 @@
 package data_access.enrollment;
 
 import entity.EnrollmentMeeting;
+import use_case.port.EnrollmentScheduleGateway;
 
 import java.time.DayOfWeek;
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 /**
  * Timetable API boundary with deterministic demo data; no network is required for the milestone demo.
  */
-public final class TimetableEnrollmentDataAccessObject implements EnrollmentDataAccessInterface {
+public final class TimetableEnrollmentDataAccessObject implements EnrollmentScheduleGateway {
     @Override
     public List<EnrollmentMeeting> getBuildingSchedule(String code, DayOfWeek day) {
         return switch (code) {
