@@ -35,17 +35,13 @@ import interface_adapter.moderate_reviews.ModerateReviewsViewModel;
 import interface_adapter.report_review.ReportReviewController;
 import interface_adapter.report_review.ReportReviewPresenter;
 import interface_adapter.report_review.ReportReviewViewModel;
-import interface_adapter.sort_reviews.SortReviewsController;
-import interface_adapter.sort_washrooms.SortWashroomController;
-import interface_adapter.sort_washrooms.SortWashroomPresenter;
-import interface_adapter.sort_washrooms.SortWashroomViewModel;
 import interface_adapter.status_report.StatusReportController;
 import interface_adapter.status_report.StatusReportPresenter;
 import interface_adapter.status_report.StatusReportViewModel;
 import interface_adapter.view_reviews.ReviewsViewModel;
 import interface_adapter.view_reviews.ViewReviewsController;
 import interface_adapter.view_reviews.ViewReviewsPresenter;
-import interface_adapter.WashroomListViewModel;
+import interface_adapter.view_reviews.WashroomListViewModel;
 import interface_adapter.vote_helpful.VoteHelpfulController;
 import interface_adapter.write_review.WriteReviewController;
 import interface_adapter.write_review.WriteReviewPresenter;
@@ -61,11 +57,8 @@ import use_case.login.LoginInteractor;
 import use_case.moderate_reviews.ModerateReviewsInteractor;
 import use_case.report_review.ReportReviewInteractor;
 import use_case.signup.SignupInteractor;
-import use_case.sort_review.SortReviewInteractor;
-import use_case.sort_washrooms.SortWashroomInteractor;
 import use_case.status_report.SubmitStatusReportInteractor;
 import use_case.view_reviews.ViewReviewsInteractor;
-import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
 import use_case.vote_helpful.VoteHelpfulInteractor;
 import use_case.write_review.WriteReviewInteractor;
 import view.*;
@@ -300,7 +293,6 @@ public final class AppBuilder {
         var geocoding = new GraphhopperGeocodingDataAccessObject(graphhopperKey);
         var enrollment = new DBEnrollmentDataAccessObject(database);
 
-
         var isLoggedIn = new IsLoggedInViewModel();
         var reviewsModel = new ReviewsViewModel();
         var writeReviewModel = new WriteReviewViewModel();
@@ -314,11 +306,8 @@ public final class AppBuilder {
         var reportReviewModel = new ReportReviewViewModel();
         var moderateModel = new ModerateReviewsViewModel();
         var filterModel = new FilterViewModel();
-        var sortWashroomModel = new SortWashroomViewModel();
 
-        ViewReviewsPresenter presenter = new ViewReviewsPresenter(reviewsModel);
-        var reviewController = new ViewReviewsController(new ViewReviewsInteractor(reviews, washrooms, reviews, reviews, presenter));
-        var sortReviewController = new SortReviewsController(new SortReviewInteractor(reviews, users, washrooms, reviews, reviews, presenter));
+        var reviewController = new ViewReviewsController(new ViewReviewsInteractor(reviews, washrooms, reviews, reviews, new ViewReviewsPresenter(reviewsModel)));
         var writeReviewController = new WriteReviewController(new WriteReviewInteractor(reviews, new WriteReviewPresenter(writeReviewModel)));
         var voteController = new VoteHelpfulController(new VoteHelpfulInteractor(reviews));
         var reportController = new ReportReviewController(new ReportReviewInteractor(reviews, new ReportReviewPresenter(reportReviewModel)));
@@ -335,7 +324,6 @@ public final class AppBuilder {
         var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
         var filterController = new FilterController(new FilterInteractor(washrooms, reviews, reports, users,
                 new FilterPresenter(filterModel, listModel, mapModel), JSON_WASHROOM_NAMES));
-        var sortWashroomController = new SortWashroomController(new SortWashroomInteractor(washrooms, new SortWashroomPresenter(listModel, sortWashroomModel)));
 
         JFrame frame = new JFrame("FlushID — U of T washroom finder");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -349,7 +337,7 @@ public final class AppBuilder {
         });
         CardLayout layout = new CardLayout();
         JPanel cards = new JPanel(layout);
-        MainView main = new MainView(listModel, mapModel, filterModel, sortWashroomModel, isLoggedIn);
+        MainView main = new MainView(listModel, mapModel, filterModel, isLoggedIn, logoutController);
         AtomicReference<List<Washroom>> displayedWashrooms = new AtomicReference<>(List.of());
         main.setAddressLookup(geocoding::lookup);
         double originLat = 43.6629, originLng = -79.3957;
@@ -408,10 +396,9 @@ public final class AppBuilder {
                 () -> noWashroom(frame)
         ));
         main.setFilterController(filterController);
-        main.setSortWashroomController(sortWashroomController);
 
         readReviews.setOnBack(showMain);
-        readReviews.setSortReviewsController(sortReviewController);
+
         readReviews.setOnWrite(() -> selected(washrooms, main).ifPresentOrElse(
                 w -> new WriteReviewDialog(frame, writeReviewModel, writeReviewController, w.id(), w.name(),
                         loggedInModel.getState().loggedIn() ? loggedInModel.getState().username() : "Anonymous",

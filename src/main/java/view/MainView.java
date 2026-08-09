@@ -10,6 +10,9 @@ import interface_adapter.filter.FilterViewModel;
 import interface_adapter.sort_washrooms.SortWashroomController;
 import interface_adapter.sort_washrooms.SortWashroomViewModel;
 import interface_adapter.WashroomListViewModel;
+import interface_adapter.logout.LogoutController;
+import interface_adapter.logout.LogoutPresenter;
+import interface_adapter.view_reviews.WashroomListViewModel;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
 import org.jxmapviewer.cache.FileBasedLocalCache;
@@ -54,7 +57,6 @@ public final class MainView extends JPanel {
     private String selectedId = "";
     private List<WashroomListViewModel.Item> renderedItems = List.of();
     private FilterController filterController;
-    private SortWashroomController sortWashroomController;
 
     private Consumer<String> onReviews = id -> {
     };
@@ -77,18 +79,12 @@ public final class MainView extends JPanel {
     };
     private double latitude = 43.6629, longitude = -79.3957;
 
-    /**
-     * Retained for callers that do not provide filtering controls.
-     */
-    public MainView(WashroomListViewModel washrooms, MapViewModel route) {
-        this(washrooms, route, new FilterViewModel(), new SortWashroomViewModel(), new IsLoggedInViewModel());
+    /** Retained for callers that do not provide filtering controls. */
+    public MainView(WashroomListViewModel washrooms, MapViewModel route) { // TODO: why is this still here its being a pain
+        this(washrooms, route, new FilterViewModel(), new IsLoggedInViewModel(), new LogoutController(new LogoutInteractor(new DBUserDataAccessObject(), new LogoutPresenter(new IsLoggedInViewModel()))));
     }
 
-    public MainView(WashroomListViewModel washrooms,
-                    MapViewModel route,
-                    FilterViewModel filter,
-                    SortWashroomViewModel sortWashroom,
-                    IsLoggedInViewModel isLoggedIn) {
+    public MainView(WashroomListViewModel washrooms, MapViewModel route, FilterViewModel filter, IsLoggedInViewModel isLoggedIn, LogoutController logoutController) {
         this.isLoggedIn = isLoggedIn;
         isLoggedIn.getState().addPropertyChangeListener(e -> render(isLoggedIn.getState()));
         setLayout(new BorderLayout());
@@ -98,7 +94,7 @@ public final class MainView extends JPanel {
         buttonsPanel.add(loggedOut, "loggedOut");
         buttonsPanel.add(loggedIn, "loggedIn");
         add(buttonsPanel, BorderLayout.NORTH);
-        JSplitPane content = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sidebar(), mapArea());
+        JSplitPane content = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sidebar(washrooms), mapArea());
         content.setDividerLocation(290);
         content.setDividerSize(8);
         content.setContinuousLayout(true);
@@ -124,10 +120,6 @@ public final class MainView extends JPanel {
             } else {
                 map.setWashrooms(s.washrooms());
             }
-        });
-        sortWashroom.addPropertyChangeListener(e -> {
-            SortWashroomViewModel.State state = sortWashroom.getState();
-            map.setWashrooms(state.washrooms());
         });
     }
 
@@ -169,7 +161,7 @@ public final class MainView extends JPanel {
         return b;
     }
 
-    private JComponent sidebar() {
+    private JComponent sidebar(WashroomListViewModel washrooms) {
         JPanel p = new JPanel(new BorderLayout(0, 10));
         p.setPreferredSize(new Dimension(290, 0));
         p.setBackground(Theme.PAPER);
@@ -184,6 +176,25 @@ public final class MainView extends JPanel {
         controls.add(clear);
         controls.add(new JLabel("Sort by:"));
         WashroomSortDropdownControl washroomSortDropdownControl = new WashroomSortDropdownControl();
+        washroomSortDropdownControl.addActionListener(e -> {
+            WashroomListViewModel.State currState = washrooms.getState();
+            washrooms.setState(new WashroomListViewModel.State(
+                    currState.items(),
+                    currState.selectedId(),
+                    washroomSortDropdownControl.getSelectedItem().toString(),
+                    currState.routeVisible()));
+            Comparator<WashroomListViewModel.Item> comparator;
+            if (washroomSortDropdownControl.getSelectedItem().toString().equals("Highest Rated")) {
+                comparator = WashroomListViewModel.Item.BY_RATING;
+            } else if (washroomSortDropdownControl.getSelectedItem().toString().equals("Nearest")) {
+                comparator = WashroomListViewModel.Item.BY_DISTANCE;
+            } else {
+                comparator = WashroomListViewModel.Item.BY_ALPHABETICAL;
+            }
+            ArrayList<WashroomListViewModel.Item> sortedWashroom = new ArrayList<>(washrooms.getState().items());
+            sortedWashroom.sort(comparator);
+            renderList(sortedWashroom);
+        });
         controls.add(washroomSortDropdownControl);
         p.add(controls, BorderLayout.NORTH);
         location.addActionListener(e -> new LocationInputDialog(SwingUtilities.getWindowAncestor(this), addressLookup, (lat, lng) -> {
@@ -191,18 +202,8 @@ public final class MainView extends JPanel {
             longitude = lng;
             map.setOrigin(new GeoPoint(lat, lng));
             routeLabel.setText("Location updated — choose directions");
-        }).setVisible(true));
-        filters.addActionListener(e ->
-                new FilterView(SwingUtilities.getWindowAncestor(this),
-                        "Filter",
-                        selectedId(),
-                        filterController,
-                        latitude,
-                        longitude).setVisible(true));
-        washroomSortDropdownControl.addActionListener(e -> sortWashroomController.execute(
-                washroomSortDropdownControl.getSelectedItem().toString(),
-                latitude,
-                longitude));
+        }, latitude, longitude, mapClicker).setVisible(true));
+        filters.addActionListener(e -> new FilterView(SwingUtilities.getWindowAncestor(this), "Filter", selectedId(), filterController, latitude, longitude).setVisible(true));
         clear.addActionListener(e -> filterController.execute(5, 1, false, false, false, selectedId(), null, latitude, longitude));
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
         list.setBackground(Theme.PAPER);
@@ -398,8 +399,6 @@ public final class MainView extends JPanel {
     public void setFilterController(FilterController f) {
         filterController = f;
     }
-
-    public void setSortWashroomController(SortWashroomController s) {sortWashroomController = s;}
 
     /** Shows the Moderator nav entry only for a user with moderator privileges. */
     public void setModerator(boolean isModerator) {
