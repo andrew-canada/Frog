@@ -46,6 +46,8 @@ import interface_adapter.vote_helpful.VoteHelpfulController;
 import interface_adapter.write_review.WriteReviewController;
 import interface_adapter.write_review.WriteReviewPresenter;
 import interface_adapter.write_review.WriteReviewViewModel;
+import interface_adapter.logout.LogoutController;
+import interface_adapter.logout.LogoutPresenter;
 import use_case.account.change_password.ChangePasswordInteractor;
 import use_case.account.change_username.ChangeUsernameInteractor;
 import use_case.account.delete_account.DeleteAccountInteractor;
@@ -54,6 +56,7 @@ import use_case.busyness.BusynessStatsInteractor;
 import use_case.directions.GetDirectionsInteractor;
 import use_case.filter.FilterInteractor;
 import use_case.login.LoginInteractor;
+import use_case.logout.LogoutInteractor;
 import use_case.moderate_reviews.ModerateReviewsInteractor;
 import use_case.report_review.ReportReviewInteractor;
 import use_case.signup.SignupInteractor;
@@ -286,6 +289,8 @@ public final class AppBuilder {
         var washrooms = new DBWashroomDataAccessObject(database);
         var reviews = new DBReviewDataAccessObject(database);
         var users = new DBUserDataAccessObject(database);
+        users.ensureModerator("frog");     // grant moderator to known accounts
+        users.ensureModerator("sheena_q");
         var reports = new DBStatusReportDataAccessObject(database);
         var routes = new GraphhopperRouteDataAccessObject(graphhopperKey);
         var geocoding = new GraphhopperGeocodingDataAccessObject(graphhopperKey);
@@ -309,7 +314,7 @@ public final class AppBuilder {
         var writeReviewController = new WriteReviewController(new WriteReviewInteractor(reviews, new WriteReviewPresenter(writeReviewModel)));
         var voteController = new VoteHelpfulController(new VoteHelpfulInteractor(reviews));
         var reportController = new ReportReviewController(new ReportReviewInteractor(reviews, new ReportReviewPresenter(reportReviewModel)));
-        var moderateController = new ModerateReviewsController(new ModerateReviewsInteractor(reviews, reviews, washrooms, new ModerateReviewsPresenter(moderateModel)));
+        var moderateController = new ModerateReviewsController(new ModerateReviewsInteractor(reviews, reviews, washrooms, users, new ModerateReviewsPresenter(moderateModel)));
         Supplier<String> currentUser = () -> loggedInModel.getState().username();
         var loginController = new LoginController(new LoginInteractor(users, new LoginPresenter(loginModel, loggedInModel, isLoggedIn)));
         var signupController = new SignupController(new SignupInteractor(users, new SignupPresenter(loginModel, loggedInModel)));
@@ -320,6 +325,7 @@ public final class AppBuilder {
         var changePasswordController = new ChangePasswordController(new ChangePasswordInteractor(users, new ChangePasswordPresenter(accountModel)));
         var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel, isLoggedIn)));
         var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
+        var logoutController = new LogoutController(new LogoutInteractor(users, new LogoutPresenter(isLoggedIn)));
         var filterController = new FilterController(new FilterInteractor(washrooms, reviews, reports, users,
                 new FilterPresenter(filterModel, listModel, mapModel), JSON_WASHROOM_NAMES));
 
@@ -335,7 +341,7 @@ public final class AppBuilder {
         });
         CardLayout layout = new CardLayout();
         JPanel cards = new JPanel(layout);
-        MainView main = new MainView(listModel, mapModel, filterModel, isLoggedIn);
+        MainView main = new MainView(listModel, mapModel, filterModel, isLoggedIn, logoutController);
         AtomicReference<List<Washroom>> displayedWashrooms = new AtomicReference<>(List.of());
         main.setAddressLookup(geocoding::lookup);
         double originLat = 43.6629, originLng = -79.3957;
@@ -345,6 +351,7 @@ public final class AppBuilder {
 
         AccountView account = new AccountView(
                 accountModel,
+                isLoggedIn,
                 changeUsernameController,
                 changePasswordController,
                 deleteAccountController,
@@ -428,6 +435,10 @@ public final class AppBuilder {
             if (SwingUtilities.isEventDispatchThread()) update.run();
             else SwingUtilities.invokeLater(update);
         });
+
+        // Gate the Moderator nav entry on the logged-in user's moderator status (hidden by default).
+        loggedInModel.addPropertyChangeListener(e ->
+                main.setModerator(loggedInModel.getState().moderator()));
         login.setOnBack(showMain);
         login.setOnSignup(() -> new SignupDialog(frame, signupController).setVisible(true));
         status.setOnCancel(showMain);

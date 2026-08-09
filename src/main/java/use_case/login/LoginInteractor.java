@@ -37,7 +37,7 @@ public final class LoginInteractor implements LoginInputBoundary {
     public void execute(LoginInputData input) {
         User user = users.get(input.username()).orElse(null);
         if (user == null || !passwordMatches(input.password(), user.passwordHash())) {
-            presenter.present(new LoginOutputData(false, null, "Incorrect username or password"));
+            presenter.present(new LoginOutputData(false, null, false, "Incorrect username or password"));
             return;
         }
         if (!isBcryptHash(user.passwordHash())) {
@@ -45,6 +45,6 @@ public final class LoginInteractor implements LoginInputBoundary {
             users.save(user);
         }
         users.setCurrentUser(user);
-        presenter.present(new LoginOutputData(true, user.username(), "Welcome back, " + user.username()));
+        presenter.present(new LoginOutputData(true, user.username(), user.isModerator(), "Welcome back, " + user.username()));
     }
 }

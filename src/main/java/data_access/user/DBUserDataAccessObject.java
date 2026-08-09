@@ -14,9 +14,11 @@ import org.bson.conversions.Bson;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import use_case.moderate_reviews.ModeratorDataAccessInterface;
+
 import java.util.*;
 
-public class DBUserDataAccessObject extends DBDataAccessObject implements UserDataAccessInterface {
+public class DBUserDataAccessObject extends DBDataAccessObject implements UserDataAccessInterface, ModeratorDataAccessInterface {
 
     static final List<String> allowedAttributes = List.of(new String[]{
             "username", "passwordHash", "personalPlan"});
@@ -67,7 +69,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
     private static LoggedInUser createUser(Document doc) {
         return new LoggedInUser(value(doc, "unknown", "username", "name"),
                 value(doc, "", "passwordHash", "password"), List.of(),
-                value(doc, "", "personalPlan"));
+                value(doc, "", "personalPlan"), doc.getBoolean("isModerator", false));
     }
 
     /**
@@ -143,7 +145,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
      */
     public String write(LoggedInUser user, String washroomID) {
         Document doc = new Document("username", user.name()).append("passwordHash", user.getPassword())
-                .append("personalPlan", user.getPersonalPlan());
+                .append("personalPlan", user.getPersonalPlan()).append("isModerator", user.isModerator());
         if (washroomID != null && !washroomID.isBlank()) doc.append("washroomID", washroomID);
         collection.replaceOne(Filters.or(Filters.eq("username", user.name()), Filters.eq("name", user.name())),
                 doc, new ReplaceOptions().upsert(true));
@@ -170,7 +172,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
             matches = getMatching(List.of(new Condition<>("username", data_access.Operator.EQ, username)));
         if (matches.isEmpty() || matches.getFirst().getPassword().isBlank()) return Optional.empty();
         LoggedInUser user = matches.getFirst();
-        return Optional.of(new entity.User(user.name(), user.getPassword(), user.getPersonalPlan()));
+        return Optional.of(new entity.User(user.name(), user.getPassword(), user.getPersonalPlan(), user.isModerator()));
     }
 
     @Override
@@ -180,7 +182,22 @@ public class DBUserDataAccessObject extends DBDataAccessObject implements UserDa
 
     @Override
     public void save(entity.User user) {
-        write(new LoggedInUser(user.username(), user.passwordHash(), List.of(), user.personalPlan()), null);
+        write(new LoggedInUser(user.username(), user.passwordHash(), List.of(), user.personalPlan(), user.isModerator()), null);
+    }
+
+    @Override
+    public boolean isModerator(String username) {
+        return get(username).map(entity.User::isModerator).orElse(false);
+    }
+
+    /**
+     * Grants moderator to an existing account. No-op if the account doesn't exist.
+     *
+     * @param username the account to promote to moderator
+     */
+    public void ensureModerator(String username) {
+        collection.updateOne(Filters.eq("username", username),
+                new Document("$set", new Document("isModerator", true)));
     }
 
     @Override

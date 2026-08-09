@@ -18,15 +18,18 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
     private final ReportedReviewsDataAccessInterface reports;
     private final ReviewAdminDataAccessInterface reviews;
     private final WashroomDataAccessInterface washrooms;
+    private final ModeratorDataAccessInterface moderators;
     private final ModerateReviewsOutputBoundary presenter;
 
     public ModerateReviewsInteractor(ReportedReviewsDataAccessInterface reports,
                                      ReviewAdminDataAccessInterface reviews,
                                      WashroomDataAccessInterface washrooms,
+                                     ModeratorDataAccessInterface moderators,
                                      ModerateReviewsOutputBoundary presenter) {
         this.reports = reports;
         this.reviews = reviews;
         this.washrooms = washrooms;
+        this.moderators = moderators;
         this.presenter = presenter;
     }
 
@@ -37,6 +40,9 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
 
     @Override
     public void removeReview(ModerateReviewsInputData input) {
+        if (denyUnlessModerator(input)) {
+            return;
+        }
         reviews.deleteReview(input.reviewId());
         reports.deleteReportsForReview(input.reviewId());
         present("Review removed.");
@@ -44,8 +50,26 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
 
     @Override
     public void dismissReports(ModerateReviewsInputData input) {
+        if (denyUnlessModerator(input)) {
+            return;
+        }
         reports.deleteReportsForReview(input.reviewId());
         present("Reports dismissed.");
+    }
+
+    /**
+     * Authorization guard for moderator actions. When the acting user is not a
+     * moderator, presents an empty queue with a "Not authorized." message (so no
+     * reported reviews are exposed) and reports that the action was blocked.
+     *
+     * @return true if the action must be aborted
+     */
+    private boolean denyUnlessModerator(ModerateReviewsInputData input) {
+        if (moderators.isModerator(input.moderatorUsername())) {
+            return false;
+        }
+        presenter.present(new ModerateReviewsOutputData(java.util.List.of(), "Not authorized."));
+        return true;
     }
 
     private void present(String message) {

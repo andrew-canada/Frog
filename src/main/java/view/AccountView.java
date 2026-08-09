@@ -1,66 +1,82 @@
 package view;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import entity.User;
 import interface_adapter.account.AccountState;
 import interface_adapter.account.AccountViewModel;
+import interface_adapter.account.IsLoggedInState;
+import interface_adapter.account.IsLoggedInViewModel;
 import interface_adapter.account.change_password.ChangePasswordController;
 import interface_adapter.account.change_username.ChangeUsernameController;
 import interface_adapter.account.delete_account.DeleteAccountController;
 import interface_adapter.account.personal_plan.PersonalPlanController;
+import interface_adapter.login.LoginController;
+import interface_adapter.login.LoginViewModel;
 import use_case.account.personal_plan.PersonalPlanInteractor;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
 
 public final class AccountView extends JPanel {
 
-    private final AccountViewModel viewModel;
+    private Runnable onBack = () -> {
+    };
+
     private final JPanel personalPlan = Theme.page();
     private final JPanel changeUsername = Theme.page();
     private final JPanel changePassword = Theme.page();
     private final JPanel deleteAccount = Theme.page();
+
     private final JButton back = Theme.button("← Back to Map");
+
     private final JLabel accountLabel = new JLabel();
     private final JLabel personalPlanLabel = new JLabel();
     private final JLabel personalPlanStatusLabel = new JLabel();
+
     private final JFileChooser icsChooser = new JFileChooser(); // TODO: make it so that it has to be an ics file
-    private final JTextField nTripField = new JTextField(10); // TODO: restrict it just to ints
+    private final JTextField nTripField = new JTextField(10);
+
     private final JTextField usernameField = new JTextField(10);
     private final JLabel usernameStatusLabel = new JLabel();
+
     private final JPasswordField passwordField = new JPasswordField(10);
     private final JPasswordField confirmPasswordField = new JPasswordField(10);
     private final JLabel passwordStatusLabel = new JLabel();
+
     private final JLabel deleteAccountLabel = new JLabel();
+
     private final JButton personalPlanButton = Theme.button("Generate New Plan");
+
     private final JButton changeUsernameButton = Theme.button("Change Username");
     private final JButton confirmUsernameButton = Theme.button("Confirm Username");
     private final JButton cancelUsernameButton = Theme.button("Cancel");
+
     private final JButton changePasswordButton = Theme.button("Change Password");
     private final JButton confirmPasswordButton = Theme.button("Confirm Password");
     private final JButton cancelPasswordButton = Theme.button("Cancel");
+
     private final JButton deleteAccountButton = Theme.button("Delete Account");
     private final JButton confirmDeleteAccountButton = Theme.button("Delete Account");
     private final JButton cancelDeleteAccountButton = Theme.button("Cancel");
-    private Runnable onBack = () -> {
-    };
-    private final ChangeUsernameController changeUsernameController;
-    private final ChangePasswordController changePasswordController;
-    private final DeleteAccountController deleteAccountController;
-    private final PersonalPlanController personalPlanController;
 
-    public AccountView(AccountViewModel viewModel, ChangeUsernameController changeUsernameController, ChangePasswordController changePasswordController, DeleteAccountController deleteAccountController, PersonalPlanController personalPlanController) {
+    public AccountView(AccountViewModel viewModel, IsLoggedInViewModel isLoggedInViewModel, ChangeUsernameController changeUsernameController, ChangePasswordController changePasswordController, DeleteAccountController deleteAccountController, PersonalPlanController personalPlanController) {
 
-        this.viewModel = viewModel;
         viewModel.getState().addPropertyChangeListener(e -> render(viewModel.getState()));
-
-        this.changeUsernameController = changeUsernameController;
-        this.changePasswordController = changePasswordController;
-        this.deleteAccountController = deleteAccountController;
-        this.personalPlanController = personalPlanController;
+        isLoggedInViewModel.getState().addPropertyChangeListener(e -> render(isLoggedInViewModel.getState()));
 
         setLayout(new BorderLayout());
 
@@ -156,13 +172,56 @@ public final class AccountView extends JPanel {
         scrollPane.getVerticalScrollBar().setBlockIncrement(192);
         add(scrollPane, BorderLayout.CENTER);
 
-        personalPlanButton.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        personalPlanController.execute(icsChooser.getSelectedFile().getAbsolutePath(), nTripField.getText());
-                    }
+        personalPlanButton.addActionListener(e -> {
+
+            personalPlanButton.setEnabled(false);
+
+            personalPlanStatusLabel.setText("Loading");
+            Timer loadingTimer = new Timer(500, null);
+            loadingTimer.addActionListener(evt -> {
+                String curr = personalPlanStatusLabel.getText();
+                if (curr.endsWith("...")) {
+                    personalPlanStatusLabel.setText("Loading");
+                } else {
+                    personalPlanStatusLabel.setText(curr + ".");
                 }
-        );
+            });
+
+            SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
+
+                @Override
+                protected String doInBackground() throws Exception {
+
+                    personalPlanController.execute(icsChooser.getSelectedFile().getAbsolutePath(), nTripField.getText());
+                    return "";
+
+                }
+
+                @Override
+                protected void done() {
+
+                    loadingTimer.stop();
+                    try {
+                        get();
+                    } catch (Exception ex) {
+                        personalPlanStatusLabel.setText("Please try again");
+                    } finally {
+                        personalPlanButton.setEnabled(true);
+                    }
+
+                }
+
+            };
+
+            loadingTimer.start();
+            worker.execute();
+
+//                new ActionListener() {
+//                    public void actionPerformed(ActionEvent evt) {
+//                        personalPlanController.execute(icsChooser.getSelectedFile().getAbsolutePath(), nTripField.getText());
+//                    }
+//                }
+        });
 
         changeUsernameButton.addActionListener(
                 new ActionListener() {
@@ -297,7 +356,7 @@ public final class AccountView extends JPanel {
                         deleteAccountContent.repaint();
 
                         deleteAccountButtons.remove(deleteAccountButton);
-                        deleteAccountContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+                        deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
                         deleteAccountButtons.add(confirmDeleteAccountButton);
                         deleteAccountButtons.add(Box.createHorizontalStrut(10));
                         deleteAccountButtons.add(cancelDeleteAccountButton);
@@ -370,9 +429,16 @@ public final class AccountView extends JPanel {
             cancelDeleteAccountButton.doClick();
             state.setDeleteAccountSuccess(false);
         }
+        deleteAccountLabel.setText(state.getDeleteAccountMessage());
 
         personalPlan.revalidate();
         personalPlan.repaint();
+
+    }
+
+    private void render(IsLoggedInState state) {
+
+        accountLabel.setText(state.getUsername());
 
     }
 
@@ -380,39 +446,90 @@ public final class AccountView extends JPanel {
 
         try {
             ObjectMapper mapper = new ObjectMapper();
-            List<PersonalPlanInteractor.WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<PersonalPlanInteractor.WashroomPlan>>() {
-            });
+            List<PersonalPlanInteractor.WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<PersonalPlanInteractor.WashroomPlan>>() {});
 
             List<String> days = List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
 
-            JPanel planPanel = new JPanel();
-            planPanel.setLayout(new BoxLayout(planPanel, BoxLayout.X_AXIS));
+            JPanel planPanel = new JPanel(new GridBagLayout());
+            GridBagConstraints constraints = new GridBagConstraints();
+            constraints.fill = GridBagConstraints.BOTH;
+            constraints.insets = new Insets(5, 5, 5, 5);
+            constraints.weightx = 1.0;
+            constraints.weighty = 0.0;
 
-            for (String day : days) {
+            for (int x = 0; x < days.size(); x++) {
+                String day = days.get(x);
+                constraints.gridx = x;
+                constraints.gridy = 0;
                 JPanel dayPanel = new JPanel();
-                dayPanel.setMaximumSize(new Dimension(300, 124));
-                dayPanel.setLayout(new BoxLayout(dayPanel, BoxLayout.Y_AXIS));
-                dayPanel.add(Theme.label(day, 14, Theme.INK));
+                dayPanel.add(Theme.label(day.toUpperCase(), 14, Theme.INK));
+                planPanel.add(dayPanel, constraints);
+                int y = 1;
                 for (PersonalPlanInteractor.WashroomPlan washroom : washroomList) {
                     if (washroom.day.contains(day)) {
-                        JPanel card = new JPanel(new BorderLayout(4, 4));
-                        card.add(Theme.label(washroom.time, 14, Theme.INK), BorderLayout.WEST);
-                        card.add(Theme.label(washroom.washroom, 14, Theme.INK), BorderLayout.EAST);
-                        dayPanel.add(card);
+                        System.out.println(y);
+                        constraints.gridx = x;
+                        constraints.gridy = y;
+                        JTextArea textArea = new JTextArea(washroom.washroom);
+                        textArea.setLineWrap(true);
+                        textArea.setWrapStyleWord(true);
+                        textArea.setEditable(false);
+                        textArea.setOpaque(false);
+                        textArea.setColumns(10);
+                        JPanel card = new JPanel(new FlowLayout());
+                        card.add(Theme.label(washroom.time, 14,  Theme.INK));
+                        card.add(textArea);
+                        planPanel.add(card, constraints);
+                        y++;
                     }
                 }
-                planPanel.add(dayPanel);
 
             }
 
             personalPlan.add(planPanel);
             personalPlan.revalidate();
             personalPlan.repaint();
-            System.out.println("success");
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+
         }
+
     }
+
+//    private void renderPlan(String plan) {
+//
+//        try {
+//            ObjectMapper mapper = new ObjectMapper();
+//            List<PersonalPlanInteractor.WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<PersonalPlanInteractor.WashroomPlan>>() {});
+//
+//            List<String> days = List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
+//
+//            JPanel planPanel = new JPanel();
+//            planPanel.setLayout(new BoxLayout(planPanel, BoxLayout.X_AXIS));
+//
+//            for (String day : days) {
+//                JPanel dayPanel = new JPanel();
+//                dayPanel.setMaximumSize(new Dimension(300, 124));
+//                dayPanel.setLayout(new BoxLayout(dayPanel, BoxLayout.Y_AXIS));
+//                dayPanel.add(Theme.label(day, 14, Theme.INK));
+//                for (PersonalPlanInteractor.WashroomPlan washroom : washroomList) {
+//                    if (washroom.day.contains(day)) {
+//                        JPanel card = new JPanel(new BorderLayout(4, 4));
+//                        card.add(Theme.label(washroom.time, 14,  Theme.INK), BorderLayout.WEST);
+//                        card.add(Theme.label(washroom.washroom, 14,  Theme.INK), BorderLayout.EAST);
+//                        dayPanel.add(card);
+//                    }
+//                }
+//                planPanel.add(dayPanel);
+//
+//            }
+//
+//            personalPlan.add(planPanel);
+//            personalPlan.revalidate();
+//            personalPlan.repaint();
+//        } catch (Exception e) {
+//
+//        }
+//    }
 
     public void setOnBack(Runnable r) {
         onBack = r;
