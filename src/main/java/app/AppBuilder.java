@@ -453,6 +453,10 @@ public final class AppBuilder {
         });
         busyness.setOnBack(showMain);
         account.setOnBack(showMain);
+        account.setOnViewPlan(id -> {
+            new PersonalPlanView(frame, users.getCurrentUser().map(entity.User::personalPlan).orElse(""));
+            moderateController.load();
+        });
 
         loadMainDataAsync(washrooms, reviews, reports, seedData, moderateController::load,
                 main, listModel, displayedWashrooms, originLat, originLng, () -> onLoaded.accept(frame));

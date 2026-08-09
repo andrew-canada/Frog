@@ -1,24 +1,14 @@
 package view;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeListener;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import entity.User;
 import interface_adapter.account.AccountState;
 import interface_adapter.account.AccountViewModel;
 import interface_adapter.account.IsLoggedInState;
@@ -27,13 +17,13 @@ import interface_adapter.account.change_password.ChangePasswordController;
 import interface_adapter.account.change_username.ChangeUsernameController;
 import interface_adapter.account.delete_account.DeleteAccountController;
 import interface_adapter.account.personal_plan.PersonalPlanController;
-import interface_adapter.login.LoginController;
-import interface_adapter.login.LoginViewModel;
 import use_case.account.personal_plan.PersonalPlanInteractor;
 
 public final class AccountView extends JPanel {
 
     private Runnable onBack = () -> {
+    };
+    private Consumer<String> onViewPlan = id -> {
     };
 
     private final JPanel personalPlan = Theme.page();
@@ -44,11 +34,10 @@ public final class AccountView extends JPanel {
     private final JButton back = Theme.button("← Back to Map");
 
     private final JLabel accountLabel = new JLabel();
-    private final JLabel personalPlanLabel = new JLabel();
     private final JLabel personalPlanStatusLabel = new JLabel();
 
     private final JFileChooser icsChooser = new JFileChooser(); // TODO: make it so that it has to be an ics file
-    private final JTextField nTripField = new JTextField(10);
+
 
     private final JTextField usernameField = new JTextField(10);
     private final JLabel usernameStatusLabel = new JLabel();
@@ -59,7 +48,14 @@ public final class AccountView extends JPanel {
 
     private final JLabel deleteAccountLabel = new JLabel();
 
-    private final JButton personalPlanButton = Theme.button("Generate New Plan");
+    private final JButton personalPlanUploadFileButton = Theme.button("Upload .ics File");
+    private final JLabel personalPlanSelectedFileLabel = new JLabel("Selected File: ");
+    private String personalPlanSelectedFilePath = "";
+    private final JTextField personalPlanNumField = new JTextField(10);
+    private final String[] semesters = {"Summer", "Fall", "Winter"};
+    private final JComboBox personalPlanSemesterBox = new JComboBox(semesters);
+    private final JButton personalPlanViewButton = Theme.button("View Plan");
+    private final JButton personalPlanGenerateButton = Theme.button("Generate New Plan");
 
     private final JButton changeUsernameButton = Theme.button("Change Username");
     private final JButton confirmUsernameButton = Theme.button("Confirm Username");
@@ -104,28 +100,61 @@ public final class AccountView extends JPanel {
         container.add(deleteAccount);
 
         personalPlan.setLayout(new BoxLayout(personalPlan, BoxLayout.Y_AXIS));
+        personalPlan.setBackground(Theme.PAPER);
         personalPlan.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
-        JPanel personalPlanTitle = Theme.page();
-        personalPlanTitle.setLayout(new BorderLayout());
-        personalPlanTitle.add(Theme.title("Personal Washroom Plan"), BorderLayout.WEST);
-        JPanel personalPlanContent = Theme.page();
-        personalPlanContent.setLayout(new BorderLayout());
-        personalPlanContent.add(Theme.label("Your Current Plan:", 14, Theme.INK), BorderLayout.WEST);
-        personalPlanContent.add(personalPlanLabel, BorderLayout.CENTER);
-        JScrollPane personalPlanScroll = new JScrollPane(personalPlanContent);
-        personalPlanScroll.getVerticalScrollBar().setUnitIncrement(32);
-        personalPlanScroll.getVerticalScrollBar().setBlockIncrement(192);
-        JPanel personalPlanInput = Theme.page();
-        personalPlanInput.add(icsChooser);
-        personalPlanInput.add(nTripField);
-        personalPlanContent.add(personalPlanInput, BorderLayout.SOUTH);
-        JPanel personalPlanButtons = Theme.page();
-        personalPlanButtons.setLayout(new BorderLayout());
-        personalPlanButtons.add(personalPlanButton, BorderLayout.WEST);
-        personalPlanButtons.add(personalPlanStatusLabel, BorderLayout.EAST);
+        JPanel personalPlanTitle = new JPanel();
+        personalPlanTitle.setLayout(new FlowLayout(FlowLayout.LEFT));
+        personalPlanTitle.setBackground(Theme.PAPER);
+        personalPlanTitle.add(Theme.title("Personal Washroom Plan"));
         personalPlan.add(personalPlanTitle);
-        personalPlan.add(personalPlanScroll);
-        personalPlan.add(personalPlanButtons);
+        personalPlan.add(Box.createVerticalStrut(10));
+
+        JTextArea personalPlanInstructions = new JTextArea("Upload your acorn timetable to generate a personal washroom schedule!\n" +
+                "To generate plan, download your timetable from Acorn Timetable as an .ics file and upload it here, then enter your desired number of washroom trips per day and the current semester. \n" +
+                "Click the Generate Plan button then the View Plan button to see the schedule (this may take a few minutes)");
+        personalPlanInstructions.setLineWrap(true);
+        personalPlanInstructions.setWrapStyleWord(true);
+        personalPlanInstructions.setEditable(false);
+        personalPlanInstructions.setOpaque(false);
+        personalPlanInstructions.setColumns(50);
+        personalPlan.add(personalPlanInstructions);
+
+        JPanel fileUploadPanel = new JPanel();
+        fileUploadPanel.setBackground(Theme.PAPER);
+        fileUploadPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        fileUploadPanel.add(personalPlanUploadFileButton);
+        fileUploadPanel.add(Box.createHorizontalStrut(10));
+        fileUploadPanel.add(personalPlanSelectedFileLabel);
+        personalPlan.add(fileUploadPanel);
+        personalPlan.add(Box.createVerticalStrut(10));
+
+        JPanel numTripPanel = new JPanel();
+        numTripPanel.setBackground(Theme.PAPER);
+        numTripPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        numTripPanel.add(Theme.label("Number of Washroom Trips Per Day:", 14, Theme.INK));
+        numTripPanel.add(Box.createHorizontalStrut(10));
+        numTripPanel.add(personalPlanNumField);
+        personalPlan.add(numTripPanel);
+        personalPlan.add(Box.createVerticalStrut(10));
+
+        JPanel semesterPanel = new JPanel();
+        semesterPanel.setBackground(Theme.PAPER);
+        semesterPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        semesterPanel.add(Theme.label("Semester:", 14, Theme.INK));
+        semesterPanel.add(Box.createHorizontalStrut(10));
+        semesterPanel.add(personalPlanSemesterBox);
+        personalPlan.add(semesterPanel);
+        personalPlan.add(Box.createVerticalStrut(10));
+
+        JPanel generateButtonPanel = new JPanel();
+        generateButtonPanel.setBackground(Theme.PAPER);
+        generateButtonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        generateButtonPanel.add(personalPlanViewButton);
+        generateButtonPanel.add(Box.createHorizontalStrut(10));
+        generateButtonPanel.add(personalPlanGenerateButton);
+        generateButtonPanel.add(Box.createHorizontalStrut(10));
+        generateButtonPanel.add(personalPlanStatusLabel);
+        personalPlan.add(generateButtonPanel);
 
         changeUsername.setLayout(new BoxLayout(changeUsername, BoxLayout.Y_AXIS));
         changeUsername.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
@@ -172,9 +201,22 @@ public final class AccountView extends JPanel {
         scrollPane.getVerticalScrollBar().setBlockIncrement(192);
         add(scrollPane, BorderLayout.CENTER);
 
-        personalPlanButton.addActionListener(e -> {
+        personalPlanUploadFileButton.addActionListener(e -> {
 
-            personalPlanButton.setEnabled(false);
+            int result = icsChooser.showOpenDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                personalPlanSelectedFilePath = icsChooser.getSelectedFile().getAbsolutePath();
+                personalPlanSelectedFileLabel.setText("Selected File: " + icsChooser.getSelectedFile().getName());
+            } else if (result == JFileChooser.CANCEL_OPTION) {
+                personalPlanSelectedFilePath = "";
+                personalPlanSelectedFileLabel.setText("Selected File: ");
+            }
+
+        });
+
+        personalPlanGenerateButton.addActionListener(e -> {
+
+            personalPlanGenerateButton.setEnabled(false);
 
             personalPlanStatusLabel.setText("Loading");
             Timer loadingTimer = new Timer(500, null);
@@ -192,7 +234,7 @@ public final class AccountView extends JPanel {
                 @Override
                 protected String doInBackground() throws Exception {
 
-                    personalPlanController.execute(icsChooser.getSelectedFile().getAbsolutePath(), nTripField.getText());
+                    personalPlanController.execute(icsChooser.getSelectedFile().getAbsolutePath(), personalPlanNumField.getText());
                     return "";
 
                 }
@@ -203,10 +245,11 @@ public final class AccountView extends JPanel {
                     loadingTimer.stop();
                     try {
                         get();
+                        personalPlanViewButton.doClick();
                     } catch (Exception ex) {
                         personalPlanStatusLabel.setText("Please try again");
                     } finally {
-                        personalPlanButton.setEnabled(true);
+                        personalPlanGenerateButton.setEnabled(true);
                     }
 
                 }
@@ -216,11 +259,12 @@ public final class AccountView extends JPanel {
             loadingTimer.start();
             worker.execute();
 
-//                new ActionListener() {
-//                    public void actionPerformed(ActionEvent evt) {
-//                        personalPlanController.execute(icsChooser.getSelectedFile().getAbsolutePath(), nTripField.getText());
-//                    }
-//                }
+        });
+
+        personalPlanViewButton.addActionListener(e -> {
+
+            onViewPlan.accept(viewModel.getState().getPersonalPlan());
+
         });
 
         changeUsernameButton.addActionListener(
@@ -405,12 +449,7 @@ public final class AccountView extends JPanel {
 
         accountLabel.setText(state.getUsername());
 
-        renderPlan(state.getPersonalPlan());
-
-        // personalPlanLabel.setText(state.getPersonalPlan());
         personalPlanStatusLabel.setText(state.getPersonalPlanMessage());
-
-        System.out.println(state.getChangeUsernameSuccess());
 
         if (state.getChangeUsernameSuccess()) {
             cancelUsernameButton.doClick();
@@ -442,94 +481,9 @@ public final class AccountView extends JPanel {
 
     }
 
-    private void renderPlan(String plan) {
-
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            List<PersonalPlanInteractor.WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<PersonalPlanInteractor.WashroomPlan>>() {});
-
-            List<String> days = List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
-
-            JPanel planPanel = new JPanel(new GridBagLayout());
-            GridBagConstraints constraints = new GridBagConstraints();
-            constraints.fill = GridBagConstraints.BOTH;
-            constraints.insets = new Insets(5, 5, 5, 5);
-            constraints.weightx = 1.0;
-            constraints.weighty = 0.0;
-
-            for (int x = 0; x < days.size(); x++) {
-                String day = days.get(x);
-                constraints.gridx = x;
-                constraints.gridy = 0;
-                JPanel dayPanel = new JPanel();
-                dayPanel.add(Theme.label(day.toUpperCase(), 14, Theme.INK));
-                planPanel.add(dayPanel, constraints);
-                int y = 1;
-                for (PersonalPlanInteractor.WashroomPlan washroom : washroomList) {
-                    if (washroom.day.contains(day)) {
-                        System.out.println(y);
-                        constraints.gridx = x;
-                        constraints.gridy = y;
-                        JTextArea textArea = new JTextArea(washroom.washroom);
-                        textArea.setLineWrap(true);
-                        textArea.setWrapStyleWord(true);
-                        textArea.setEditable(false);
-                        textArea.setOpaque(false);
-                        textArea.setColumns(10);
-                        JPanel card = new JPanel(new FlowLayout());
-                        card.add(Theme.label(washroom.time, 14,  Theme.INK));
-                        card.add(textArea);
-                        planPanel.add(card, constraints);
-                        y++;
-                    }
-                }
-
-            }
-
-            personalPlan.add(planPanel);
-            personalPlan.revalidate();
-            personalPlan.repaint();
-        } catch (Exception e) {
-
-        }
-
+    public void setOnViewPlan(Consumer<String> c) {
+        onViewPlan = c;
     }
-
-//    private void renderPlan(String plan) {
-//
-//        try {
-//            ObjectMapper mapper = new ObjectMapper();
-//            List<PersonalPlanInteractor.WashroomPlan> washroomList = mapper.readValue(plan, new TypeReference<List<PersonalPlanInteractor.WashroomPlan>>() {});
-//
-//            List<String> days = List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
-//
-//            JPanel planPanel = new JPanel();
-//            planPanel.setLayout(new BoxLayout(planPanel, BoxLayout.X_AXIS));
-//
-//            for (String day : days) {
-//                JPanel dayPanel = new JPanel();
-//                dayPanel.setMaximumSize(new Dimension(300, 124));
-//                dayPanel.setLayout(new BoxLayout(dayPanel, BoxLayout.Y_AXIS));
-//                dayPanel.add(Theme.label(day, 14, Theme.INK));
-//                for (PersonalPlanInteractor.WashroomPlan washroom : washroomList) {
-//                    if (washroom.day.contains(day)) {
-//                        JPanel card = new JPanel(new BorderLayout(4, 4));
-//                        card.add(Theme.label(washroom.time, 14,  Theme.INK), BorderLayout.WEST);
-//                        card.add(Theme.label(washroom.washroom, 14,  Theme.INK), BorderLayout.EAST);
-//                        dayPanel.add(card);
-//                    }
-//                }
-//                planPanel.add(dayPanel);
-//
-//            }
-//
-//            personalPlan.add(planPanel);
-//            personalPlan.revalidate();
-//            personalPlan.repaint();
-//        } catch (Exception e) {
-//
-//        }
-//    }
 
     public void setOnBack(Runnable r) {
         onBack = r;

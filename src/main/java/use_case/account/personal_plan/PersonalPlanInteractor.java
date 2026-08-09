@@ -65,10 +65,8 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
                 GenerateContentConfig config = GenerateContentConfig.builder().responseMimeType("application/json").responseSchema(plan).build();
 
                 Client client = Client.builder().apiKey(apiKey).build();
-                System.out.println("hi !!");
                 GenerateContentResponse response = client.models.generateContent("gemini-3.6-flash", "This is a UOFT time table, generate a schedule of washroom breaks in the fall semester such that there are " + inputData.nTrips() + "washroom trips per day they are at school: " + calendar, config);
                 String personalPlanString = response.text();
-                System.out.println(personalPlanString);
                 if (checkValid(response.text(), Integer.parseInt(inputData.nTrips()))) {
                     throw new Exception("Invalid gemini response");
                 }
