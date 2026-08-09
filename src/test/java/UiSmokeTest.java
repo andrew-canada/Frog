@@ -4,7 +4,7 @@ import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginViewModel;
 import interface_adapter.status_report.StatusReportViewModel;
 import interface_adapter.view_reviews.ReviewsViewModel;
-import interface_adapter.WashroomListViewModel;
+import interface_adapter.view_reviews.WashroomListViewModel;
 import entity.Building;
 import entity.ReviewSummary;
 import entity.Washroom;

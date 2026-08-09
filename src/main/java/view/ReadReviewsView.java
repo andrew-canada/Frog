@@ -1,12 +1,14 @@
 package view;
 
-import interface_adapter.sort_reviews.SortReviewsController;
 import interface_adapter.view_reviews.ReviewsViewModel;
+import interface_adapter.view_reviews.WashroomListViewModel;
 import use_case.view_reviews.ViewReviewsOutputData;
 
 import javax.swing.*;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -15,7 +17,6 @@ public final class ReadReviewsView extends JPanel {
     private static final Color HELPFUL_GREEN = new Color(0x4C, 0xAF, 0x50);
     private final JLabel title = Theme.title("Reviews"), subtitle = Theme.label("", 12, Theme.INK), summary = Theme.label("", 13, Theme.MUTED);
     private final JPanel reviews = new JPanel();
-    private SortReviewsController sortReviewsController;
     private Runnable onBack = () -> {
     }, onWrite = () -> {
     };
@@ -23,11 +24,11 @@ public final class ReadReviewsView extends JPanel {
     }, onReport = id -> {
     };
 
-    public ReadReviewsView(ReviewsViewModel reviewsViewModel) {
+    public ReadReviewsView(ReviewsViewModel model) {
         setLayout(new BorderLayout());
         setBackground(Theme.PAPER);
         subtitle.setFont(subtitle.getFont().deriveFont(Font.BOLD));
-        add(header(reviewsViewModel), BorderLayout.NORTH);
+        add(header(model), BorderLayout.NORTH);
 
         reviews.setLayout(new BoxLayout(reviews, BoxLayout.Y_AXIS));
         reviews.setBackground(Theme.PAPER);
@@ -35,7 +36,8 @@ public final class ReadReviewsView extends JPanel {
         scroll.setBorder(null);
         add(scroll, BorderLayout.CENTER);
         scroll.getVerticalScrollBar().setValue(0);
-        reviewsViewModel.addPropertyChangeListener(e -> render(reviewsViewModel.getState()));
+
+        model.addPropertyChangeListener(e -> render(model.getState()));
     }
 
     private JComponent header(ReviewsViewModel s) {
@@ -49,20 +51,38 @@ public final class ReadReviewsView extends JPanel {
         text.add(subtitle);
         text.add(Box.createVerticalStrut(12));
         text.add(summary);
+        ReviewSortDropdownControl reviewSortDropdownControl = new ReviewSortDropdownControl();
+        reviewSortDropdownControl.addActionListener(e -> {
+            Comparator<ViewReviewsOutputData.ReviewDisplay> comparator;
+            String choice = reviewSortDropdownControl.getSelectedItem().toString();
+            if(choice.equals("Highest Rated")) {
+                comparator = ViewReviewsOutputData.ReviewDisplay.BY_HIGHEST_RATING;
+            } else if(choice.equals("Lowest Rated")) {
+                comparator = ViewReviewsOutputData.ReviewDisplay.BY_LOWEST_RATING;
+            } else if(choice.equals("Most Helpful")) {
+                comparator = ViewReviewsOutputData.ReviewDisplay.BY_HELPFULNESS;
+            } else if(choice.equals("Newest")) {
+                comparator = ViewReviewsOutputData.ReviewDisplay.BY_TIME_NEWEST;
+            } else if(choice.equals("Voted by Me")) {
+                comparator = ViewReviewsOutputData.ReviewDisplay.BY_ME;
+            } else {
+                comparator = ViewReviewsOutputData.ReviewDisplay.BY_HIGHEST_RATING;
+
+            }
+            ArrayList<ViewReviewsOutputData.ReviewDisplay> reviewList = new ArrayList<>(s.getState().reviews());
+            reviewList.sort(comparator);
+            reviews.removeAll();
+            renderReviews(reviewList);
+        });
+
+        text.add(reviewSortDropdownControl);
+        outer.add(text);
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttons.setOpaque(false);
         JButton write = Theme.primary("+ Write a review"), back = Theme.button("← Back to map");
-        ReviewSortDropdownControl reviewSortDropdownControl = new ReviewSortDropdownControl();
         write.addActionListener(e -> onWrite.run());
         back.addActionListener(e -> onBack.run());
-        reviewSortDropdownControl.addActionListener(e ->
-                sortReviewsController.execute(
-                        reviewSortDropdownControl.getSelectedItem().toString(),
-                        s.getState().washroomId()
-                ));
-        text.add(reviewSortDropdownControl);
-        outer.add(text);
         buttons.add(write);
         buttons.add(back);
         outer.add(buttons, BorderLayout.EAST);
@@ -78,7 +98,6 @@ public final class ReadReviewsView extends JPanel {
         reviews.revalidate();
         reviews.repaint();
     }
-
     public void renderReviews(List<ViewReviewsOutputData.ReviewDisplay> s){
         for (ViewReviewsOutputData.ReviewDisplay r : s) {
             JPanel card = new JPanel(new BorderLayout(10, 10));
@@ -146,6 +165,4 @@ public final class ReadReviewsView extends JPanel {
     public void setOnReport(Consumer<String> c) {
         onReport = c;
     }
-
-    public void setSortReviewsController(SortReviewsController c){sortReviewsController = c;}
 }

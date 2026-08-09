@@ -15,6 +15,10 @@ public record ViewReviewsOutputData(String washroomId, String washroomName, Stri
     public record ReviewDisplay(String reviewId, double rating, String comment, int helpfulCount,
                                 LocalDate date, String author, boolean votedByCurrentUser,
                                 boolean reportedByCurrentUser) {
-
+        public static final Comparator<ReviewDisplay> BY_HIGHEST_RATING = Comparator.comparing(ReviewDisplay::rating).reversed();
+        public static final Comparator<ReviewDisplay> BY_LOWEST_RATING = Comparator.comparing(ReviewDisplay::rating);
+        public static final Comparator<ReviewDisplay> BY_HELPFULNESS = Comparator.comparing(ReviewDisplay::helpfulCount).reversed();
+        public static final Comparator<ReviewDisplay> BY_TIME_NEWEST = Comparator.comparing(ReviewDisplay::date).reversed();
+        public static final Comparator<ReviewDisplay> BY_ME = Comparator.comparing(ReviewDisplay::votedByCurrentUser).reversed();
     }
 }
