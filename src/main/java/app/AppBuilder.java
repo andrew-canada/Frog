@@ -50,8 +50,6 @@ import interface_adapter.vote_helpful.VoteHelpfulController;
 import interface_adapter.write_review.WriteReviewController;
 import interface_adapter.write_review.WriteReviewPresenter;
 import interface_adapter.write_review.WriteReviewViewModel;
-import interface_adapter.logout.LogoutController;
-import interface_adapter.logout.LogoutPresenter;
 import use_case.account.change_password.ChangePasswordInteractor;
 import use_case.account.change_username.ChangeUsernameInteractor;
 import use_case.account.delete_account.DeleteAccountInteractor;
@@ -60,7 +58,6 @@ import use_case.busyness.BusynessStatsInteractor;
 import use_case.directions.GetDirectionsInteractor;
 import use_case.filter.FilterInteractor;
 import use_case.login.LoginInteractor;
-import use_case.logout.LogoutInteractor;
 import use_case.moderate_reviews.ModerateReviewsInteractor;
 import use_case.report_review.ReportReviewInteractor;
 import use_case.signup.SignupInteractor;
@@ -317,6 +314,7 @@ public final class AppBuilder {
         var reportReviewModel = new ReportReviewViewModel();
         var moderateModel = new ModerateReviewsViewModel();
         var filterModel = new FilterViewModel();
+        var sortWashroomModel = new SortWashroomViewModel();
 
         ViewReviewsPresenter presenter = new ViewReviewsPresenter(reviewsModel);
         var reviewController = new ViewReviewsController(new ViewReviewsInteractor(reviews, washrooms, reviews, reviews, presenter));
@@ -335,9 +333,9 @@ public final class AppBuilder {
         var changePasswordController = new ChangePasswordController(new ChangePasswordInteractor(users, new ChangePasswordPresenter(accountModel)));
         var deleteAccountController = new DeleteAccountController(new DeleteAccountInteractor(users, new DeleteAccountPresenter(accountModel, isLoggedIn)));
         var personalPlanController = new PersonalPlanController(new PersonalPlanInteractor(users, new PersonalPlanPresenter(accountModel)));
-        var logoutController = new LogoutController(new LogoutInteractor(users, new LogoutPresenter(isLoggedIn)));
         var filterController = new FilterController(new FilterInteractor(washrooms, reviews, reports, users,
                 new FilterPresenter(filterModel, listModel, mapModel), JSON_WASHROOM_NAMES));
+        var sortWashroomController = new SortWashroomController(new SortWashroomInteractor(washrooms, new SortWashroomPresenter(listModel, sortWashroomModel)));
 
         JFrame frame = new JFrame("FlushID — U of T washroom finder");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -351,7 +349,7 @@ public final class AppBuilder {
         });
         CardLayout layout = new CardLayout();
         JPanel cards = new JPanel(layout);
-        MainView main = new MainView(listModel, mapModel, filterModel, isLoggedIn, logoutController);
+        MainView main = new MainView(listModel, mapModel, filterModel, sortWashroomModel, isLoggedIn);
         AtomicReference<List<Washroom>> displayedWashrooms = new AtomicReference<>(List.of());
         main.setAddressLookup(geocoding::lookup);
         double originLat = 43.6629, originLng = -79.3957;
@@ -361,7 +359,6 @@ public final class AppBuilder {
 
         AccountView account = new AccountView(
                 accountModel,
-                isLoggedIn,
                 changeUsernameController,
                 changePasswordController,
                 deleteAccountController,
@@ -411,6 +408,7 @@ public final class AppBuilder {
                 () -> noWashroom(frame)
         ));
         main.setFilterController(filterController);
+        main.setSortWashroomController(sortWashroomController);
 
         readReviews.setOnBack(showMain);
         readReviews.setSortReviewsController(sortReviewController);
