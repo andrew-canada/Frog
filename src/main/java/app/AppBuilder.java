@@ -429,7 +429,7 @@ public final class AppBuilder {
         ));
         readReviews.setOnHelpful(id -> {
             voteController.toggle(id, currentUser.get());
-            reviewController.execute(reviewsModel.getState().washroomId(), currentUser.get());
+            reviewsModel.toggleHelpfulVote(id);
         });
         readReviews.setOnReport(id -> {
             // Modal dialog: setVisible blocks until it closes, then refresh the review list (so the
