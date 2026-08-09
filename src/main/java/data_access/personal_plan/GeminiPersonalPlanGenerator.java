@@ -33,12 +33,12 @@ public final class GeminiPersonalPlanGenerator implements PersonalPlanGenerator 
         if (key == null || key.isBlank()) {
             throw new IllegalStateException("Set " + API_KEY_ENV + " to generate a personal plan");
         }
-        Schema washroom = Schema.builder().type(Type.Known.OBJECT).properties(Map.of(
+        Schema washroomSchema = Schema.builder().type(Type.Known.OBJECT).properties(Map.of(
                 DAY_PROMPT, Schema.builder().type(Type.Known.STRING).build(),
                 TIME_PROMPT, Schema.builder().type(Type.Known.STRING).build(),
                 WASHROOM_ID_PROMPT, Schema.builder().type(Type.Known.STRING).build()
         )).required(List.of(DAY_PROMPT, TIME_PROMPT, WASHROOM_ID_PROMPT)).build();
-        Schema plan = Schema.builder().type(Type.Known.ARRAY).items(washroom).build();
+        Schema plan = Schema.builder().type(Type.Known.ARRAY).items(washroomSchema).build();
         GenerateContentConfig config = GenerateContentConfig.builder()
                 .responseMimeType("application/json").responseSchema(plan).build();
         Client client = Client.builder().apiKey(key).build();
