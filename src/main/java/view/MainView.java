@@ -1,5 +1,6 @@
 package view;
 
+import data_access.user.DBUserDataAccessObject;
 import data_access.user.InMemoryUserDataAccessObject;
 import entity.GeoPoint;
 import entity.Washroom;
@@ -15,7 +16,7 @@ import interface_adapter.logout.LogoutPresenter;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import interface_adapter.sort_washrooms.SortWashroomController;
 import interface_adapter.sort_washrooms.SortWashroomViewModel;
-import interface_adapter.WashroomListViewModel;
+import interface_adapter.view_reviews.WashroomListViewModel;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
 import org.jxmapviewer.cache.FileBasedLocalCache;
@@ -65,6 +66,7 @@ public final class MainView extends JPanel {
     private String selectedId = "";
     private List<WashroomListViewModel.Item> renderedItems = List.of();
     private FilterController filterController;
+    private SortWashroomController sortWashroomController;
 
     private Consumer<String> onReviews = id -> {
     };
@@ -89,11 +91,11 @@ public final class MainView extends JPanel {
 
     /** Retained for callers that do not provide filtering controls. */
     public MainView(WashroomListViewModel washrooms, MapViewModel route) { // TODO: why is this still here its being a pain
-        this(washrooms, route, new FilterViewModel(), new IsLoggedInViewModel(), new LogoutController(new LogoutInteractor(new DBUserDataAccessObject(), new LogoutPresenter(new IsLoggedInViewModel()))));
-    /** Retained for callers that do not provide filtering controls. */
-    public MainView(WashroomListViewModel washrooms, MapViewModel route) { // TODO: why is this still here its being a pain
-        this(washrooms, route, new FilterViewModel(), new SortWashroomViewModel(), new IsLoggedInViewModel(),
-                new LogoutController(new LogoutInteractor(new InMemoryUserDataAccessObject(), new LogoutPresenter(new IsLoggedInViewModel()))));
+        this(washrooms,
+                route,
+                new FilterViewModel(),
+                new IsLoggedInViewModel(),
+                new LogoutController(new LogoutInteractor(new DBUserDataAccessObject(), new LogoutPresenter(new IsLoggedInViewModel()))));
     }
 
     public MainView(WashroomListViewModel washrooms, MapViewModel route, FilterViewModel filter, IsLoggedInViewModel isLoggedIn, LogoutController logoutController) {
@@ -134,7 +136,6 @@ public final class MainView extends JPanel {
                 map.setWashrooms(s.washrooms());
             }
         });
-        sortWashroom.addPropertyChangeListener(e -> map.setWashrooms(sortWashroom.getState().washrooms()));
     }
 
     private JComponent headerLoggedIn() {
@@ -201,11 +202,11 @@ public final class MainView extends JPanel {
         controls.add(clear);
         controls.add(new JLabel("Sort by:"));
         WashroomSortDropdownControl washroomSortDropdownControl = new WashroomSortDropdownControl();
-        washroomSortDropdownControl.addActionListener(e -> {
-            if (sortWashroomController != null) {
-                sortWashroomController.execute(washroomSortDropdownControl.getSelectedItem().toString(), latitude, longitude);
-            }
-        });
+        controls.add(washroomSortDropdownControl);
+        washroomSortDropdownControl.addActionListener(e -> sortWashroomController.execute(
+                washroomSortDropdownControl.getSelectedItem().toString(),
+                latitude,
+                longitude));
         controls.add(washroomSortDropdownControl);
         p.add(controls, BorderLayout.NORTH);
 
@@ -474,7 +475,7 @@ public final class MainView extends JPanel {
         }
     }
 
-    static final class CampusMapPanel extends JPanel {
+    final class CampusMapPanel extends JPanel {
         private final JXMapViewer viewer;
         private final Map<String, Rectangle> markerHitTargets = new HashMap<>();
         private List<GeoPoint> route = List.of();
@@ -486,7 +487,7 @@ public final class MainView extends JPanel {
         };
         private GeoPoint origin = new GeoPoint(43.6629, -79.3957);
 
-        CampusMapPanel() {
+        public CampusMapPanel() {
             setLayout(new BorderLayout());
             setBorder(BorderFactory.createLineBorder(Theme.LINE));
             if (GraphicsEnvironment.isHeadless()) {
