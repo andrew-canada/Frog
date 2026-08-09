@@ -8,8 +8,8 @@ import interface_adapter.account.IsLoggedInViewModel;
 import interface_adapter.directions.MapViewModel;
 import interface_adapter.filter.FilterController;
 import interface_adapter.filter.FilterViewModel;
-import interface_adapter.logout.LogoutController;
-import interface_adapter.logout.LogoutPresenter;
+import interface_adapter.sort_washrooms.SortWashroomController;
+import interface_adapter.sort_washrooms.SortWashroomViewModel;
 import interface_adapter.view_reviews.WashroomListViewModel;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
@@ -98,7 +98,7 @@ public final class MainView extends JPanel {
         buttonsPanel.add(loggedOut, "loggedOut");
         buttonsPanel.add(loggedIn, "loggedIn");
         add(buttonsPanel, BorderLayout.NORTH);
-        JSplitPane content = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sidebar(washrooms), mapArea());
+        JSplitPane content = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sidebar(), mapArea());
         content.setDividerLocation(290);
         content.setDividerSize(8);
         content.setContinuousLayout(true);
@@ -176,7 +176,7 @@ public final class MainView extends JPanel {
         return b;
     }
 
-    private JComponent sidebar(WashroomListViewModel washrooms) {
+    private JComponent sidebar() {
         JPanel p = new JPanel(new BorderLayout(0, 10));
         p.setPreferredSize(new Dimension(290, 0));
         p.setBackground(Theme.PAPER);
