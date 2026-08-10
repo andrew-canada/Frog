@@ -95,10 +95,10 @@ MongoDB stores users, reviews, review reports, status reports, and optional enro
 
 ## Testing and coverage
 
-Run the test suite and generate the JaCoCo report with:
+With JDK 24 and Maven installed, run the full test suite and generate the JaCoCo coverage report from the repository root:
 
 ```powershell
 mvn test
 ```
 
-Open `target/site/jacoco/index.html` after the run to inspect coverage. The test suite uses deterministic fakes and local HTTP servers for application behavior and route/geocoding adapter coverage; it does not require live MongoDB, GraphHopper, or Gemini access.
+Maven writes the HTML report to `target/site/jacoco/index.html`; open that file in a browser to inspect overall, package, class, line, and branch coverage. The test suite uses deterministic fakes and local HTTP servers for application behavior and route/geocoding adapter coverage, so it does not require live MongoDB, GraphHopper, or Gemini access.
