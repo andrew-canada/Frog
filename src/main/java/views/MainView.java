@@ -172,8 +172,8 @@ public final class MainView extends JPanel {
         buttonsPanel.add(loggedIn, "loggedIn");
         add(buttonsPanel, BorderLayout.NORTH);
         final JPanel content = new JPanel(new BorderLayout());
-        content.add(MainSidebar.create(this, washrooms, map, filterController, sortWashroomController, addressLookup),
-            BorderLayout.WEST);
+        content.add(MainSidebar.create(this, washrooms, map, () -> filterController, () -> sortWashroomController,
+            () -> addressLookup), BorderLayout.WEST);
         content.add(mapArea(), BorderLayout.CENTER);
         add(content, BorderLayout.CENTER);
         map.setOnWashroomSelected(this::selectWashroom);
@@ -582,7 +582,7 @@ public final class MainView extends JPanel {
         private void initializeViewer() {
             viewer = MapViewerSetup.create(origin);
             viewer.setOverlayPainter(this::paintOverlay);
-            viewer.addMouseListener(new MapMarkerClickListener(markerHitTargets, onWashroomSelected));
+            viewer.addMouseListener(new MapMarkerClickListener(markerHitTargets, () -> onWashroomSelected));
             viewer.setFocusable(true);
             final JLabel attribution = Theme.label(
                 "Drag to pan  -  mouse wheel to zoom  -  (c) OpenStreetMap contributors  -  routes by GraphHopper",
@@ -932,6 +932,13 @@ public final class MainView extends JPanel {
         public void addMouseListener(final MouseListener listener) {
             if (viewer != null) {
                 viewer.addMouseListener(listener);
+            }
+        }
+
+        @Override
+        public void removeMouseListener(final MouseListener listener) {
+            if (viewer != null) {
+                viewer.removeMouseListener(listener);
             }
         }
 

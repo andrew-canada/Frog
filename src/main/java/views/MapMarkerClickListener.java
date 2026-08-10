@@ -5,14 +5,15 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.swing.SwingUtilities;
 
 final class MapMarkerClickListener extends MouseAdapter {
     private final Map<String, Rectangle> targets;
-    private final Consumer<String> selection;
+    private final Supplier<Consumer<String>> selection;
 
-    MapMarkerClickListener(final Map<String, Rectangle> targets, final Consumer<String> selection) {
+    MapMarkerClickListener(final Map<String, Rectangle> targets, final Supplier<Consumer<String>> selection) {
         this.targets = targets;
         this.selection = selection;
     }
@@ -22,7 +23,8 @@ final class MapMarkerClickListener extends MouseAdapter {
         if (SwingUtilities.isLeftMouseButton(event)) {
             for (final Map.Entry<String, Rectangle> target : targets.entrySet()) {
                 if (target.getValue().contains(event.getPoint())) {
-                    selection.accept(target.getKey());
+                    selection.get().accept(target.getKey());
+                    break;
                 }
             }
         }
