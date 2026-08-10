@@ -1,5 +1,6 @@
 package app;
 
+import configuration.ApplicationEnvironment;
 import database.personal_plan.FileCalendarContentReader;
 import database.personal_plan.GeminiPersonalPlanGenerator;
 import interface_adapter.account.personal_plan.PersonalPlanController;
@@ -24,7 +25,7 @@ final class PersonalPlanControllers {
     }
 
     private static String personalPlanKey() {
-        return System.getenv(GeminiPersonalPlanGenerator.API_KEY_ENV);
+        return ApplicationEnvironment.value(GeminiPersonalPlanGenerator.API_KEY_ENV);
     }
 
     PersonalPlanController personalPlan() {
