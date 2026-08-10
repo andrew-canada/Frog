@@ -288,11 +288,14 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
                 else if (genderStr.equals(entity.Washroom.Gender.WOMEN.toString())) {
                     gender = entity.Washroom.Gender.WOMEN;
                 }
+                else if (genderStr.equals("WOMEN_AND_MEN")) {
+                    gender = entity.Washroom.Gender.WOMEN_AND_MEN;
+                }
                 else if (genderStr.equals("ALL_GENDER")) {
                     gender = entity.Washroom.Gender.ALL_GENDER;
                 }
                 else {
-                    gender = entity.Washroom.Gender.ALL_GENDER;
+                    gender = entity.Washroom.Gender.NO_INFO;
                 }
 
                 final boolean accessible = obj.getBoolean("accessible");
@@ -349,14 +352,15 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
             .toString();
     }
 
-    public void main(final String[] args) {
+    public static void main(String[] args) {
+        DBWashroomDataAccessObject dbWashroomDataAccessObject = new DBWashroomDataAccessObject();
         try {
             final DBWashroomDataAccessObject dbwashroomDAO = new DBWashroomDataAccessObject();
             final Condition condition = new Condition<>("floor", Operator.NE, "00");
             dbwashroomDAO.delete(condition);
             final List<entity.Washroom> washroomList = loadWashrooms("src/main/resources/data/washrooms.json");
             for (final entity.Washroom washroom : washroomList) {
-                write(washroom, washroom.id());
+                dbWashroomDataAccessObject.write(washroom, washroom.id());
                 System.out.println(washroom);
 
             }
