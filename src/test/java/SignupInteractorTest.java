@@ -1,4 +1,4 @@
-import database.security.BCryptPasswordHasher;
+import database.security.BcryptPasswordHasher;
 import entity.User;
 import java.util.Optional;
 import use_case.port.CurrentUserSession;
@@ -46,7 +46,7 @@ final class SignupInteractorTest {
         }
         final Fake fake = new Fake();
         final SignupOutputData[] out = new SignupOutputData[1];
-        new SignupInteractor(fake, fake, new BCryptPasswordHasher(), d -> out[0] = d).execute(
+        new SignupInteractor(fake, fake, new BcryptPasswordHasher(), d -> out[0] = d).execute(
             new SignupInputData("new_user", "pass"));
         TestSupport.check(out[0].success() && fake.saved != null, "signup should save user");
         TestSupport.check(!fake.saved

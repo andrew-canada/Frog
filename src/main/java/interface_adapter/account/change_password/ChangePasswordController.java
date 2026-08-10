@@ -11,6 +11,13 @@ public final class ChangePasswordController {
         this.interactor = interactor;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param newPassword parameter value.
+     *
+     * @param confirmNewPassword parameter value.
+     */
     public void execute(final String newPassword, final String confirmNewPassword) {
         interactor.execute(new ChangePasswordInputData(newPassword, confirmNewPassword));
     }

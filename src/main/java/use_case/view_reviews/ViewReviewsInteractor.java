@@ -36,7 +36,13 @@ public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
     private static String displayDescription(final Washroom washroom) {
         final String name = washroom.name();
         final int separator = name.indexOf('|');
-        final String description = separator >= 0 ? name.substring(separator + 1) : name;
+        final String description;
+        if (separator >= 0) {
+            description = name.substring(separator + 1);
+        }
+        else {
+            description = name;
+        }
         return description
             .replaceAll("(?i)\\bwashrooms?\\b", "")
             .replaceAll("\\s{2,}", " ")
@@ -45,6 +51,8 @@ public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
 
     /**
      * Ranking score: helpfulness (log) + recency (exponential decay).
+     * @param review parameter value.
+     * @return the operation result.
      */
     private static double score(final Review review) {
         final long ageInDays = ChronoUnit.DAYS.between(review.createdAt(), LocalDate.now());
@@ -58,29 +66,32 @@ public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
             .orElse(null);
         if (washroom == null) {
             presenter.presentError("Washroom not found");
-            return;
         }
-        final List<Review> washroomReviews = reviews.getReviewsForWashroom(washroom.id());
-        final ReviewSummary summary = ReviewSummary.fromReviews(washroomReviews);
-        final Set<String> reviewIds = washroomReviews
-            .stream()
-            .map(Review::id)
-            .collect(java.util.stream.Collectors.toUnmodifiableSet());
-        final Set<String> votedReviewIds = votes.votedReviewIds(reviewIds, input.username());
-        final Set<String> reportedReviewIds = reports.reportedReviewIds(reviewIds, input.username());
-        final List<ViewReviewsOutputData.ReviewDisplay> display = washroomReviews
-            .stream()
-            .sorted(Comparator
-                .comparingDouble(ViewReviewsInteractor::score)
-                .reversed())
-            .map(r -> {
-                return new ViewReviewsOutputData.ReviewDisplay(r.id(), r.rating(), r.comment(), r.helpfulCount(), r.createdAt(), r.authorUsername(), votedReviewIds.contains(r.id()),
-                    reportedReviewIds.contains(r.id()));
-            })
-            .toList();
-        presenter.present(new ViewReviewsOutputData(washroom.id(), washroom
-            .building()
-            .name(), displayDescription(washroom), summary.averageRating(), summary.averageCleanliness(),
-            summary.reviewCount(), washroom.numToilets(), washroom.numSinks(), display));
+        else {
+            final List<Review> washroomReviews = reviews.getReviewsForWashroom(washroom.id());
+            final ReviewSummary summary = ReviewSummary.fromReviews(washroomReviews);
+            final Set<String> reviewIds = washroomReviews
+                .stream()
+                .map(Review::id)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+            final Set<String> votedReviewIds = votes.votedReviewIds(reviewIds, input.username());
+            final Set<String> reportedReviewIds = reports.reportedReviewIds(reviewIds, input.username());
+            final List<ViewReviewsOutputData.ReviewDisplay> display = washroomReviews
+                .stream()
+                .sorted(Comparator
+                    .comparingDouble(ViewReviewsInteractor::score)
+                    .reversed())
+                .map(reviewValue -> {
+                    return new ViewReviewsOutputData.ReviewDisplay(reviewValue.id(), reviewValue.rating(),
+                         reviewValue.comment(), reviewValue.helpfulCount(), reviewValue.createdAt(),
+                         reviewValue.authorUsername(), votedReviewIds.contains(reviewValue.id()),
+                        reportedReviewIds.contains(reviewValue.id()));
+                })
+                .toList();
+            presenter.present(new ViewReviewsOutputData(washroom.id(), washroom
+                .building()
+                .name(), displayDescription(washroom), summary.averageRating(), summary.averageCleanliness(),
+                summary.reviewCount(), washroom.numToilets(), washroom.numSinks(), display));
+        }
     }
 }

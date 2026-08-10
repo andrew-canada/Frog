@@ -11,6 +11,11 @@ public final class ChangeUsernameController {
         this.interactor = interactor;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param newUsername parameter value.
+     */
     public void execute(final String newUsername) {
         interactor.execute(new ChangeUsernameInputData(newUsername));
     }

@@ -14,14 +14,31 @@ public final class ModerateReviewsController {
         this.interactor = interactor;
     }
 
+    /**
+     * Performs this operation.
+     */
     public void load() {
         interactor.loadReportedReviews();
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param reviewId parameter value.
+     *
+     * @param moderatorUsername parameter value.
+     */
     public void remove(final String reviewId, final String moderatorUsername) {
         interactor.removeReview(new ModerateReviewsInputData(reviewId, moderatorUsername));
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param reviewId parameter value.
+     *
+     * @param moderatorUsername parameter value.
+     */
     public void dismiss(final String reviewId, final String moderatorUsername) {
         interactor.dismissReports(new ModerateReviewsInputData(reviewId, moderatorUsername));
     }

@@ -14,6 +14,13 @@ public final class VoteHelpfulController {
         this.interactor = interactor;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param reviewId parameter value.
+     *
+     * @param username parameter value.
+     */
     public void toggle(final String reviewId, final String username) {
         interactor.toggle(new VoteHelpfulInputData(reviewId, username));
     }

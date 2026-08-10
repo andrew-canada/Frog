@@ -9,6 +9,9 @@ public final class LogoutController {
         this.interactor = interactor;
     }
 
+    /**
+     * Performs this operation.
+     */
     public void execute() {
         interactor.execute();
     }

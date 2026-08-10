@@ -31,7 +31,7 @@ final class FilterInteractorTest {
         class FakeWashrooms implements WashroomFilterRepository {
             private final List<Washroom> washrooms = new ArrayList<>();
 
-            public FakeWashrooms() {
+            FakeWashrooms() {
                 washrooms.add(new Washroom(
                     "a",
                     "a",
@@ -100,7 +100,7 @@ final class FilterInteractorTest {
         class FakeReviews implements ReviewRepository {
             private final List<Review> reviews = new ArrayList<>();
 
-            public FakeReviews() {
+            FakeReviews() {
                 reviews.add(new Review(
                     "a", "a", "", 4.0, 4.0,
                     "", 5, null));
@@ -203,7 +203,7 @@ final class FilterInteractorTest {
         }
 
         class FakePresenter implements FilterOutputBoundary {
-            public FilterOutputData out;
+            FilterOutputData out;
 
             @Override
             public void present(final FilterOutputData data) {

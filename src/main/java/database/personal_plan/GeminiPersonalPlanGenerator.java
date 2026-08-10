@@ -67,7 +67,7 @@ public final class GeminiPersonalPlanGenerator implements PersonalPlanGenerator 
         final String washroomChoices = availableWashrooms
             .stream()
             .map(washroom -> {
-                return washroom.id() + " — " + washroom.name() + " (" + washroom
+                return washroom.id() + " - " + washroom.name() + " (" + washroom
                     .building()
                     .name() + ")";
             })

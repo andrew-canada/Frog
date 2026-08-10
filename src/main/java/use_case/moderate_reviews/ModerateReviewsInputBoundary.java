@@ -12,11 +12,13 @@ public interface ModerateReviewsInputBoundary {
 
     /**
      * Removes a review (and its reports).
+     * @param input parameter value.
      */
     void removeReview(ModerateReviewsInputData input);
 
     /**
      * Dismisses the reports on a review, leaving the review in place.
+     * @param input parameter value.
      */
     void dismissReports(ModerateReviewsInputData input);
 }

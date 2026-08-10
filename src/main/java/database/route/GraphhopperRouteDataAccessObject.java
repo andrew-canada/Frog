@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.bson.Document;
+import org.bson.json.JsonParseException;
 
 import entity.GeoPoint;
 import entity.Route;
@@ -23,6 +24,11 @@ import use_case.port.RouteGateway;
  */
 public final class GraphhopperRouteDataAccessObject implements RouteGateway {
     public static final String API_KEY_ENV = "GRAPHHOPPER_API_KEY";
+    private static final int HTTP_REDIRECTION_STATUS = 300;
+    private static final int HTTP_SUCCESS_STATUS = 200;
+    private static final int REQUEST_TIMEOUT_SECONDS = 20;
+    private static final double MILLISECONDS_PER_SECOND = 1000.0;
+    private static final int CONNECTION_TIMEOUT_SECONDS = 10;
     private static final URI DEFAULT_ENDPOINT = URI.create("https://graphhopper.com/api/1/route");
 
     private final HttpClient httpClient;
@@ -32,7 +38,7 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
     public GraphhopperRouteDataAccessObject(final String apiKey) {
         this(HttpClient
             .newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
+            .connectTimeout(Duration.ofSeconds(CONNECTION_TIMEOUT_SECONDS))
             .build(), DEFAULT_ENDPOINT, apiKey);
     }
 
@@ -51,7 +57,7 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
         try {
             root = Document.parse(json);
         }
-        catch (final RuntimeException malformed) {
+        catch (final JsonParseException malformed) {
             throw new IllegalStateException("GraphHopper returned invalid JSON.", malformed);
         }
         final List<Document> paths = root.getList("paths", Document.class);
@@ -64,6 +70,21 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
             throw new IllegalStateException("GraphHopper response did not contain route geometry.");
         }
         final List<?> coordinates = geometry.getList("coordinates", List.class);
+        final List<GeoPoint> points = routePoints(coordinates);
+        final Number distance = path.get("distance", Number.class);
+        final Number time = path.get("time", Number.class);
+        int distanceMeters = 0;
+        if (distance != null) {
+            distanceMeters = (int) Math.round(distance.doubleValue());
+        }
+        int timeSeconds = 0;
+        if (time != null) {
+            timeSeconds = (int) Math.round(time.doubleValue() / MILLISECONDS_PER_SECOND);
+        }
+        return new Route(points, distanceMeters, timeSeconds);
+    }
+
+    private static List<GeoPoint> routePoints(final List<?> coordinates) {
         final List<GeoPoint> points = new ArrayList<>();
         if (coordinates != null) {
             for (final Object coordinate : coordinates) {
@@ -76,10 +97,7 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
         if (points.size() < 2) {
             throw new IllegalStateException("GraphHopper returned incomplete route geometry.");
         }
-        final Number distance = path.get("distance", Number.class);
-        final Number time = path.get("time", Number.class);
-        return new Route(points, distance == null ? 0 : (int) Math.round(distance.doubleValue()),
-            time == null ? 0 : (int) Math.round(time.doubleValue() / 1000.0));
+        return points;
     }
 
     private static String point(final GeoPoint point) {
@@ -93,14 +111,14 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
             + URLEncoder.encode(apiKey, StandardCharsets.UTF_8));
         final HttpRequest request = HttpRequest
             .newBuilder(requestUri)
-            .timeout(Duration.ofSeconds(20))
+            .timeout(Duration.ofSeconds(REQUEST_TIMEOUT_SECONDS))
             .header("Accept", "application/json")
             .header("User-Agent", "FlushID/1.0")
             .GET()
             .build();
         try {
             final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            if (response.statusCode() < HTTP_SUCCESS_STATUS || response.statusCode() >= HTTP_REDIRECTION_STATUS) {
                 throw new IllegalStateException("GraphHopper returned HTTP " + response.statusCode() + ".");
             }
             return parseRoute(response.body());

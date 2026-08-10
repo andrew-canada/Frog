@@ -22,21 +22,39 @@ import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
 public final class InMemoryReviewDataAccessObject
     implements ReviewRepository, HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface,
     ReviewAdminDataAccessInterface, ReportedReviewsDataAccessInterface {
+    private static final int SAMPLE_REVIEW_DAY_SIXTEEN = 16;
+    private static final int SAMPLE_REVIEW_VALUE_FOUR = 4;
+    private static final int SAMPLE_REVIEW_YEAR = 2026;
+    private static final int SAMPLE_REVIEW_VALUE_THREE = 3;
+    private static final double SAMPLE_REVIEW_RATING_THREE_POINT_FIVE = 3.5;
+    private static final int SAMPLE_REVIEW_HELPFUL_COUNT_EIGHT = 8;
+    private static final int SAMPLE_REVIEW_DAY_TWENTY_EIGHT = 28;
+    private static final int SAMPLE_REVIEW_HELPFUL_COUNT_SIX = 6;
+    private static final int SAMPLE_REVIEW_DAY_TWELVE = 12;
+    private static final int SAMPLE_REVIEW_HELPFUL_COUNT_FOURTEEN = 14;
+    private static final int SAMPLE_REVIEW_VALUE_FIVE = 5;
     private final List<Review> reviews = new ArrayList<>();
     private final Map<String, Set<String>> votesByReview = new HashMap<>();
     private final List<Report> reports = new ArrayList<>();
 
     public InMemoryReviewDataAccessObject() {
-        reviews.add(new Review("r1", "bahen-2", "sheena_q", 5, 5,
-            "Spotless and rarely busy. Good lighting and a spacious accessible stall.", 14, LocalDate.of(2026, 3, 12)));
-        reviews.add(new Review("r2", "bahen-2", "andrew_p", 4, 4,
-            "Clean most days but can get crowded between classes. Soap was full.", 6, LocalDate.of(2026, 2, 28)));
+        reviews.add(new Review("r1", "bahen-2", "sheena_q", SAMPLE_REVIEW_VALUE_FIVE,
+            SAMPLE_REVIEW_VALUE_FIVE, "Spotless and rarely busy. Good lighting and a spacious accessible stall.",
+            SAMPLE_REVIEW_HELPFUL_COUNT_FOURTEEN,
+            LocalDate.of(SAMPLE_REVIEW_YEAR, SAMPLE_REVIEW_VALUE_THREE, SAMPLE_REVIEW_DAY_TWELVE)));
+        reviews.add(new Review("r2", "bahen-2", "andrew_p", SAMPLE_REVIEW_VALUE_FOUR,
+            SAMPLE_REVIEW_VALUE_FOUR, "Clean most days but can get crowded between classes. Soap was full.",
+            SAMPLE_REVIEW_HELPFUL_COUNT_SIX,
+            LocalDate.of(SAMPLE_REVIEW_YEAR, 2, SAMPLE_REVIEW_DAY_TWENTY_EIGHT)));
         reviews.add(
-            new Review("r3", "robarts-4", "eleanor_l", 4, 4, "Reliable and easy to find, though busy after lunch.", 8,
-                LocalDate.of(2026, 4, 3)));
+            new Review("r3", "robarts-4", "eleanor_l", SAMPLE_REVIEW_VALUE_FOUR, SAMPLE_REVIEW_VALUE_FOUR,
+                "Reliable and easy to find, though busy after lunch.", SAMPLE_REVIEW_HELPFUL_COUNT_EIGHT,
+                LocalDate.of(SAMPLE_REVIEW_YEAR, SAMPLE_REVIEW_VALUE_FOUR, SAMPLE_REVIEW_VALUE_THREE)));
         reviews.add(
-            new Review("r4", "gerstein-main", "ian_c", 3.5, 3, "Quiet in the morning. One sink was out of service.", 4,
-                LocalDate.of(2026, 4, 16)));
+            new Review("r4", "gerstein-main", "ian_c", SAMPLE_REVIEW_RATING_THREE_POINT_FIVE,
+                SAMPLE_REVIEW_VALUE_THREE,
+                "Quiet in the morning. One sink was out of service.", SAMPLE_REVIEW_VALUE_FOUR,
+                LocalDate.of(SAMPLE_REVIEW_YEAR, SAMPLE_REVIEW_VALUE_FOUR, SAMPLE_REVIEW_DAY_SIXTEEN)));
     }
 
     public InMemoryReviewDataAccessObject(final List<Review> seed) {
@@ -44,12 +62,13 @@ public final class InMemoryReviewDataAccessObject
     }
 
     // --- View Reviews ----------------------------------------------------------
+
     @Override
     public List<Review> getReviewsForWashroom(final String id) {
         return reviews
             .stream()
-            .filter(r -> {
-                return r
+            .filter(reviewValue -> {
+                return reviewValue
                     .washroomId()
                     .equals(id);
             })
@@ -59,26 +78,30 @@ public final class InMemoryReviewDataAccessObject
     @Override
     public ReviewSummary getSummary(final String id) {
         final List<Review> found = getReviewsForWashroom(id);
+        final ReviewSummary result;
         if (found.isEmpty()) {
-            return ReviewSummary.empty();
+            result = ReviewSummary.empty();
         }
-        return new ReviewSummary(found
-            .stream()
-            .mapToDouble(Review::rating)
-            .average()
-            .orElse(0), found
-            .stream()
-            .mapToDouble(Review::cleanliness)
-            .average()
-            .orElse(0), found.size());
+        else {
+            result = new ReviewSummary(found
+                .stream()
+                .mapToDouble(Review::rating)
+                .average()
+                .orElse(0), found
+                .stream()
+                .mapToDouble(Review::cleanliness)
+                .average()
+                .orElse(0), found.size());
+        }
+        return result;
     }
 
     @Override
     public List<Review> getReviewsByUser(final String username) {
         return reviews
             .stream()
-            .filter(r -> {
-                return username.equals(r.authorUsername());
+            .filter(reviewValue -> {
+                return username.equals(reviewValue.authorUsername());
             })
             .toList();
     }
@@ -88,7 +111,13 @@ public final class InMemoryReviewDataAccessObject
         reviews.add(review);
     }
 
+    @Override
+    public void save(final Report report) {
+        reports.add(report);
+    }
+
     // --- Helpful votes ---------------------------------------------------------
+
     @Override
     public boolean hasVoted(final String reviewId, final String username) {
         return votesByReview
@@ -128,24 +157,21 @@ public final class InMemoryReviewDataAccessObject
 
     private void adjustHelpful(final String reviewId, final int delta) {
         for (int i = 0; i < reviews.size(); i++) {
-            final Review r = reviews.get(i);
-            if (r
+            final Review reviewValue = reviews.get(i);
+            if (reviewValue
                 .id()
                 .equals(reviewId)) {
-                final int count = Math.max(0, r.helpfulCount() + delta);
+                final int count = Math.max(0, reviewValue.helpfulCount() + delta);
                 reviews.set(i,
-                    new Review(r.id(), r.washroomId(), r.authorUsername(), r.rating(), r.cleanliness(), r.comment(),
-                        count, r.createdAt()));
-                return;
+                    new Review(reviewValue.id(), reviewValue.washroomId(), reviewValue.authorUsername(),
+                        reviewValue.rating(), reviewValue.cleanliness(), reviewValue.comment(),
+                        count, reviewValue.createdAt()));
+                break;
             }
         }
     }
 
     // --- Reports ---------------------------------------------------------------
-    @Override
-    public void save(final Report report) {
-        reports.add(report);
-    }
 
     @Override
     public boolean hasReported(final String reviewId, final String username) {
@@ -187,12 +213,13 @@ public final class InMemoryReviewDataAccessObject
     }
 
     // --- Review admin ----------------------------------------------------------
+
     @Override
     public Optional<Review> getById(final String reviewId) {
         return reviews
             .stream()
-            .filter(r -> {
-                return r
+            .filter(reviewValue -> {
+                return reviewValue
                     .id()
                     .equals(reviewId);
             })
@@ -201,8 +228,8 @@ public final class InMemoryReviewDataAccessObject
 
     @Override
     public void deleteReview(final String reviewId) {
-        reviews.removeIf(r -> {
-            return r
+        reviews.removeIf(reviewValue -> {
+            return reviewValue
                 .id()
                 .equals(reviewId);
         });

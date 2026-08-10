@@ -1,8 +1,13 @@
 package use_case.filter;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import entity.Building;
@@ -14,23 +19,23 @@ import use_case.port.ReviewRepository;
 import use_case.port.StatusReportRepository;
 
 public class FilterInteractor implements FilterInputBoundary {
-    WashroomFilterRepository washroomDAO;
-    ReviewRepository reviewDAO;
-    StatusReportRepository statusReports;
-    CurrentUserSession session;
-    FilterOutputBoundary presenter;
+    private final WashroomFilterRepository washroomDao;
+    private final ReviewRepository reviewDao;
+    private final StatusReportRepository statusReports;
+    private final CurrentUserSession session;
+    private final FilterOutputBoundary presenter;
     private final Set<String> permittedWashroomNames;
 
-    public FilterInteractor(final WashroomFilterRepository washroomDAO, final ReviewRepository reviewDAO,
+    public FilterInteractor(final WashroomFilterRepository washroomDao, final ReviewRepository reviewDao,
                             final CurrentUserSession session, final FilterOutputBoundary presenter) {
-        this(washroomDAO, reviewDAO, null, session, presenter, Set.of());
+        this(washroomDao, reviewDao, null, session, presenter, Set.of());
     }
 
-    public FilterInteractor(final WashroomFilterRepository washroomDAO, final ReviewRepository reviewDAO,
+    public FilterInteractor(final WashroomFilterRepository washroomDao, final ReviewRepository reviewDao,
                             final StatusReportRepository statusReports, final CurrentUserSession session,
                             final FilterOutputBoundary presenter, final Set<String> permittedWashroomNames) {
-        this.washroomDAO = washroomDAO;
-        this.reviewDAO = reviewDAO;
+        this.washroomDao = washroomDao;
+        this.reviewDao = reviewDao;
         this.statusReports = statusReports;
         this.session = session;
         this.presenter = presenter;
@@ -39,145 +44,152 @@ public class FilterInteractor implements FilterInputBoundary {
 
     @Override
     public void execute(final FilterInputData inputData) {
-        String buildingCode = null;
-
-        if (!inputData
-            .washroomID()
-            .isEmpty()) {
-            final Optional<Washroom> washroom = washroomDAO.getById(inputData.washroomID());
-            if (washroom.isEmpty()) {
-                presenter.presentError("Invalid Washroom Selected.");
-                return;
-            }
-            else {
-                final Building building = washroom
-                    .get()
-                    .building();
-                buildingCode = building.getBuildingCode();
+        final String buildingCode = selectedBuildingCode(inputData.washroomID());
+        final List<Washroom.Gender> genders = parseGenders(inputData.gender());
+        final boolean validSelection = inputData.washroomID().isEmpty()
+            || buildingCode != null;
+        final boolean validGender = inputData.gender() == null || genders != null;
+        if (!validSelection) {
+            presenter.presentError("Invalid Washroom Selected.");
+        }
+        else if (!validGender) {
+            presenter.presentError("Invalid washroom category.");
+        }
+        else {
+            final List<Washroom> initialWashrooms = washroomDao.findMatching(
+                new WashroomFilterCriteria(inputData.accessible(), genders, buildingCode, permittedWashroomNames));
+            if (applyUserFilters(initialWashrooms, inputData)) {
+                filterByCurrentStatus(initialWashrooms, inputData);
+                presenter.present(new FilterOutputData(true, initialWashrooms, inputData.latitude(),
+                    inputData.longitude()));
             }
         }
+    }
 
-        List<Washroom.Gender> genders = null;
-        if (inputData.gender() != null) {
+    private String selectedBuildingCode(final String washroomId) {
+        String result = null;
+        if (!washroomId.isEmpty()) {
+            final Optional<Washroom> washroom = washroomDao.getById(washroomId);
+            if (washroom.isPresent()) {
+                final Building building = washroom.get().building();
+                result = building.getBuildingCode();
+            }
+        }
+        return result;
+    }
+
+    private static List<Washroom.Gender> parseGenders(final String value) {
+        List<Washroom.Gender> result = null;
+        if (value != null) {
             try {
-                genders = new ArrayList<>();
-                genders.add(Washroom.Gender.valueOf(inputData.gender()));
-                if (Washroom.Gender.valueOf(inputData.gender()).equals(Washroom.Gender.WOMEN) ||
-                        Washroom.Gender.valueOf(inputData.gender()).equals(Washroom.Gender.MEN)) {
-                    genders.add(Washroom.Gender.WOMEN_AND_MEN);
+                final Washroom.Gender requestedGender = Washroom.Gender.valueOf(value);
+                if (requestedGender == Washroom.Gender.WOMEN || requestedGender == Washroom.Gender.MEN) {
+                    result = List.of(requestedGender, Washroom.Gender.WOMEN_AND_MEN);
+                }
+                else {
+                    result = List.of(requestedGender);
                 }
             }
             catch (final IllegalArgumentException invalidGender) {
-                presenter.presentError("Invalid washroom category.");
-                return;
+                result = null;
             }
         }
-        final List<Washroom> initialWashrooms = washroomDAO.findMatching(
-            new WashroomFilterCriteria(inputData.accessible(), genders, buildingCode, permittedWashroomNames));
+        return result;
+    }
 
+    private boolean applyUserFilters(final List<Washroom> washrooms, final FilterInputData inputData) {
+        boolean result = true;
+        final Optional<User> user = session.currentUser();
         if (inputData.ownReviews()) {
-            final Optional<User> user = session.currentUser();
-            if (user.isEmpty()) {
-                presenter.presentError("Cannot filter on own reviews while the user is logged out.");
-                return;
+            if (user.isPresent()) {
+                filterByUser(washrooms, user.get());
             }
             else {
-                filterByUser(initialWashrooms, user.get());
+                presenter.presentError("Cannot filter on own reviews while the user is logged out.");
+                result = false;
             }
         }
-
-        if (inputData.personalPlan()) {
-            final Optional<User> user = session.currentUser();
+        if (result && inputData.personalPlan()) {
             if (user.isEmpty()) {
                 presenter.presentError("Cannot filter on personal plan while the user is logged out.");
-                return;
+                result = false;
             }
-            else if (user
-                .map(entity.User::personalPlan)
-                .orElse("")
-                .equals("") || Objects.isNull(user
-                .map(entity.User::personalPlan)
-                .orElse(""))) {
+            else if (user.get().personalPlan() == null || user.get().personalPlan().isBlank()) {
                 presenter.presentError("Please generate personal plan before filtering.");
-                return;
+                result = false;
             }
             else {
-                filterByPlan(initialWashrooms, user.get());
+                result = filterByPlan(washrooms, user.get());
             }
         }
-
-
-        filterByCurrentStatus(initialWashrooms, inputData);
-
-        presenter.present(new FilterOutputData(true, initialWashrooms, inputData.latitude(), inputData.longitude()));
+        return result;
     }
 
     /**
-     * Filters washrooms, modifying the inputted list to remove washrooms which don't have
-     * reviews by the given user
+     * Filters washrooms, modifying the inputted list to remove washrooms which don't have reviews by the given user.
      *
-     * @param washrooms A Map from washroomID to Washroom object of the washrooms to be filtered.
-     * @param user      The user whose reviews are required for the washroom to pass the filter.
+     * @param washrooms washrooms to filter.
+     * @param user user whose reviews are required.
      */
     private void filterByUser(final List<Washroom> washrooms, final User user) {
-        final Set<String> washroomIds = reviewDAO
+        final Set<String> washroomIds = reviewDao
             .getReviewsByUser(user.name())
             .stream()
             .map(entity.Review::washroomId)
             .collect(java.util.stream.Collectors.toSet());
-        washrooms.removeIf(washroom -> {
-            return !washroomIds.contains(washroom.id());
-        });
+        washrooms.removeIf(washroom -> !washroomIds.contains(washroom.id()));
     }
 
     /**
-     * Filters washrooms, modifying the inputted list to remove washrooms which are not included in the user's
-     * personal plan
+     * Filters washrooms to those included in the user's personal plan.
      *
-     * @param washrooms A Map from washroomID to Washroom object of the washrooms to be filtered.
-     * @param user      The user whose personal plan is required for the washroom to pass the filter.
+     * @param washrooms washrooms to filter.
+     * @param user user whose personal plan is required.
+     * @return whether the plan was valid.
      */
-    private void filterByPlan(final List<Washroom> washrooms, final User user) {
+    private boolean filterByPlan(final List<Washroom> washrooms, final User user) {
+        boolean result = true;
         try {
             final ObjectMapper mapper = new ObjectMapper();
-            final List<HashMap<String, String>> washroomList =
-                mapper.readValue(user.personalPlan(), new TypeReference<List<HashMap<String, String>>>() {
+            final List<Map<String, String>> washroomList = mapper.readValue(user.personalPlan(),
+                new TypeReference<List<Map<String, String>>>() {
                 });
             final Set<String> washroomIds = new HashSet<>();
-            for (final HashMap<String, String> washroom : washroomList) {
+            for (final Map<String, String> washroom : washroomList) {
                 washroomIds.add(washroom.get("id"));
             }
-            washrooms.removeIf(washroom -> {
-                return !washroomIds.contains(washroom.id());
-            });
+            washrooms.removeIf(washroom -> !washroomIds.contains(washroom.id()));
         }
-        catch (final Exception e) {
+        catch (final JsonProcessingException entryValue) {
             presenter.presentError("Please re-generate your personal plan.");
+            result = false;
         }
-
+        return result;
     }
 
     /**
      * Filters by each washroom's newest status report in the current clock hour.
+     *
+     * @param washrooms washrooms to filter.
+     * @param inputData filter thresholds.
      */
     private void filterByCurrentStatus(final List<Washroom> washrooms, final FilterInputData inputData) {
         if (statusReports == null) {
             presenter.presentError("Live status filtering is unavailable.");
             washrooms.clear();
-            return;
         }
-        final Map<String, StatusReport> currentStatus = statusReports.getCurrentHourForWashrooms(washrooms
-            .stream()
-            .map(Washroom::id)
-            .toList(), LocalDateTime
-            .now()
-            .getHour());
-        washrooms.removeIf(washroom -> {
-            final StatusReport status = currentStatus.get(washroom.id());
-            return status == null || status.busyness() > inputData.maxBusyness()
-                || status.cleanliness() < inputData.minCleanliness();
-        });
+        else {
+            final Map<String, StatusReport> currentStatus = statusReports.getCurrentHourForWashrooms(washrooms
+                .stream()
+                .map(Washroom::id)
+                .toList(), LocalDateTime
+                .now()
+                .getHour());
+            washrooms.removeIf(washroom -> {
+                final StatusReport status = currentStatus.get(washroom.id());
+                return status == null || status.busyness() > inputData.maxBusyness()
+                    || status.cleanliness() < inputData.minCleanliness();
+            });
+        }
     }
-
-
 }

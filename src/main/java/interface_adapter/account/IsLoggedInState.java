@@ -17,14 +17,24 @@ public class IsLoggedInState {
 
     }
 
-    public void addPropertyChangeListener(final PropertyChangeListener l) {
-        changes.addPropertyChangeListener(l);
+    /**
+     * Performs this operation.
+     *
+     * @param labelValue parameter value.
+     */
+    public void addPropertyChangeListener(final PropertyChangeListener labelValue) {
+        changes.addPropertyChangeListener(labelValue);
     }
 
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param username parameter value.
+     */
     public void setUsername(final String username) {
         final String prev = this.username;
         this.username = username;
@@ -35,6 +45,11 @@ public class IsLoggedInState {
         return isLoggedIn;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param isLoggedIn parameter value.
+     */
     public void setIsLoggedIn(final boolean isLoggedIn) {
         final boolean prev = this.isLoggedIn;
         this.isLoggedIn = isLoggedIn;
