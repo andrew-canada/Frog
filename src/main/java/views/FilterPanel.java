@@ -22,7 +22,7 @@ public final class FilterPanel extends JPanel {
     private final JSlider cleanliness = new JSlider(1, 5, 1);
     private final JCheckBox accessible = new JCheckBox("Accessible only");
     private final JCheckBox ownReviews = new JCheckBox("Only washrooms that you've reviewed");
-    private final JComboBox<String> gender = new JComboBox<>(new String[] {"Any gender", "All-gender", "Women", "Men"});
+    private final JComboBox<String> gender = new JComboBox<>(new String[] {"Any gender", "All-gender", "Women", "Men", "Women and Men"});
     private final JCheckBox filterSelectedBuilding = new JCheckBox("Filter to currently selected building");
     private final JCheckBox personalPlan = new JCheckBox("Only washrooms in your personal plan");
 
@@ -113,6 +113,7 @@ public final class FilterPanel extends JPanel {
             case 1 -> Washroom.Gender.ALL_GENDER;
             case 2 -> Washroom.Gender.WOMEN;
             case 3 -> Washroom.Gender.MEN;
+            case 4 -> Washroom.Gender.WOMEN_AND_MEN;
             default -> null;
         };
     }
