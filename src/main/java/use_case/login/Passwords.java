@@ -15,7 +15,7 @@ import javax.crypto.spec.PBEKeySpec;
 public final class Passwords {
     private static final String FIELD_SEPARATOR = ":";
     private static final int FIELD_COUNT = 3;
-    private static final int MAGIC_16 = 16;
+    private static final int SALT_LENGTH_BYTES = 16;
     private static final int ITERATIONS = 120_000;
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -34,7 +34,7 @@ public final class Passwords {
         if (raw == null || raw.isEmpty()) {
             throw new IllegalArgumentException("Password is required");
         }
-        final byte[] salt = new byte[MAGIC_16];
+        final byte[] salt = new byte[SALT_LENGTH_BYTES];
         RANDOM.nextBytes(salt);
         return ITERATIONS + FIELD_SEPARATOR + Base64
             .getEncoder()

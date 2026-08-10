@@ -7,8 +7,8 @@ import entity.StatusReport;
 import use_case.port.StatusReportRepository;
 
 public final class SubmitStatusReportInteractor implements SubmitStatusReportInputBoundary {
-    private static final int MAGIC_4 = 4;
-    private static final int MAGIC_5 = 5;
+    private static final int RECENT_REPORT_WINDOW_HOURS = 4;
+    private static final int MAX_STATUS_LEVEL = 5;
     private final StatusReportRepository reports;
     private final SubmitStatusReportOutputBoundary presenter;
     private final Clock clock;
@@ -27,7 +27,8 @@ public final class SubmitStatusReportInteractor implements SubmitStatusReportInp
 
     @Override
     public void execute(final SubmitStatusReportInputData in) {
-        if (in.busyness() < 1 || in.busyness() > MAGIC_5 || in.cleanliness() < 1 || in.cleanliness() > MAGIC_5) {
+        if (in.busyness() < 1 || in.busyness() > MAX_STATUS_LEVEL || in.cleanliness() < 1
+            || in.cleanliness() > MAX_STATUS_LEVEL) {
             presenter.present(new SubmitStatusReportOutputData(false, 0, "Choose values from 1 to 5"));
         }
         else {
@@ -35,7 +36,7 @@ public final class SubmitStatusReportInteractor implements SubmitStatusReportInp
             reports.save(
                 new StatusReport(in.washroomId(), in.username(), in.busyness(), in.cleanliness(), in.issue(), now));
             final double current = reports
-                .getRecentForWashroom(in.washroomId(), now.minusHours(MAGIC_4))
+                .getRecentForWashroom(in.washroomId(), now.minusHours(RECENT_REPORT_WINDOW_HOURS))
                 .stream()
                 .mapToInt(StatusReport::busyness)
                 .average()

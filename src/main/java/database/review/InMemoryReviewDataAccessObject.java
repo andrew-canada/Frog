@@ -22,36 +22,39 @@ import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
 public final class InMemoryReviewDataAccessObject
     implements ReviewRepository, HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface,
     ReviewAdminDataAccessInterface, ReportedReviewsDataAccessInterface {
-    private static final int MAGIC_16 = 16;
-    private static final int MAGIC_4 = 4;
-    private static final int MAGIC_2026 = 2026;
-    private static final int MAGIC_3 = 3;
-    private static final double MAGIC_3_5 = 3.5;
-    private static final int MAGIC_8 = 8;
-    private static final int MAGIC_28 = 28;
-    private static final int MAGIC_6 = 6;
-    private static final int MAGIC_12 = 12;
-    private static final int MAGIC_14 = 14;
-    private static final int MAGIC_5 = 5;
+    private static final int SAMPLE_REVIEW_DAY_SIXTEEN = 16;
+    private static final int SAMPLE_REVIEW_VALUE_FOUR = 4;
+    private static final int SAMPLE_REVIEW_YEAR = 2026;
+    private static final int SAMPLE_REVIEW_VALUE_THREE = 3;
+    private static final double SAMPLE_REVIEW_RATING_THREE_POINT_FIVE = 3.5;
+    private static final int SAMPLE_REVIEW_HELPFUL_COUNT_EIGHT = 8;
+    private static final int SAMPLE_REVIEW_DAY_TWENTY_EIGHT = 28;
+    private static final int SAMPLE_REVIEW_HELPFUL_COUNT_SIX = 6;
+    private static final int SAMPLE_REVIEW_DAY_TWELVE = 12;
+    private static final int SAMPLE_REVIEW_HELPFUL_COUNT_FOURTEEN = 14;
+    private static final int SAMPLE_REVIEW_VALUE_FIVE = 5;
     private final List<Review> reviews = new ArrayList<>();
     private final Map<String, Set<String>> votesByReview = new HashMap<>();
     private final List<Report> reports = new ArrayList<>();
 
     public InMemoryReviewDataAccessObject() {
-        reviews.add(new Review("r1", "bahen-2", "sheena_q", MAGIC_5, MAGIC_5,
-            "Spotless and rarely busy. Good lighting and a spacious accessible stall.", MAGIC_14,
-                LocalDate.of(MAGIC_2026, MAGIC_3, MAGIC_12)));
-        reviews.add(new Review("r2", "bahen-2", "andrew_p", MAGIC_4, MAGIC_4,
-            "Clean most days but can get crowded between classes. Soap was full.", MAGIC_6, LocalDate.of(MAGIC_2026,
-                2, MAGIC_28)));
+        reviews.add(new Review("r1", "bahen-2", "sheena_q", SAMPLE_REVIEW_VALUE_FIVE,
+            SAMPLE_REVIEW_VALUE_FIVE, "Spotless and rarely busy. Good lighting and a spacious accessible stall.",
+            SAMPLE_REVIEW_HELPFUL_COUNT_FOURTEEN,
+            LocalDate.of(SAMPLE_REVIEW_YEAR, SAMPLE_REVIEW_VALUE_THREE, SAMPLE_REVIEW_DAY_TWELVE)));
+        reviews.add(new Review("r2", "bahen-2", "andrew_p", SAMPLE_REVIEW_VALUE_FOUR,
+            SAMPLE_REVIEW_VALUE_FOUR, "Clean most days but can get crowded between classes. Soap was full.",
+            SAMPLE_REVIEW_HELPFUL_COUNT_SIX,
+            LocalDate.of(SAMPLE_REVIEW_YEAR, 2, SAMPLE_REVIEW_DAY_TWENTY_EIGHT)));
         reviews.add(
-            new Review("r3", "robarts-4", "eleanor_l", MAGIC_4, MAGIC_4,
-                "Reliable and easy to find, though busy after lunch.", MAGIC_8,
-                LocalDate.of(MAGIC_2026, MAGIC_4, MAGIC_3)));
+            new Review("r3", "robarts-4", "eleanor_l", SAMPLE_REVIEW_VALUE_FOUR, SAMPLE_REVIEW_VALUE_FOUR,
+                "Reliable and easy to find, though busy after lunch.", SAMPLE_REVIEW_HELPFUL_COUNT_EIGHT,
+                LocalDate.of(SAMPLE_REVIEW_YEAR, SAMPLE_REVIEW_VALUE_FOUR, SAMPLE_REVIEW_VALUE_THREE)));
         reviews.add(
-            new Review("r4", "gerstein-main", "ian_c", MAGIC_3_5, MAGIC_3,
-                "Quiet in the morning. One sink was out of service.", MAGIC_4,
-                LocalDate.of(MAGIC_2026, MAGIC_4, MAGIC_16)));
+            new Review("r4", "gerstein-main", "ian_c", SAMPLE_REVIEW_RATING_THREE_POINT_FIVE,
+                SAMPLE_REVIEW_VALUE_THREE,
+                "Quiet in the morning. One sink was out of service.", SAMPLE_REVIEW_VALUE_FOUR,
+                LocalDate.of(SAMPLE_REVIEW_YEAR, SAMPLE_REVIEW_VALUE_FOUR, SAMPLE_REVIEW_DAY_SIXTEEN)));
     }
 
     public InMemoryReviewDataAccessObject(final List<Review> seed) {

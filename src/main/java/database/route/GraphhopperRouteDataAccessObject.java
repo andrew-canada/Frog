@@ -24,11 +24,11 @@ import use_case.port.RouteGateway;
  */
 public final class GraphhopperRouteDataAccessObject implements RouteGateway {
     public static final String API_KEY_ENV = "GRAPHHOPPER_API_KEY";
-    private static final int MAGIC_300 = 300;
-    private static final int MAGIC_200 = 200;
-    private static final int MAGIC_20 = 20;
-    private static final double MAGIC_1000_0 = 1000.0;
-    private static final int MAGIC_10 = 10;
+    private static final int HTTP_REDIRECTION_STATUS = 300;
+    private static final int HTTP_SUCCESS_STATUS = 200;
+    private static final int REQUEST_TIMEOUT_SECONDS = 20;
+    private static final double MILLISECONDS_PER_SECOND = 1000.0;
+    private static final int CONNECTION_TIMEOUT_SECONDS = 10;
     private static final URI DEFAULT_ENDPOINT = URI.create("https://graphhopper.com/api/1/route");
 
     private final HttpClient httpClient;
@@ -38,7 +38,7 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
     public GraphhopperRouteDataAccessObject(final String apiKey) {
         this(HttpClient
             .newBuilder()
-            .connectTimeout(Duration.ofSeconds(MAGIC_10))
+            .connectTimeout(Duration.ofSeconds(CONNECTION_TIMEOUT_SECONDS))
             .build(), DEFAULT_ENDPOINT, apiKey);
     }
 
@@ -79,7 +79,7 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
         }
         int timeSeconds = 0;
         if (time != null) {
-            timeSeconds = (int) Math.round(time.doubleValue() / MAGIC_1000_0);
+            timeSeconds = (int) Math.round(time.doubleValue() / MILLISECONDS_PER_SECOND);
         }
         return new Route(points, distanceMeters, timeSeconds);
     }
@@ -111,14 +111,14 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
             + URLEncoder.encode(apiKey, StandardCharsets.UTF_8));
         final HttpRequest request = HttpRequest
             .newBuilder(requestUri)
-            .timeout(Duration.ofSeconds(MAGIC_20))
+            .timeout(Duration.ofSeconds(REQUEST_TIMEOUT_SECONDS))
             .header("Accept", "application/json")
             .header("User-Agent", "FlushID/1.0")
             .GET()
             .build();
         try {
             final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() < MAGIC_200 || response.statusCode() >= MAGIC_300) {
+            if (response.statusCode() < HTTP_SUCCESS_STATUS || response.statusCode() >= HTTP_REDIRECTION_STATUS) {
                 throw new IllegalStateException("GraphHopper returned HTTP " + response.statusCode() + ".");
             }
             return parseRoute(response.body());

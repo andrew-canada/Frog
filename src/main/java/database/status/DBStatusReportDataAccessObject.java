@@ -33,8 +33,8 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
     private static final String FIELD_TIMESTAMP = "timestamp";
     private static final String FIELD_SEEDKEY = "seedKey";
     private static final String FIELD_OR = "$or";
-    private static final int MAGIC_24 = 24;
-    private static final int MAGIC_5 = 5;
+    private static final int HOURS_PER_DAY = 24;
+    private static final int MAX_STATUS_LEVEL = 5;
     private final MongoCollection<Document> reports;
 
     public DBStatusReportDataAccessObject(final MongoDatabase database) {
@@ -42,7 +42,7 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
     }
 
     private static int clamp(final int value) {
-        return Math.max(1, Math.min(MAGIC_5, value));
+        return Math.max(1, Math.min(MAX_STATUS_LEVEL, value));
     }
 
     @Override
@@ -78,7 +78,7 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
         final List<Document> newReports = new ArrayList<>();
         for (int washroomIndex = 0; washroomIndex < washrooms.size(); washroomIndex++) {
             final entity.Washroom washroom = washrooms.get(washroomIndex);
-            for (int hour = 0; hour < MAGIC_24; hour++) {
+            for (int hour = 0; hour < HOURS_PER_DAY; hour++) {
                 final String seedKey = "json-hourly-status-" + washroom.id() + "-" + hour;
                 if (existingSeedKeys.contains(seedKey)) {
                     continue;

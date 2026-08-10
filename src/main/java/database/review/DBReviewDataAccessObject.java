@@ -49,13 +49,13 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     private static final String FIELD_REPORTERUSERNAME = "reporterUsername";
     private static final String FIELD_ID = "_id";
     private static final String FIELD_DETAILS = "details";
-    private static final int MAGIC_5 = 5;
-    private static final int MAGIC_7 = 7;
-    private static final int MAGIC_2026 = 2026;
-    private static final int MAGIC_9 = 9;
-    private static final int MAGIC_3 = 3;
-    private static final int MAGIC_4 = 4;
-    private static final double MAGIC_1_5 = 1.5;
+    private static final int MAX_RATING_LEVEL = 5;
+    private static final int SEED_REVIEW_MONTH = 7;
+    private static final int SEED_REVIEW_YEAR = 2026;
+    private static final int SEED_HELPFUL_COUNT_MODULUS = 9;
+    private static final int SEED_REVIEW_INDEX_FACTOR = 3;
+    private static final int HIGH_RATING_THRESHOLD = 4;
+    private static final double LOW_RATING_THRESHOLD = 1.5;
 
     private static final List<String> ALLOWED_ATTRIBUTES = List.of(
         new String[] {FIELD_WASHROOMID, FIELD_AUTHORUSERNAME, FIELD_RATING, FIELD_CLEANLINESS, FIELD_COMMENT,
@@ -214,15 +214,15 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
         final double rating = 1 + .5 * Math.floorMod(washroomIndex * 2 + reviewIndex * 3, 9);
         final double cleanliness = 1 + .5 * Math.floorMod(washroomIndex * 3 + reviewIndex * 2, 9);
         final String comment;
-        if (rating <= MAGIC_1_5) {
+        if (rating <= LOW_RATING_THRESHOLD) {
             comment = "The supplies were low and the space needed more attention during this visit.";
         }
         else {
-            if (rating <= MAGIC_3) {
+            if (rating <= SEED_REVIEW_INDEX_FACTOR) {
                 comment = "It was usable, but cleanliness and availability could be more consistent.";
             }
             else {
-                if (rating <= MAGIC_4) {
+                if (rating <= HIGH_RATING_THRESHOLD) {
                     comment = "A solid option that was easy to find and reasonably well maintained.";
                 }
                 else {
@@ -238,14 +238,14 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
             author = "Student reviewer";
         }
         return new SeedReview(author, rating, cleanliness, comment, Math.floorMod(washroomIndex
-            + reviewIndex * MAGIC_3, MAGIC_9),
+            + reviewIndex * SEED_REVIEW_INDEX_FACTOR, SEED_HELPFUL_COUNT_MODULUS),
             LocalDate
-                .of(MAGIC_2026, MAGIC_7, 1)
+                .of(SEED_REVIEW_YEAR, SEED_REVIEW_MONTH, 1)
                 .minusDays(washroomIndex * 2L + reviewIndex));
     }
 
     private static double clamp(final double rating) {
-        return Math.max(1, Math.min(MAGIC_5, rating));
+        return Math.max(1, Math.min(MAX_RATING_LEVEL, rating));
     }
 
     /**

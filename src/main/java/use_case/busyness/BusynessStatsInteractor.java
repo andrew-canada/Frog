@@ -11,9 +11,9 @@ import use_case.port.EnrollmentScheduleGateway;
 import use_case.port.StatusReportRepository;
 
 public final class BusynessStatsInteractor implements BusynessStatsInputBoundary {
-    private static final int MAGIC_5 = 5;
-    private static final double MAGIC_100_0 = 100.0;
-    private static final int MAGIC_24 = 24;
+    private static final int MAX_BUSYNESS_LEVEL = 5;
+    private static final double STUDENTS_PER_BUSYNESS_LEVEL = 100.0;
+    private static final int HOURS_PER_DAY = 24;
     private final StatusReportRepository reports;
     private final EnrollmentScheduleGateway enrollment;
     private final BusynessStatsOutputBoundary presenter;
@@ -32,7 +32,7 @@ public final class BusynessStatsInteractor implements BusynessStatsInputBoundary
             reports.getForWashroom(in.washroomId(), now.minusDays(30), now.plusSeconds(1));
         final List<EnrollmentMeeting> meetings = enrollment.getBuildingSchedule(in.buildingCode(), in.dayOfWeek());
         final List<BusynessStatsOutputData.HourBucket> buckets = new ArrayList<>();
-        for (int hour = 0; hour < MAGIC_24; hour++) {
+        for (int hour = 0; hour < HOURS_PER_DAY; hour++) {
             buckets.add(hourBucket(hour, observations, meetings));
         }
         final String note;
@@ -71,7 +71,7 @@ public final class BusynessStatsInteractor implements BusynessStatsInputBoundary
         final boolean hasTimetable = !meetings.isEmpty();
         final double predicted;
         if (hasTimetable) {
-            predicted = Math.min(MAGIC_5, 1 + students / MAGIC_100_0);
+            predicted = Math.min(MAX_BUSYNESS_LEVEL, 1 + students / STUDENTS_PER_BUSYNESS_LEVEL);
         }
         else {
             predicted = Double.NaN;
@@ -87,8 +87,8 @@ public final class BusynessStatsInteractor implements BusynessStatsInputBoundary
         else {
             level = 0;
         }
-        return new BusynessStatsOutputData.HourBucket(hour, Math.max(0, Math.min(MAGIC_5, level)), cleanliness,
-            bucketSource(hasCrowd, hasTimetable));
+        return new BusynessStatsOutputData.HourBucket(hour, Math.max(0, Math.min(MAX_BUSYNESS_LEVEL, level)),
+            cleanliness, bucketSource(hasCrowd, hasTimetable));
     }
 
     private static String bucketSource(final boolean hasCrowd, final boolean hasTimetable) {

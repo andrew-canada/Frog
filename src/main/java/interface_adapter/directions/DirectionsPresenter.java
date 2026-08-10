@@ -5,7 +5,7 @@ import use_case.directions.GetDirectionsOutputBoundary;
 import use_case.directions.GetDirectionsOutputData;
 
 public final class DirectionsPresenter implements GetDirectionsOutputBoundary {
-    private static final int MAGIC_60 = 60;
+    private static final int SECONDS_PER_MINUTE = 60;
     private final MapViewModel model;
     private final UiDispatcher userInterface;
 
@@ -24,7 +24,7 @@ public final class DirectionsPresenter implements GetDirectionsOutputBoundary {
         final String timeLabel;
         if (data.success()) {
             distanceLabel = data.distanceMeters() + " m";
-            timeLabel = Math.max(1, data.timeSeconds() / MAGIC_60) + " min";
+            timeLabel = Math.max(1, data.timeSeconds() / SECONDS_PER_MINUTE) + " min";
         }
         else {
             distanceLabel = "";

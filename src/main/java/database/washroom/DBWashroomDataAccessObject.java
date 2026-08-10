@@ -44,8 +44,8 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
     private static final String FIELD_LOCATIONDESCRIPTION = "locationDescription";
     private static final String FIELD_IFNULL = "$ifNull";
     private static final String FIELD_ID = "_id";
-    private static final int MAGIC_6_371_000 = 6_371_000;
-    private static final int MAGIC_5 = 5;
+    private static final int EARTH_RADIUS_METERS = 6_371_000;
+    private static final int MAX_RATING_LEVEL = 5;
 
     private static final List<String> ALLOWED_ATTRIBUTES = List.of(
         new String[] {FIELD_BUILDINGID, FIELD_BUILDINGCODE, "seedKey", FIELD_NAME, FIELD_FLOOR, FIELD_GENDER,
@@ -286,13 +286,13 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
     }
 
     private static double clampRating(final double value) {
-        return Math.max(1, Math.min(MAGIC_5, value));
+        return Math.max(1, Math.min(MAX_RATING_LEVEL, value));
     }
 
     private static double distance(final double lat1, final double lon1, final double lat2, final double lon2) {
         final double x = Math.toRadians(lon2 - lon1) * Math.cos(Math.toRadians((lat1 + lat2) / 2));
         final double y = Math.toRadians(lat2 - lat1);
-        return Math.sqrt(x * x + y * y) * MAGIC_6_371_000;
+        return Math.sqrt(x * x + y * y) * EARTH_RADIUS_METERS;
     }
 
     /**

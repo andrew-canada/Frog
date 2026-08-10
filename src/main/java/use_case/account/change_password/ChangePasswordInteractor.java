@@ -6,7 +6,7 @@ import use_case.port.PasswordHasher;
 import use_case.port.UserRepository;
 
 public final class ChangePasswordInteractor implements ChangePasswordInputBoundary {
-    private static final int MAGIC_4 = 4;
+    private static final int MINIMUM_PASSWORD_LENGTH = 4;
 
     private final UserRepository users;
     private final PasswordHasher passwords;
@@ -38,7 +38,7 @@ public final class ChangePasswordInteractor implements ChangePasswordInputBounda
         }
         else if (input
             .newPassword()
-            .length() < MAGIC_4) {
+            .length() < MINIMUM_PASSWORD_LENGTH) {
             presenter.present(new ChangePasswordOutputData(false, "Password needs 4+ characters"));
         }
         else {

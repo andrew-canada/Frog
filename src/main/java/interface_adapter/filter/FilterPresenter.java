@@ -9,7 +9,7 @@ import use_case.filter.FilterOutputBoundary;
 import use_case.filter.FilterOutputData;
 
 public class FilterPresenter implements FilterOutputBoundary {
-    private static final int MAGIC_6_371_000 = 6_371_000;
+    private static final int EARTH_RADIUS_METERS = 6_371_000;
     private final WashroomListViewModel listModel;
     private final FilterViewModel filterModel;
     private final UiDispatcher userInterface;
@@ -27,7 +27,7 @@ public class FilterPresenter implements FilterOutputBoundary {
         final double x = Math.toRadians(fourthValue - secondValue) * Math.cos(Math.toRadians((firstValue
             + thirdValue) / 2));
         final double y = Math.toRadians(thirdValue - firstValue);
-        return Math.sqrt(x * x + y * y) * MAGIC_6_371_000;
+        return Math.sqrt(x * x + y * y) * EARTH_RADIUS_METERS;
     }
 
     /**

@@ -6,8 +6,8 @@ import use_case.port.PasswordHasher;
 import use_case.port.UserRepository;
 
 public final class SignupInteractor implements SignupInputBoundary {
-    private static final int MAGIC_4 = 4;
-    private static final int MAGIC_3 = 3;
+    private static final int MINIMUM_PASSWORD_LENGTH = 4;
+    private static final int MINIMUM_USERNAME_LENGTH = 3;
     private final UserRepository users;
     private final PasswordHasher passwords;
     private final CurrentUserSession session;
@@ -32,9 +32,9 @@ public final class SignupInteractor implements SignupInputBoundary {
                 .username()
                 .trim();
         }
-        if (name.length() < MAGIC_3 || input.password() == null || input
+        if (name.length() < MINIMUM_USERNAME_LENGTH || input.password() == null || input
             .password()
-            .length() < MAGIC_4) {
+            .length() < MINIMUM_PASSWORD_LENGTH) {
             presenter.present(
                 new SignupOutputData(false, null, "Use 3+ characters for the name and 4+ for the password"));
         }

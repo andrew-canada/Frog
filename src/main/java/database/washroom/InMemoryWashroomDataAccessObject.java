@@ -15,39 +15,43 @@ import use_case.filter.WashroomFilterCriteria;
 import use_case.filter.WashroomFilterRepository;
 
 public final class InMemoryWashroomDataAccessObject implements WashroomFilterRepository {
-    private static final int MAGIC_6_371_000 = 6_371_000;
-    private static final int MAGIC_11 = 11;
-    private static final double MAGIC_3_8 = 3.8;
-    private static final double MAGIC_3_9 = 3.9;
-    private static final int MAGIC_3 = 3;
-    private static final int MAGIC_4 = 4;
-    private static final int MAGIC_16 = 16;
-    private static final double MAGIC_4_0 = 4.0;
-    private static final double MAGIC_4_1 = 4.1;
-    private static final int MAGIC_5 = 5;
-    private static final int MAGIC_23 = 23;
-    private static final double MAGIC_4_7 = 4.7;
-    private static final double MAGIC_4_6 = 4.6;
+    private static final int EARTH_RADIUS_METERS = 6_371_000;
+    private static final int SAMPLE_REVIEW_COUNT_ELEVEN = 11;
+    private static final double SAMPLE_CLEANLINESS_SCORE_THREE_POINT_EIGHT = 3.8;
+    private static final double SAMPLE_RATING_SCORE_THREE_POINT_NINE = 3.9;
+    private static final int SAMPLE_COUNT_THREE = 3;
+    private static final int SAMPLE_COUNT_FOUR = 4;
+    private static final int SAMPLE_REVIEW_COUNT_SIXTEEN = 16;
+    private static final double SAMPLE_CLEANLINESS_SCORE_FOUR = 4.0;
+    private static final double SAMPLE_RATING_SCORE_FOUR_POINT_ONE = 4.1;
+    private static final int SAMPLE_COUNT_FIVE = 5;
+    private static final int SAMPLE_REVIEW_COUNT_TWENTY_THREE = 23;
+    private static final double SAMPLE_CLEANLINESS_SCORE_FOUR_POINT_SEVEN = 4.7;
+    private static final double SAMPLE_RATING_SCORE_FOUR_POINT_SIX = 4.6;
     private final Map<String, Washroom> washrooms = new LinkedHashMap<>();
 
     public InMemoryWashroomDataAccessObject() {
         final Building bahen = new Building("BA", "Bahen Centre", 43.6597, -79.3974);
         final Building robarts = new Building("RB", "Robarts Library", 43.6644, -79.3996);
         final Building gerstein = new Building("GE", "Gerstein Library", 43.6626, -79.3934);
-        add(new Washroom("bahen-2", "Bahen, 2nd floor", bahen, "2nd", true, Washroom.Gender.ALL_GENDER, MAGIC_3, 2,
-            "Past the elevators", new ReviewSummary(MAGIC_4_6, MAGIC_4_7, MAGIC_23)));
-        add(new Washroom("robarts-4", "Robarts, 4th floor", robarts, "4th", true, Washroom.Gender.ALL_GENDER, MAGIC_5,
-            MAGIC_3,
-            "North elevators", new ReviewSummary(MAGIC_4_1, MAGIC_4_0, MAGIC_16)));
+        add(new Washroom("bahen-2", "Bahen, 2nd floor", bahen, "2nd", true, Washroom.Gender.ALL_GENDER,
+            SAMPLE_COUNT_THREE, 2, "Past the elevators",
+            new ReviewSummary(SAMPLE_RATING_SCORE_FOUR_POINT_SIX, SAMPLE_CLEANLINESS_SCORE_FOUR_POINT_SEVEN,
+                SAMPLE_REVIEW_COUNT_TWENTY_THREE)));
+        add(new Washroom("robarts-4", "Robarts, 4th floor", robarts, "4th", true, Washroom.Gender.ALL_GENDER,
+            SAMPLE_COUNT_FIVE, SAMPLE_COUNT_THREE, "North elevators",
+            new ReviewSummary(SAMPLE_RATING_SCORE_FOUR_POINT_ONE, SAMPLE_CLEANLINESS_SCORE_FOUR,
+                SAMPLE_REVIEW_COUNT_SIXTEEN)));
         add(new Washroom("gerstein-main", "Gerstein, main floor", gerstein, "Main", false, Washroom.Gender.WOMEN,
-            MAGIC_4, MAGIC_3,
-            "East reading room", new ReviewSummary(MAGIC_3_9, MAGIC_3_8, MAGIC_11)));
+            SAMPLE_COUNT_FOUR, SAMPLE_COUNT_THREE, "East reading room",
+            new ReviewSummary(SAMPLE_RATING_SCORE_THREE_POINT_NINE, SAMPLE_CLEANLINESS_SCORE_THREE_POINT_EIGHT,
+                SAMPLE_REVIEW_COUNT_ELEVEN)));
     }
 
     private static double distance(final double lat1, final double lon1, final double lat2, final double lon2) {
         final double x = Math.toRadians(lon2 - lon1) * Math.cos(Math.toRadians((lat1 + lat2) / 2));
         final double y = Math.toRadians(lat2 - lat1);
-        return Math.sqrt(x * x + y * y) * MAGIC_6_371_000;
+        return Math.sqrt(x * x + y * y) * EARTH_RADIUS_METERS;
     }
 
     private void add(final Washroom washroom) {

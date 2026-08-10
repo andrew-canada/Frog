@@ -4,10 +4,10 @@ import java.time.LocalDate;
 
 public record Review(String id, String washroomId, String authorUsername, double rating, double cleanliness,
                      String comment, int helpfulCount, LocalDate createdAt) {
-    private static final int MAGIC_5 = 5;
+    private static final int MAX_RATING_LEVEL = 5;
 
     public Review {
-        if (rating < 1 || rating > MAGIC_5 || cleanliness < 1 || cleanliness > MAGIC_5) {
+        if (rating < 1 || rating > MAX_RATING_LEVEL || cleanliness < 1 || cleanliness > MAX_RATING_LEVEL) {
             throw new IllegalArgumentException("Ratings must be from 1 to 5");
         }
         if (helpfulCount < 0) {

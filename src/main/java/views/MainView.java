@@ -87,7 +87,7 @@ public final class MainView extends JPanel {
     /**
      * Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies.
      */
-    private final LogoutController logoutController;
+    private final Runnable logoutAction;
     private final CardLayout buttonsLayout = new CardLayout();
     private final JPanel buttonsPanel = new JPanel(buttonsLayout);
     /**
@@ -134,22 +134,25 @@ public final class MainView extends JPanel {
     private double longitude = MAP_ORIGIN_LONGITUDE;
 
     /**
-     * Retained for callers that do not provide filtering controls.
+     * Retained for callers that do not provide optional controls.
      *
      * @param washrooms washroom view model.
      * @param route route view model.
      */
-    public MainView(final WashroomListViewModel washrooms,
-                    // TODO: why is this still here its being a pain
-                    final MapViewModel route) {
-        this(washrooms, route, new FilterViewModel(), new IsLoggedInViewModel(),
-            MainViewDefaults.logoutController());
+    public MainView(final WashroomListViewModel washrooms, final MapViewModel route) {
+        this(washrooms, route, new FilterViewModel(), new IsLoggedInViewModel(), () -> {
+        });
     }
 
     public MainView(final WashroomListViewModel washrooms, final MapViewModel route, final FilterViewModel filter,
                     final IsLoggedInViewModel isLoggedIn, final LogoutController logoutController) {
+        this(washrooms, route, filter, isLoggedIn, logoutController::execute);
+    }
+
+    private MainView(final WashroomListViewModel washrooms, final MapViewModel route, final FilterViewModel filter,
+                     final IsLoggedInViewModel isLoggedIn, final Runnable logoutAction) {
         this.isLoggedIn = isLoggedIn;
-        this.logoutController = logoutController;
+        this.logoutAction = logoutAction;
         isLoggedIn.getState().addPropertyChangeListener(entryValue -> {
             if (isLoggedIn.getState().getIsLoggedIn()) {
                 buttonsLayout.show(buttonsPanel, "loggedIn");
@@ -219,7 +222,7 @@ public final class MainView extends JPanel {
         final JButton logoutButton = Theme.button("Logout");
         logoutButton.addActionListener(entryValue -> {
             onLogout.run();
-            logoutController.execute();
+            logoutAction.run();
         });
         nav.add(logoutButton);
         p.add(nav, BorderLayout.EAST);

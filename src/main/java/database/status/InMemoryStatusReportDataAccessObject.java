@@ -9,19 +9,20 @@ import entity.StatusReport;
 import use_case.port.StatusReportRepository;
 
 public final class InMemoryStatusReportDataAccessObject implements StatusReportRepository {
-    private static final int MAGIC_35 = 35;
-    private static final int MAGIC_4 = 4;
-    private static final int MAGIC_5 = 5;
-    private static final int MAGIC_3 = 3;
+    private static final int RECENT_REPORT_AGE_MINUTES = 35;
+    private static final int TYPICAL_STATUS_LEVEL = 4;
+    private static final int MAX_STATUS_LEVEL = 5;
+    private static final int OLDER_REPORT_AGE_HOURS = 3;
     private final List<StatusReport> reports = new ArrayList<>();
 
     public InMemoryStatusReportDataAccessObject() {
         final LocalDateTime now = LocalDateTime.now();
-        reports.add(new StatusReport("bahen-2", "sheena_q", 2, MAGIC_5, MaintenanceIssue.NONE, now.minusHours(1)));
-        reports.add(new StatusReport("bahen-2", null, MAGIC_4, MAGIC_4, MaintenanceIssue.NONE,
-            now.minusHours(MAGIC_3)));
-        reports.add(new StatusReport("robarts-4", null, MAGIC_5, MAGIC_4, MaintenanceIssue.NONE,
-            now.minusMinutes(MAGIC_35)));
+        reports.add(new StatusReport("bahen-2", "sheena_q", 2, MAX_STATUS_LEVEL, MaintenanceIssue.NONE,
+            now.minusHours(1)));
+        reports.add(new StatusReport("bahen-2", null, TYPICAL_STATUS_LEVEL, TYPICAL_STATUS_LEVEL, MaintenanceIssue.NONE,
+            now.minusHours(OLDER_REPORT_AGE_HOURS)));
+        reports.add(new StatusReport("robarts-4", null, MAX_STATUS_LEVEL, TYPICAL_STATUS_LEVEL, MaintenanceIssue.NONE,
+            now.minusMinutes(RECENT_REPORT_AGE_MINUTES)));
     }
 
     @Override
