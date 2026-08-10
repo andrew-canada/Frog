@@ -14,16 +14,23 @@ public interface ReviewReportDataAccessInterface {
 
     /**
      * Saves a new report.
+     * @param report parameter value.
      */
     void save(Report report);
 
     /**
+     * Checks whether a user has already reported a review.
+     * @param reviewId parameter value.
+     * @param username parameter value.
      * @return whether the given user has already reported the given review.
      */
     boolean hasReported(String reviewId, String username);
 
     /**
      * Returns the requested reviews already reported by the user, preferably in one query.
+     * @param reviewIds parameter value.
+     * @param username parameter value.
+     * @return the operation result.
      */
     default Set<String> reportedReviewIds(final Collection<String> reviewIds, final String username) {
         return reviewIds

@@ -5,7 +5,7 @@ import org.bson.conversions.Bson;
 import com.mongodb.client.model.Filters;
 
 /**
- * Class representing a condition to be fed into the DatabaseAccessObject methods
+ * Class representing a condition to be fed into the DatabaseAccessObject methods.
  * such as Condition("buildingCode", Operator.EQ, "BA") for the condition that the buildingCode
  * field must equal "BA"
  *

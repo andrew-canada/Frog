@@ -17,6 +17,10 @@ import javax.swing.JSlider;
 import entity.Washroom;
 
 public final class FilterPanel extends JPanel {
+    private static final int MEN_FILTER_VALUE = 3;
+    private static final int LABEL_FONT_SIZE = 12;
+    private static final int CONTROL_GAP = 8;
+    private static final int SECTION_GAP = 10;
     private final JFrame frame;
     private final JSlider busyness = new JSlider(1, 5, 5);
     private final JSlider cleanliness = new JSlider(1, 5, 1);
@@ -30,20 +34,20 @@ public final class FilterPanel extends JPanel {
         this.frame = frame;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(Theme.PAPER);
-        setBorder(Theme.pad(12, 12, 12, 12));
+        setBorder(Theme.pad(LABEL_FONT_SIZE, LABEL_FONT_SIZE, LABEL_FONT_SIZE, LABEL_FONT_SIZE));
         final JLabel heading = Theme.label("Filters", 16, Theme.INK);
         heading.setFont(heading
             .getFont()
             .deriveFont(Font.BOLD));
         add(heading);
-        add(Box.createVerticalStrut(10));
+        add(Box.createVerticalStrut(SECTION_GAP));
 
-        add(Theme.label("Maximum busyness · 1 quiet — 5 packed", 12, Theme.MUTED));
+        add(Theme.label("Maximum busyness  -  1 quiet - 5 packed", LABEL_FONT_SIZE, Theme.MUTED));
         busyness.setBackground(Theme.PAPER);
         busyness.setMajorTickSpacing(1);
         busyness.setPaintTicks(true);
         add(busyness);
-        add(Theme.label("Minimum current cleanliness · 1 poor — 5 spotless", 12, Theme.MUTED));
+        add(Theme.label("Minimum current cleanliness  -  1 poor - 5 spotless", LABEL_FONT_SIZE, Theme.MUTED));
         cleanliness.setBackground(Theme.PAPER);
         cleanliness.setMajorTickSpacing(1);
         cleanliness.setPaintTicks(true);
@@ -63,8 +67,8 @@ public final class FilterPanel extends JPanel {
         checkboxes2.add(personalPlan);
         add(checkboxes2);
 
-        add(Box.createVerticalStrut(8));
-        add(Theme.label("Washroom type", 12, Theme.MUTED));
+        add(Box.createVerticalStrut(CONTROL_GAP));
+        add(Theme.label("Washroom type", LABEL_FONT_SIZE, Theme.MUTED));
         add(gender);
 
         final JPanel buttonPanel = new JPanel();
@@ -73,10 +77,10 @@ public final class FilterPanel extends JPanel {
         for (final JButton button : new JButton[] {cancel, confirm}) {
             button.setAlignmentX(Component.LEFT_ALIGNMENT);
         }
-        cancel.addActionListener(e -> {
+        cancel.addActionListener(entryValue -> {
             frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
         });
-        confirm.addActionListener(e -> {
+        confirm.addActionListener(entryValue -> {
             onFilter.run();
         });
         buttonPanel.add(cancel);
@@ -84,35 +88,70 @@ public final class FilterPanel extends JPanel {
         add(buttonPanel);
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public int busyness() {
         return busyness.getValue();
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public int cleanliness() {
         return cleanliness.getValue();
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public boolean accessibleOnly() {
         return accessible.isSelected();
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public boolean ownReviews() {
         return ownReviews.isSelected();
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public boolean selectedBuilding() {
         return filterSelectedBuilding.isSelected();
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public boolean personalPlan() {
         return personalPlan.isSelected();
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public Washroom.Gender gender() {
         return switch (gender.getSelectedIndex()) {
             case 1 -> Washroom.Gender.ALL_GENDER;
             case 2 -> Washroom.Gender.WOMEN;
-            case 3 -> Washroom.Gender.MEN;
+            case MEN_FILTER_VALUE -> Washroom.Gender.MEN;
             default -> null;
         };
     }

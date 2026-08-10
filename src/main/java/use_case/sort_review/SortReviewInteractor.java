@@ -20,23 +20,23 @@ import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
 import use_case.vote_helpful.ReviewScorer;
 
 public class SortReviewInteractor implements SortReviewInputBoundary {
-    private final ReviewRepository reviewDAO;
+    private final ReviewRepository reviewRepository;
     private final CurrentUserSession session;
-    private final WashroomRepository washroomDAO;
-    private final HelpfulVoteDataAccessInterface helpfulVoteDAO;
-    private final ReviewReportDataAccessInterface reportDAO;
+    private final WashroomRepository washroomRepository;
+    private final HelpfulVoteDataAccessInterface helpfulVoteRepository;
+    private final ReviewReportDataAccessInterface reportRepository;
     private final ViewReviewsOutputBoundary presenter;
 
-    public SortReviewInteractor(final ReviewRepository reviewDAO, final CurrentUserSession session,
-                                final WashroomRepository washroomDAO,
-                                final HelpfulVoteDataAccessInterface helpfulVoteDAO,
-                                final ReviewReportDataAccessInterface reportDAO,
+    public SortReviewInteractor(final ReviewRepository reviewRepository, final CurrentUserSession session,
+                                final WashroomRepository washroomRepository,
+                                final HelpfulVoteDataAccessInterface helpfulVoteRepository,
+                                final ReviewReportDataAccessInterface reportRepository,
                                 final ViewReviewsOutputBoundary presenter) {
-        this.reviewDAO = reviewDAO;
+        this.reviewRepository = reviewRepository;
         this.session = session;
-        this.washroomDAO = washroomDAO;
-        this.helpfulVoteDAO = helpfulVoteDAO;
-        this.reportDAO = reportDAO;
+        this.washroomRepository = washroomRepository;
+        this.helpfulVoteRepository = helpfulVoteRepository;
+        this.reportRepository = reportRepository;
         this.presenter = presenter;
 
     }
@@ -59,6 +59,8 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
 
     /**
      * Ranking score: helpfulness (log) + recency (exponential decay).
+     * @param review parameter value.
+     * @return the operation result.
      */
     private static double score(final Review review) {
         final long ageInDays = ChronoUnit.DAYS.between(review.createdAt(), LocalDate.now());
@@ -67,7 +69,7 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
 
     @Override
     public void execute(final SortReviewInputData inputData) {
-        final Washroom washroom = washroomDAO
+        final Washroom washroom = washroomRepository
             .getById(inputData.currentWashroom())
             .orElse(null);
         if (washroom == null) {
@@ -111,7 +113,7 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
                     return Comparator.comparing(Review::getHelpfuls);
                 });
         };
-        final ArrayList<Review> sortedReviews = new ArrayList<>(reviewDAO.getReviewsForWashroom(washroom.id()));
+        final ArrayList<Review> sortedReviews = new ArrayList<>(reviewRepository.getReviewsForWashroom(washroom.id()));
         sortedReviews.sort(comparator);
         final ReviewSummary summary = ReviewSummary.fromReviews(sortedReviews);
         final String username = session
@@ -122,13 +124,15 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
             .stream()
             .map(Review::id)
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
-        final Set<String> votedReviewIds = helpfulVoteDAO.votedReviewIds(reviewIds, username);
-        final Set<String> reportedReviewIds = reportDAO.reportedReviewIds(reviewIds, username);
+        final Set<String> votedReviewIds = helpfulVoteRepository.votedReviewIds(reviewIds, username);
+        final Set<String> reportedReviewIds = reportRepository.reportedReviewIds(reviewIds, username);
         final List<ViewReviewsOutputData.ReviewDisplay> display = sortedReviews
             .stream()
-            .map(r -> {
-                return new ViewReviewsOutputData.ReviewDisplay(r.id(), r.rating(), r.comment(), r.helpfulCount(), r.createdAt(), r.authorUsername(), votedReviewIds.contains(r.id()),
-                    reportedReviewIds.contains(r.id()));
+            .map(reviewValue -> {
+                return new ViewReviewsOutputData.ReviewDisplay(reviewValue.id(), reviewValue.rating(),
+                     reviewValue.comment(), reviewValue.helpfulCount(), reviewValue.createdAt(),
+                     reviewValue.authorUsername(), votedReviewIds.contains(reviewValue.id()),
+                    reportedReviewIds.contains(reviewValue.id()));
             })
             .toList();
         presenter.present(new ViewReviewsOutputData(washroom.id(), washroom

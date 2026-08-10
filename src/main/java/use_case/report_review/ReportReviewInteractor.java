@@ -37,12 +37,13 @@ public final class ReportReviewInteractor implements ReportReviewInputBoundary {
             .reasons()
             .isEmpty()) {
             presenter.present(new ReportReviewOutputData(false, NO_REASON));
-            return;
         }
-        reports.save(new Report(UUID
-            .randomUUID()
-            .toString(), input.reviewId(), input.reporterUsername(), input.reasons(), input.details(),
-            LocalDateTime.now(clock)));
-        presenter.present(new ReportReviewOutputData(true, THANK_YOU));
+        else {
+            reports.save(new Report(UUID
+                .randomUUID()
+                .toString(), input.reviewId(), input.reporterUsername(), input.reasons(), input.details(),
+                LocalDateTime.now(clock)));
+            presenter.present(new ReportReviewOutputData(true, THANK_YOU));
+        }
     }
 }

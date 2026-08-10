@@ -18,6 +18,7 @@ import use_case.port.WashroomRepository;
  * review or dismiss its reports.
  */
 public final class ModerateReviewsInteractor implements ModerateReviewsInputBoundary {
+    private static final int EM_DASH_CODE_POINT = 8212;
 
     private final ReportedReviewsDataAccessInterface reports;
     private final ReviewAdminDataAccessInterface reviews;
@@ -65,7 +66,8 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
      * moderator, presents an empty queue with a "Not authorized." message (so no
      * reported reviews are exposed) and reports that the action was blocked.
      *
-     * @return true if the action must be aborted
+     * @param input parameter value.
+     * @return true if the action must be aborted.
      */
     private boolean denyUnlessModerator(final ModerateReviewsInputData input) {
         if (moderators.isModerator(input.moderatorUsername())) {
@@ -142,7 +144,7 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
         final String washroomName = washrooms
             .getById(review.washroomId())
             .map(washroom -> {
-                return washroom.name() + " — " + washroom.floor();
+                return washroom.name() + " " + Character.toString(EM_DASH_CODE_POINT) + " " + washroom.floor();
             })
             .orElse(review.washroomId());
 

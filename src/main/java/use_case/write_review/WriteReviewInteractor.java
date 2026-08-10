@@ -11,6 +11,7 @@ import use_case.port.ReviewRepository;
  * Validates and stores a review through the same repository used to display it.
  */
 public final class WriteReviewInteractor implements WriteReviewInputBoundary {
+    private static final int MAGIC_5 = 5;
     private final ReviewRepository reviews;
     private final WriteReviewOutputBoundary presenter;
     private final Clock clock;
@@ -34,7 +35,8 @@ public final class WriteReviewInteractor implements WriteReviewInputBoundary {
             presenter.present(new WriteReviewOutputData(false, "Choose a washroom before writing a review."));
             return;
         }
-        if (input.rating() < 1 || input.rating() > 5 || input.cleanliness() < 1 || input.cleanliness() > 5) {
+        if (input.rating() < 1 || input.rating() > MAGIC_5
+                || input.cleanliness() < 1 || input.cleanliness() > MAGIC_5) {
             presenter.present(new WriteReviewOutputData(false, "Ratings must be between 1 and 5."));
             return;
         }
@@ -64,6 +66,6 @@ public final class WriteReviewInteractor implements WriteReviewInputBoundary {
             .randomUUID()
             .toString(), input.washroomId(), username, input.rating(), input.cleanliness(), comment, 0,
             LocalDate.now(clock)));
-        presenter.present(new WriteReviewOutputData(true, "Thanks — your review was posted."));
+        presenter.present(new WriteReviewOutputData(true, "Thanks - your review was posted."));
     }
 }

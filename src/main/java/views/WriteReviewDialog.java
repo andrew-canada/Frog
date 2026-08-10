@@ -23,6 +23,10 @@ import interface_adapter.write_review.WriteReviewViewModel;
  * Small modal editor; persistence and validation remain in the write-review use case.
  */
 public final class WriteReviewDialog extends JDialog {
+    private static final int SECTION_GAP = 10;
+    private static final int CONTROL_GAP = 8;
+    private static final int LARGE_GAP = 14;
+    private static final int LABEL_FONT_SIZE = 13;
     public WriteReviewDialog(final Window owner, final WriteReviewViewModel model,
                              final WriteReviewController controller, final String washroomId, final String washroomName,
                              final String username, final Runnable onSaved) {
@@ -30,8 +34,8 @@ public final class WriteReviewDialog extends JDialog {
         final JPanel page = Theme.page();
         page.setLayout(new BoxLayout(page, BoxLayout.Y_AXIS));
         page.add(Theme.title("Write a review"));
-        page.add(Theme.label(washroomName, 13, Theme.MUTED));
-        page.add(Box.createVerticalStrut(14));
+        page.add(Theme.label(washroomName, LABEL_FONT_SIZE, Theme.MUTED));
+        page.add(Box.createVerticalStrut(LARGE_GAP));
 
         final JSlider rating = slider();
         final JSlider cleanliness = slider();
@@ -41,13 +45,13 @@ public final class WriteReviewDialog extends JDialog {
         final JLabel message = Theme.label("", 12, Theme.BERRY);
         page.add(new JLabel("Overall rating"));
         page.add(rating);
-        page.add(Box.createVerticalStrut(8));
+        page.add(Box.createVerticalStrut(CONTROL_GAP));
         page.add(new JLabel("Cleanliness"));
         page.add(cleanliness);
-        page.add(Box.createVerticalStrut(8));
+        page.add(Box.createVerticalStrut(CONTROL_GAP));
         page.add(new JLabel("Your review"));
         page.add(new JScrollPane(comment));
-        page.add(Box.createVerticalStrut(10));
+        page.add(Box.createVerticalStrut(SECTION_GAP));
 
         final JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttons.setOpaque(false);

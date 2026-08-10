@@ -2,10 +2,10 @@ package interface_adapter.view_reviews;
 
 import java.util.List;
 
-import interface_adapter.common.ViewModel;
+import interface_adapter.common.AbstractViewModel;
 import use_case.view_reviews.ViewReviewsOutputData;
 
-public final class ReviewsViewModel extends ViewModel<ReviewsViewModel.State> {
+public final class ReviewsViewModel extends AbstractViewModel<ReviewsViewModel.State> {
     public ReviewsViewModel() {
         super(new State("", "", "", 0, 0, 0, 0, 0, List.of(), null));
     }
@@ -13,6 +13,7 @@ public final class ReviewsViewModel extends ViewModel<ReviewsViewModel.State> {
     /**
      * Updates the clicked review after a helpful vote without changing the
      * presentation order selected by the user.
+     * @param reviewId parameter value.
      */
     public void toggleHelpfulVote(final String reviewId) {
         final State current = getState();

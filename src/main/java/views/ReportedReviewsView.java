@@ -30,6 +30,18 @@ import use_case.moderate_reviews.ReportedReview;
  * details), and Dismiss / Remove actions.
  */
 public final class ReportedReviewsView extends JPanel {
+    private static final int BODY_FONT_SIZE = 14;
+    private static final int LABEL_FONT_SIZE = 13;
+    private static final int DETAIL_GAP = 6;
+    private static final int SMALL_GAP = 8;
+    private static final int SECTION_GAP = 10;
+    private static final int WASHROOM_NAME_FONT_SIZE = 15;
+    private static final int CARD_PADDING = 16;
+    private static final int COUNT_FONT_SIZE = 12;
+    private static final int CARD_HORIZONTAL_PADDING = 24;
+    private static final int CARD_VERTICAL_PADDING = 18;
+    private static final int CARD_TOP_PADDING = 20;
+    private static final int TINY_GAP = 4;
 
     private static final int MAX_STARS = 5;
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("MMM d, yyyy");
@@ -52,14 +64,14 @@ public final class ReportedReviewsView extends JPanel {
         add(header(), BorderLayout.NORTH);
         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
         body.setBackground(Theme.PAPER);
-        body.setBorder(Theme.pad(4, 24, 20, 24));
+        body.setBorder(Theme.pad(TINY_GAP, CARD_HORIZONTAL_PADDING, CARD_TOP_PADDING, CARD_HORIZONTAL_PADDING));
         final JScrollPane scroll = new JScrollPane(body);
         scroll.setBorder(null);
         scroll
             .getVerticalScrollBar()
-            .setUnitIncrement(16);
+            .setUnitIncrement(CARD_PADDING);
         add(scroll, BorderLayout.CENTER);
-        model.addPropertyChangeListener(e -> {
+        model.addPropertyChangeListener(entryValue -> {
             expanded.clear();
             render();
         });
@@ -83,10 +95,10 @@ public final class ReportedReviewsView extends JPanel {
         final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < MAX_STARS; i++) {
             if (i < filled) {
-                builder.append('★');
+                builder.append('*');
             }
             else {
-                builder.append('☆');
+                builder.append('o');
             }
         }
         return builder.toString();
@@ -95,10 +107,10 @@ public final class ReportedReviewsView extends JPanel {
     private JComponent header() {
         final JPanel outer = new JPanel(new BorderLayout());
         outer.setBackground(Theme.PAPER);
-        outer.setBorder(Theme.pad(18, 24, 8, 24));
+        outer.setBorder(Theme.pad(CARD_VERTICAL_PADDING, CARD_HORIZONTAL_PADDING, SMALL_GAP, CARD_HORIZONTAL_PADDING));
         outer.add(Theme.title("Reported Reviews"), BorderLayout.WEST);
-        final JButton back = Theme.button("← Back to map");
-        back.addActionListener(e -> {
+        final JButton back = Theme.button("<- Back to map");
+        back.addActionListener(entryValue -> {
             onBack.run();
         });
         final JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -114,13 +126,13 @@ public final class ReportedReviewsView extends JPanel {
             .getState()
             .reportedReviews();
         if (reviews.isEmpty()) {
-            body.add(left(Theme.label("No reported reviews to moderate.", 14, Theme.MUTED)));
+            body.add(left(Theme.label("No reported reviews to moderate.", BODY_FONT_SIZE, Theme.MUTED)));
             final String message = model
                 .getState()
                 .message();
             if (message != null) {
-                body.add(Box.createVerticalStrut(8));
-                body.add(left(Theme.label(message, 12, Theme.MUTED)));
+                body.add(Box.createVerticalStrut(SMALL_GAP));
+                body.add(left(Theme.label(message, COUNT_FONT_SIZE, Theme.MUTED)));
             }
             body.revalidate();
             body.repaint();
@@ -134,13 +146,13 @@ public final class ReportedReviewsView extends JPanel {
         else {
             count = reviews.size() + " reviews awaiting moderation";
         }
-        body.add(left(Theme.label(count, 13, Theme.MUTED)));
-        body.add(Box.createVerticalStrut(10));
+        body.add(left(Theme.label(count, LABEL_FONT_SIZE, Theme.MUTED)));
+        body.add(Box.createVerticalStrut(SECTION_GAP));
 
         for (int i = 0; i < reviews.size(); i++) {
             body.add(card(reviews.get(i)));
             if (i < reviews.size() - 1) {
-                body.add(Box.createVerticalStrut(12));
+                body.add(Box.createVerticalStrut(COUNT_FONT_SIZE));
             }
         }
 
@@ -153,38 +165,43 @@ public final class ReportedReviewsView extends JPanel {
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBackground(Theme.PAPER);
         card.setBorder(
-            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(14, 16, 14, 16)));
+            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(BODY_FONT_SIZE,
+                CARD_PADDING, BODY_FONT_SIZE, CARD_PADDING)));
 
-        card.add(row(bold(Theme.label(review.washroomName(), 15, Theme.INK)),
-            Theme.label(review.totalReports() + " reports", 13, Theme.MUTED)));
-        card.add(Box.createVerticalStrut(8));
-        card.add(row(Theme.label("Author: " + review.author(), 13, Theme.INK), Theme.label("Posted: " + review
+        card.add(row(bold(Theme.label(review.washroomName(), WASHROOM_NAME_FONT_SIZE, Theme.INK)),
+            Theme.label(review.totalReports() + " reports", LABEL_FONT_SIZE, Theme.MUTED)));
+        card.add(Box.createVerticalStrut(SMALL_GAP));
+        card.add(row(Theme.label("Author: " + review.author(), LABEL_FONT_SIZE, Theme.INK), Theme.label("Posted: "
+            +
+            review
             .date()
-            .format(DATE), 13, Theme.MUTED)));
+            .format(DATE), LABEL_FONT_SIZE, Theme.MUTED)));
         card.add(left(
-            Theme.label(String.format("Rating: %.1f %s", review.rating(), stars(review.rating())), 13, Theme.INK)));
-        card.add(Box.createVerticalStrut(8));
-        card.add(left(Theme.label("Review", 13, Theme.MUTED)));
-        card.add(left(Theme.label("“" + review.comment() + "”", 14, Theme.INK)));
+            Theme.label(String.format("Rating: %.1f %s", review.rating(), stars(review.rating())), LABEL_FONT_SIZE,
+                Theme.INK)));
+        card.add(Box.createVerticalStrut(SMALL_GAP));
+        card.add(left(Theme.label("Review", LABEL_FONT_SIZE, Theme.MUTED)));
+        card.add(left(Theme.label("\"" + review.comment() + "\"", BODY_FONT_SIZE, Theme.INK)));
 
-        card.add(Box.createVerticalStrut(10));
-        card.add(left(Theme.label("Report reasons", 13, Theme.MUTED)));
+        card.add(Box.createVerticalStrut(SECTION_GAP));
+        card.add(left(Theme.label("Report reasons", LABEL_FONT_SIZE, Theme.MUTED)));
         for (final ReportedReview.ReasonCount reasonCount : review.reasonCounts()) {
-            card.add(left(Theme.label("• " + reasonCount.reason() + " — " + reasonCount.count(), 13, Theme.INK)));
+            card.add(left(Theme.label("* " + reasonCount.reason() + " - " + reasonCount.count(), LABEL_FONT_SIZE,
+                Theme.INK)));
         }
 
         final int detailsCount = review.additionalDetailsCount();
         if (detailsCount > 0) {
             final boolean open = expanded.contains(review.reviewId());
-            card.add(Box.createVerticalStrut(8));
+            card.add(Box.createVerticalStrut(SMALL_GAP));
             final JButton toggle;
             if (open) {
-                toggle = Theme.button("Hide Additional Details ▲");
+                toggle = Theme.button("Hide Additional Details up");
             }
             else {
-                toggle = Theme.button("View Additional Details (" + detailsCount + ") ▼");
+                toggle = Theme.button("View Additional Details (" + detailsCount + ") down");
             }
-            toggle.addActionListener(e -> {
+            toggle.addActionListener(entryValue -> {
                 if (!expanded.remove(review.reviewId())) {
                     expanded.add(review.reviewId());
                 }
@@ -192,26 +209,26 @@ public final class ReportedReviewsView extends JPanel {
             });
             card.add(left(toggle));
             if (open) {
-                card.add(Box.createVerticalStrut(6));
-                card.add(left(Theme.label("Additional report details", 13, Theme.MUTED)));
+                card.add(Box.createVerticalStrut(DETAIL_GAP));
+                card.add(left(Theme.label("Additional report details", LABEL_FONT_SIZE, Theme.MUTED)));
                 int index = 1;
                 for (final ReportedReview.AdditionalDetail detail : review.additionalDetails()) {
-                    card.add(left(Theme.label(index + ". " + detail.reason(), 13, Theme.INK)));
-                    card.add(left(Theme.label("      “" + detail.text() + "”", 13, Theme.MUTED)));
+                    card.add(left(Theme.label(index + ". " + detail.reason(), LABEL_FONT_SIZE, Theme.INK)));
+                    card.add(left(Theme.label("      \"" + detail.text() + "\"", LABEL_FONT_SIZE, Theme.MUTED)));
                     index++;
                 }
             }
         }
 
-        card.add(Box.createVerticalStrut(14));
+        card.add(Box.createVerticalStrut(BODY_FONT_SIZE));
         final JButton dismiss = Theme.button("Dismiss Reports");
         final JButton remove = Theme.primary("Remove Review");
-        dismiss.addActionListener(e -> {
+        dismiss.addActionListener(entryValue -> {
             if (controller != null) {
                 controller.dismiss(review.reviewId(), moderatorUsername);
             }
         });
-        remove.addActionListener(e -> {
+        remove.addActionListener(entryValue -> {
             if (controller != null) {
                 controller.remove(review.reviewId(), moderatorUsername);
             }

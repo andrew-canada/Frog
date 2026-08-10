@@ -17,12 +17,19 @@ public record User(String username, String passwordHash, String personalPlan, bo
         this(username, passwordHash, personalPlan, false);
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public String name() {
         return username;
     }
 
     /**
-     * @return whether this user has moderator privileges.
+     * Checks whether this user has moderator privileges.
+     *
+     * @return whether this user has moderator privileges
      */
     public boolean isModerator() {
         return moderator;

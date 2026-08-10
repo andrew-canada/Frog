@@ -32,6 +32,7 @@ public class DBDataAccessObject implements AutoCloseable {
 
     /**
      * Allows additive adapters/subclasses to share a client owned by the composition root.
+     * @param database parameter value.
      */
     protected DBDataAccessObject(final MongoDatabase database) {
         this.client = null;
@@ -39,6 +40,11 @@ public class DBDataAccessObject implements AutoCloseable {
         this.ownsClient = false;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public static DBDataAccessObject fromEnvironment() {
         return new DBDataAccessObject(requiredUri(), configuredDatabaseName());
     }
@@ -53,12 +59,21 @@ public class DBDataAccessObject implements AutoCloseable {
 
     private static String configuredDatabaseName() {
         final String name = System.getenv(DATABASE_ENV);
+        final String result;
         if (name == null || name.isBlank()) {
-            return "FlushID";
+            result = "FlushID";
         }
-        return name;
+        else {
+            result = name;
+        }
+        return result;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public MongoDatabase database() {
         return database;
     }

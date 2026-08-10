@@ -43,49 +43,108 @@ public final class Washroom {
         return value;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public String id() {
         return id;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public String name() {
         return name;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public entity.Building building() {
         return building;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public String floor() {
         return floor;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public boolean accessible() {
         return accessible;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public Gender gender() {
         return gender;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public int numToilets() {
         return numToilets;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public int numSinks() {
         return numSinks;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public String locationDescription() {
         return locationDescription;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @return the operation result.
+     */
     public ReviewSummary reviewSummary() {
         return reviewSummary;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param summary parameter value.
+     */
     public void updateReviewSummary(final ReviewSummary summary) {
         this.reviewSummary = Objects.requireNonNull(summary);
     }
 
-    public enum Gender { ALL_GENDER, WOMEN, MEN }
+    public enum Gender {
+        ALL_GENDER,
+        WOMEN,
+        MEN
+    }
 }

@@ -41,8 +41,13 @@ public class AccountState {
 
     }
 
-    public void addPropertyChangeListener(final PropertyChangeListener l) {
-        changes.addPropertyChangeListener(l);
+    /**
+     * Performs this operation.
+     *
+     * @param labelValue parameter value.
+     */
+    public void addPropertyChangeListener(final PropertyChangeListener labelValue) {
+        changes.addPropertyChangeListener(labelValue);
     }
 
     private void baseResetState() {
@@ -56,11 +61,17 @@ public class AccountState {
         personalPlanMessage = "";
     }
 
+    /**
+     * Performs this operation.
+     */
     public void exitResetState() {
         baseResetState();
         changes.firePropertyChange("state", "a", "b");
     }
 
+    /**
+     * Performs this operation.
+     */
     public void logoutResetState() {
         baseResetState();
         username = "";
@@ -72,6 +83,11 @@ public class AccountState {
         return username;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param username parameter value.
+     */
     public void setUsername(final String username) {
         final String prev = this.username;
         this.username = username;
@@ -82,6 +98,11 @@ public class AccountState {
         return personalPlan;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param personalPlan parameter value.
+     */
     public void setPersonalPlan(final String personalPlan) {
         final String prev = this.personalPlan;
         this.personalPlan = personalPlan;
@@ -92,6 +113,11 @@ public class AccountState {
         return changeUsernameSuccess;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param changeUsernameSuccess parameter value.
+     */
     public void setChangeUsernameSuccess(final boolean changeUsernameSuccess) {
         final boolean prev = this.changeUsernameSuccess;
         this.changeUsernameSuccess = changeUsernameSuccess;
@@ -102,6 +128,11 @@ public class AccountState {
         return changeUsernameMessage;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param changeUsernameMessage parameter value.
+     */
     public void setChangeUsernameMessage(final String changeUsernameMessage) {
         final String prev = this.changeUsernameMessage;
         this.changeUsernameMessage = changeUsernameMessage;
@@ -113,6 +144,11 @@ public class AccountState {
         return changePasswordSuccess;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param changePasswordSuccess parameter value.
+     */
     public void setChangePasswordSuccess(final boolean changePasswordSuccess) {
         final boolean prev = this.changePasswordSuccess;
         this.changePasswordSuccess = changePasswordSuccess;
@@ -123,6 +159,11 @@ public class AccountState {
         return changePasswordMessage;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param changePasswordMessage parameter value.
+     */
     public void setChangePasswordMessage(final String changePasswordMessage) {
         final String prev = this.changePasswordMessage;
         this.changePasswordMessage = changePasswordMessage;
@@ -133,6 +174,11 @@ public class AccountState {
         return deleteAccountSuccess;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param deleteAccountSuccess parameter value.
+     */
     public void setDeleteAccountSuccess(final boolean deleteAccountSuccess) {
         final boolean prev = this.deleteAccountSuccess;
         this.deleteAccountSuccess = deleteAccountSuccess;
@@ -143,6 +189,11 @@ public class AccountState {
         return deleteAccountMessage;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param deleteAccountMessage parameter value.
+     */
     public void setDeleteAccountMessage(final String deleteAccountMessage) {
         final String prev = this.deleteAccountMessage;
         this.deleteAccountMessage = deleteAccountMessage;
@@ -153,6 +204,11 @@ public class AccountState {
         return personalPlanSuccess;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param personalPlanSuccess parameter value.
+     */
     public void setPersonalPlanSuccess(final boolean personalPlanSuccess) {
         final boolean prev = this.personalPlanSuccess;
         this.personalPlanSuccess = personalPlanSuccess;
@@ -163,6 +219,11 @@ public class AccountState {
         return personalPlanMessage;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param personalPlanMessage parameter value.
+     */
     public void setPersonalPlanMessage(final String personalPlanMessage) {
         final String prev = this.personalPlanMessage;
         this.personalPlanMessage = personalPlanMessage;

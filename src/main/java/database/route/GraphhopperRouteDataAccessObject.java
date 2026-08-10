@@ -22,6 +22,11 @@ import use_case.port.RouteGateway;
  * Live GraphHopper Routing API adapter. The API key is supplied at the composition root.
  */
 public final class GraphhopperRouteDataAccessObject implements RouteGateway {
+    private static final int MAGIC_300 = 300;
+    private static final int MAGIC_200 = 200;
+    private static final int MAGIC_20 = 20;
+    private static final double MAGIC_1000_0 = 1000.0;
+    private static final int MAGIC_10 = 10;
     public static final String API_KEY_ENV = "GRAPHHOPPER_API_KEY";
     private static final URI DEFAULT_ENDPOINT = URI.create("https://graphhopper.com/api/1/route");
 
@@ -32,7 +37,7 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
     public GraphhopperRouteDataAccessObject(final String apiKey) {
         this(HttpClient
             .newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
+            .connectTimeout(Duration.ofSeconds(MAGIC_10))
             .build(), DEFAULT_ENDPOINT, apiKey);
     }
 
@@ -82,10 +87,10 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
             return new Route(points, distance == null ? 0 : (int) Math.round(distance.doubleValue()), 0);
         }
         if (distance == null) {
-            return new Route(points, 0, (int) Math.round(time.doubleValue() / 1000.0));
+            return new Route(points, 0, (int) Math.round(time.doubleValue() / MAGIC_1000_0));
         }
         return new Route(points, (int) Math.round(distance.doubleValue()),
-            (int) Math.round(time.doubleValue() / 1000.0));
+            (int) Math.round(time.doubleValue() / MAGIC_1000_0));
     }
 
     private static String point(final GeoPoint point) {
@@ -99,14 +104,14 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
             + URLEncoder.encode(apiKey, StandardCharsets.UTF_8));
         final HttpRequest request = HttpRequest
             .newBuilder(requestUri)
-            .timeout(Duration.ofSeconds(20))
+            .timeout(Duration.ofSeconds(MAGIC_20))
             .header("Accept", "application/json")
             .header("User-Agent", "FlushID/1.0")
             .GET()
             .build();
         try {
             final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            if (response.statusCode() < MAGIC_200 || response.statusCode() >= MAGIC_300) {
                 throw new IllegalStateException("GraphHopper returned HTTP " + response.statusCode() + ".");
             }
             return parseRoute(response.body());

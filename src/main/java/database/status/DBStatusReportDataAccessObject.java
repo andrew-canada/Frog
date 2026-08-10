@@ -24,6 +24,17 @@ import entity.StatusReport;
 import use_case.port.StatusReportRepository;
 
 public final class DBStatusReportDataAccessObject implements StatusReportRepository {
+    private static final String FIELD_WASHROOMID = "washroomId";
+    private static final String FIELD_USERNAME = "username";
+    private static final String FIELD_BUSYNESS = "busyness";
+    private static final String FIELD_CLEANLINESS = "cleanliness";
+    private static final String FIELD_ISSUE = "issue";
+    private static final String FIELD_HOUROFDAY = "hourOfDay";
+    private static final String FIELD_TIMESTAMP = "timestamp";
+    private static final String FIELD_SEEDKEY = "seedKey";
+    private static final String FIELD__OR = "$or";
+    private static final int MAGIC_24 = 24;
+    private static final int MAGIC_5 = 5;
     private final MongoCollection<Document> reports;
 
     public DBStatusReportDataAccessObject(final MongoDatabase database) {
@@ -31,22 +42,22 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
     }
 
     private static int clamp(final int value) {
-        return Math.max(1, Math.min(5, value));
+        return Math.max(1, Math.min(MAGIC_5, value));
     }
 
     @Override
     public void save(final StatusReport report) {
-        reports.insertOne(new Document("washroomId", report.washroomId())
-            .append("username", report.username())
-            .append("busyness", report.busyness())
-            .append("cleanliness", report.cleanliness())
-            .append("issue", report
+        reports.insertOne(new Document(FIELD_WASHROOMID, report.washroomId())
+            .append(FIELD_USERNAME, report.username())
+            .append(FIELD_BUSYNESS, report.busyness())
+            .append(FIELD_CLEANLINESS, report.cleanliness())
+            .append(FIELD_ISSUE, report
                 .issue()
                 .name())
-            .append("hourOfDay", report
+            .append(FIELD_HOUROFDAY, report
                 .timestamp()
                 .getHour())
-            .append("timestamp", Date.from(report
+            .append(FIELD_TIMESTAMP, Date.from(report
                 .timestamp()
                 .atZone(ZoneId.systemDefault())
                 .toInstant())));
@@ -54,19 +65,20 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
 
     /**
      * Adds one persistent, varied status report for every hour of every JSON-sourced washroom.
+     * @param washrooms parameter value.
      */
     public void ensureJsonHourlyReports(final List<entity.Washroom> washrooms) {
         final LocalDate reportDay = LocalDate
             .now()
             .minusDays(1);
         final Set<String> existingSeedKeys = new HashSet<>();
-        for (final Document report : reports.find(Filters.regex("seedKey", "^json-hourly-status-"))) {
-            existingSeedKeys.add(MongoDocuments.string(report, "", "seedKey"));
+        for (final Document report : reports.find(Filters.regex(FIELD_SEEDKEY, "^json-hourly-status-"))) {
+            existingSeedKeys.add(MongoDocuments.string(report, "", FIELD_SEEDKEY));
         }
         final List<Document> newReports = new ArrayList<>();
         for (int washroomIndex = 0; washroomIndex < washrooms.size(); washroomIndex++) {
             final entity.Washroom washroom = washrooms.get(washroomIndex);
-            for (int hour = 0; hour < 24; hour++) {
+            for (int hour = 0; hour < MAGIC_24; hour++) {
                 final String seedKey = "json-hourly-status-" + washroom.id() + "-" + hour;
                 if (existingSeedKeys.contains(seedKey)) {
                     continue;
@@ -74,16 +86,16 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
                 final int busyness = 1 + Math.floorMod(washroomIndex * 2 + hour * 3, 5);
                 final int cleanliness = 1 + Math.floorMod(washroomIndex * 3 + hour * 2, 5);
                 final LocalDateTime timestamp = LocalDateTime.of(reportDay, LocalTime.of(hour, 0));
-                newReports.add(new Document("washroomId", washroom.id())
-                    .append("username", "System seed")
-                    .append("busyness", busyness)
-                    .append("cleanliness", cleanliness)
-                    .append("issue", MaintenanceIssue.NONE.name())
-                    .append("hourOfDay", hour)
-                    .append("timestamp", Date.from(timestamp
+                newReports.add(new Document(FIELD_WASHROOMID, washroom.id())
+                    .append(FIELD_USERNAME, "System seed")
+                    .append(FIELD_BUSYNESS, busyness)
+                    .append(FIELD_CLEANLINESS, cleanliness)
+                    .append(FIELD_ISSUE, MaintenanceIssue.NONE.name())
+                    .append(FIELD_HOUROFDAY, hour)
+                    .append(FIELD_TIMESTAMP, Date.from(timestamp
                         .atZone(ZoneId.systemDefault())
                         .toInstant()))
-                    .append("seedKey", seedKey));
+                    .append(FIELD_SEEDKEY, seedKey));
             }
         }
         if (!newReports.isEmpty()) {
@@ -103,7 +115,7 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
                                              final LocalDateTime to) {
         final List<StatusReport> result = new ArrayList<>();
         for (final Document document : reports.find()) {
-            if (!MongoDocuments.referenceMatches(document.get("washroomId"), washroomId)
+            if (!MongoDocuments.referenceMatches(document.get(FIELD_WASHROOMID), washroomId)
                 && !MongoDocuments.referenceMatches(document.get("washroomID"), washroomId)) {
                 continue;
             }
@@ -127,11 +139,12 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
         if (washroomIds.isEmpty()) {
             return Map.of();
         }
-        final Document currentHour = new Document("$or", List.of(new Document("hourOfDay", hour),
+        final Document currentHour = new Document(FIELD__OR, List.of(new Document(FIELD_HOUROFDAY, hour),
             new Document("$expr", new Document("$eq", List.of(new Document("$hour", "$timestamp"), hour)))));
         final List<Document> pipeline = List.of(new Document("$match",
-                new Document("washroomId", new Document("$in", washroomIds)).append("$or", currentHour.get("$or"))),
-            new Document("$sort", new Document("timestamp", -1)), new Document("$group",
+                new Document(FIELD_WASHROOMID, new Document("$in", washroomIds)).append(FIELD__OR,
+                    currentHour.get(FIELD__OR))),
+            new Document("$sort", new Document(FIELD_TIMESTAMP, -1)), new Document("$group",
                 new Document("_id", "$washroomId").append("latest", new Document("$first", "$$ROOT"))),
             new Document("$replaceRoot", new Document("newRoot", "$latest")));
         final Map<String, StatusReport> result = new HashMap<>();
@@ -146,15 +159,16 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
      * Backfills the hour bucket once, then indexes the current-hour heatmap query.
      */
     public void ensurePerformanceIndexes() {
-        reports.updateMany(Filters.exists("hourOfDay", false),
-            List.of(new Document("$set", new Document("hourOfDay", new Document("$hour", "$timestamp")))));
-        reports.createIndex(Indexes.compoundIndex(Indexes.ascending("hourOfDay"), Indexes.ascending("washroomId"),
-            Indexes.descending("timestamp")));
+        reports.updateMany(Filters.exists(FIELD_HOUROFDAY, false),
+            List.of(new Document("$set", new Document(FIELD_HOUROFDAY, new Document("$hour", "$timestamp")))));
+        reports.createIndex(Indexes.compoundIndex(Indexes.ascending(FIELD_HOUROFDAY),
+            Indexes.ascending(FIELD_WASHROOMID),
+            Indexes.descending(FIELD_TIMESTAMP)));
     }
 
     private StatusReport toEntity(final Document document) {
         final String issueName =
-            MongoDocuments.string(document, MaintenanceIssue.NONE.name(), "issue", "maintenanceIssue");
+            MongoDocuments.string(document, MaintenanceIssue.NONE.name(), FIELD_ISSUE, "maintenanceIssue");
         MaintenanceIssue issue;
         try {
             issue = MaintenanceIssue.valueOf(issueName);
@@ -162,9 +176,10 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
         catch (final IllegalArgumentException ignored) {
             issue = MaintenanceIssue.OTHER;
         }
-        return new StatusReport(MongoDocuments.string(document, "unknown", "washroomId", "washroomID"),
-            MongoDocuments.string(document, null, "username"), clamp(MongoDocuments.integer(document, 1, "busyness")),
-            clamp(MongoDocuments.integer(document, 1, "cleanliness")), issue,
-            MongoDocuments.dateTime(document, LocalDateTime.now(), "timestamp", "createdAt"));
+        return new StatusReport(MongoDocuments.string(document, "unknown", FIELD_WASHROOMID, "washroomID"),
+            MongoDocuments.string(document, null, FIELD_USERNAME), clamp(MongoDocuments.integer(document, 1,
+                FIELD_BUSYNESS)),
+            clamp(MongoDocuments.integer(document, 1, FIELD_CLEANLINESS)), issue,
+            MongoDocuments.dateTime(document, LocalDateTime.now(), FIELD_TIMESTAMP, "createdAt"));
     }
 }

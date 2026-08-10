@@ -86,9 +86,13 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
 
     /**
      * Converts the model response to the compact format consumed by the plan viewer and filter.
+     * @param availableWashrooms parameter value.
+     * @param generatedPlan parameter value.
+     * @return the operation result.
+     * @throws Exception if the plan cannot be parsed.
      */
     private static String normalizePlan(final String generatedPlan, final List<Washroom> availableWashrooms)
-        throws Exception {
+            throws Exception {
         final ObjectMapper mapper = new ObjectMapper();
         final List<Map<String, String>> suggestions =
             mapper.readValue(generatedPlan, new TypeReference<List<Map<String, String>>>() {

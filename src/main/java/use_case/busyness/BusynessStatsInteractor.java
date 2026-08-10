@@ -11,6 +11,9 @@ import use_case.port.EnrollmentScheduleGateway;
 import use_case.port.StatusReportRepository;
 
 public final class BusynessStatsInteractor implements BusynessStatsInputBoundary {
+    private static final int MAGIC_5 = 5;
+    private static final double MAGIC_100_0 = 100.0;
+    private static final int MAGIC_24 = 24;
     private final StatusReportRepository reports;
     private final EnrollmentScheduleGateway enrollment;
     private final BusynessStatsOutputBoundary presenter;
@@ -29,12 +32,12 @@ public final class BusynessStatsInteractor implements BusynessStatsInputBoundary
             reports.getForWashroom(in.washroomId(), now.minusDays(30), now.plusSeconds(1));
         final List<EnrollmentMeeting> meetings = enrollment.getBuildingSchedule(in.buildingCode(), in.dayOfWeek());
         final List<BusynessStatsOutputData.HourBucket> buckets = new ArrayList<>();
-        for (int hour = 0; hour < 24; hour++) {
+        for (int hour = 0; hour < MAGIC_24; hour++) {
             final int h = hour;
             final StatusReport latestReport = observations
                 .stream()
-                .filter(r -> {
-                    return r
+                .filter(reviewValue -> {
+                    return reviewValue
                         .timestamp()
                         .getHour() == h;
                 })
@@ -56,15 +59,15 @@ public final class BusynessStatsInteractor implements BusynessStatsInputBoundary
             }
             final int students = meetings
                 .stream()
-                .filter(m -> {
-                    return h >= m.startHour() && h < m.endHour();
+                .filter(parameterValue -> {
+                    return h >= parameterValue.startHour() && h < parameterValue.endHour();
                 })
                 .mapToInt(EnrollmentMeeting::enrollment)
                 .sum();
             final boolean hasTimetable = !meetings.isEmpty();
             final double predicted;
             if (hasTimetable) {
-                predicted = Math.min(5, 1 + students / 100.0);
+                predicted = Math.min(MAGIC_5, 1 + students / MAGIC_100_0);
             }
             else {
                 predicted = Double.NaN;
@@ -83,11 +86,13 @@ public final class BusynessStatsInteractor implements BusynessStatsInputBoundary
                 }
             }
             if (hasCrowd) {
-                buckets.add(new BusynessStatsOutputData.HourBucket(hour, Math.max(0, Math.min(5, level)), cleanliness,
+                buckets.add(new BusynessStatsOutputData.HourBucket(hour, Math.max(0, Math.min(MAGIC_5, level)),
+                    cleanliness,
                     "latest report"));
             }
             else {
-                buckets.add(new BusynessStatsOutputData.HourBucket(hour, Math.max(0, Math.min(5, level)), cleanliness,
+                buckets.add(new BusynessStatsOutputData.HourBucket(hour, Math.max(0, Math.min(MAGIC_5, level)),
+                    cleanliness,
                     hasTimetable ? "enrollment" : "no data"));
             }
         }

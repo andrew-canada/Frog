@@ -8,6 +8,21 @@ import entity.Washroom;
  * External planning service boundary owned by the personal-plan use case.
  */
 public interface PersonalPlanGenerator {
+    /**
+     * Performs this operation.
+     *
+     * @param availableWashrooms parameter value.
+     *
+     * @param calendarContent parameter value.
+     *
+     * @param semester parameter value.
+     *
+     * @param tripsPerDay parameter value.
+     *
+     * @return the operation result.
+     *
+     * @throws Exception if the operation fails.
+     */
     String generate(String calendarContent, int tripsPerDay, String semester, List<Washroom> availableWashrooms)
-        throws Exception;
+            throws Exception;
 }

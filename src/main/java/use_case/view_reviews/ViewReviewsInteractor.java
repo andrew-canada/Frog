@@ -51,6 +51,8 @@ public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
 
     /**
      * Ranking score: helpfulness (log) + recency (exponential decay).
+     * @param review parameter value.
+     * @return the operation result.
      */
     private static double score(final Review review) {
         final long ageInDays = ChronoUnit.DAYS.between(review.createdAt(), LocalDate.now());
@@ -79,9 +81,11 @@ public final class ViewReviewsInteractor implements ViewReviewsInputBoundary {
             .sorted(Comparator
                 .comparingDouble(ViewReviewsInteractor::score)
                 .reversed())
-            .map(r -> {
-                return new ViewReviewsOutputData.ReviewDisplay(r.id(), r.rating(), r.comment(), r.helpfulCount(), r.createdAt(), r.authorUsername(), votedReviewIds.contains(r.id()),
-                    reportedReviewIds.contains(r.id()));
+            .map(reviewValue -> {
+                return new ViewReviewsOutputData.ReviewDisplay(reviewValue.id(), reviewValue.rating(),
+                     reviewValue.comment(), reviewValue.helpfulCount(), reviewValue.createdAt(),
+                     reviewValue.authorUsername(), votedReviewIds.contains(reviewValue.id()),
+                    reportedReviewIds.contains(reviewValue.id()));
             })
             .toList();
         presenter.present(new ViewReviewsOutputData(washroom.id(), washroom

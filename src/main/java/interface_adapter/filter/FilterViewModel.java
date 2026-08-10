@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import entity.Washroom;
-import interface_adapter.common.ViewModel;
+import interface_adapter.common.AbstractViewModel;
 
-public final class FilterViewModel extends ViewModel<interface_adapter.filter.FilterViewModel.State> {
+public final class FilterViewModel extends AbstractViewModel<interface_adapter.filter.FilterViewModel.State> {
     public FilterViewModel() {
         super(new interface_adapter.filter.FilterViewModel.State(false, new ArrayList<>(), ""));
     }

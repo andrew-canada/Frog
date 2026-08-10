@@ -13,6 +13,29 @@ public class FilterController {
         this.interactor = interactor;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param accessible parameter value.
+     *
+     * @param gender parameter value.
+     *
+     * @param latitude parameter value.
+     *
+     * @param longitude parameter value.
+     *
+     * @param maxBusyness parameter value.
+     *
+     * @param minCleanliness parameter value.
+     *
+     * @param ownReviews parameter value.
+     *
+     * @param personalPlan parameter value.
+     *
+     * @param selectedBuilding parameter value.
+     *
+     * @param selectedID parameter value.
+     */
     public void execute(final int maxBusyness, final int minCleanliness, final boolean accessible,
                         final boolean ownReviews, final boolean selectedBuilding, final boolean personalPlan,
                         final String selectedID, final Washroom.Gender gender, final double latitude,

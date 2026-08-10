@@ -107,14 +107,13 @@ public class FilterInteractor implements FilterInputBoundary {
             }
         }
 
-
         filterByCurrentStatus(initialWashrooms, inputData);
 
         presenter.present(new FilterOutputData(true, initialWashrooms, inputData.latitude(), inputData.longitude()));
     }
 
     /**
-     * Filters washrooms, modifying the inputted list to remove washrooms which don't have
+     * Filters washrooms, modifying the inputted list to remove washrooms which don't have.
      * reviews by the given user
      *
      * @param washrooms A Map from washroomID to Washroom object of the washrooms to be filtered.
@@ -132,7 +131,7 @@ public class FilterInteractor implements FilterInputBoundary {
     }
 
     /**
-     * Filters washrooms, modifying the inputted list to remove washrooms which are not included in the user's
+     * Filters washrooms, modifying the inputted list to remove washrooms which are not included in the user's.
      * personal plan
      *
      * @param washrooms A Map from washroomID to Washroom object of the washrooms to be filtered.
@@ -152,7 +151,7 @@ public class FilterInteractor implements FilterInputBoundary {
                 return !washroomIds.contains(washroom.id());
             });
         }
-        catch (final Exception e) {
+        catch (final Exception entryValue) {
             presenter.presentError("Please re-generate your personal plan.");
         }
 
@@ -160,6 +159,8 @@ public class FilterInteractor implements FilterInputBoundary {
 
     /**
      * Filters by each washroom's newest status report in the current clock hour.
+     * @param inputData parameter value.
+     * @param washrooms parameter value.
      */
     private void filterByCurrentStatus(final List<Washroom> washrooms, final FilterInputData inputData) {
         if (statusReports == null) {
@@ -179,6 +180,5 @@ public class FilterInteractor implements FilterInputBoundary {
                 || status.cleanliness() < inputData.minCleanliness();
         });
     }
-
 
 }

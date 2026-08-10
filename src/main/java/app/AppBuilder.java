@@ -115,8 +115,18 @@ import views.WriteReviewDialog;
  * Composition root: the only class that selects concrete database and external-service adapters.
  */
 final class AppBuilder {
-    private static final String MAIN = "main", REVIEWS = "reviews", LOGIN = "login", STATUS = "status", BUSYNESS =
-        "busyness", ACCOUNT = "account", MODERATE = "moderate";
+    private static final int WINDOW_HEIGHT = 700;
+    private static final int WINDOW_WIDTH = 1060;
+    private static final int MIN_WINDOW_HEIGHT = 600;
+    private static final int MIN_WINDOW_WIDTH = 900;
+    private static final int EARTH_RADIUS_METERS = 6_371_000;
+    private static final String MAIN = "main";
+    private static final String REVIEWS = "reviews";
+    private static final String LOGIN = "login";
+    private static final String STATUS = "status";
+    private static final String BUSYNESS = "busyness";
+    private static final String ACCOUNT = "account";
+    private static final String MODERATE = "moderate";
     private static final Set<String> JSON_WASHROOM_NAMES = CampusStartup.loadWashroomNames();
 
     private static void showLoadedFrame(final JFrame frame) {
@@ -185,6 +195,10 @@ final class AppBuilder {
 
     /**
      * Runs the optional baseline-data maintenance away from Swing's event thread.
+     *
+     * @param washrooms washroom data access.
+     * @param reviews review data access.
+     * @param reports status report data access.
      */
     private static void seedInitialData(final DBWashroomDataAccessObject washrooms,
                                         final DBReviewDataAccessObject reviews,
@@ -198,16 +212,16 @@ final class AppBuilder {
         main.setWashrooms(availableWashrooms);
         final List<WashroomListViewModel.Item> items = availableWashrooms
             .stream()
-            .map(w -> {
-                return new WashroomListViewModel.Item(w.id(), w
+            .map(washroomValue -> {
+                return new WashroomListViewModel.Item(washroomValue.id(), washroomValue
                     .building()
-                    .name(), listDescription(w), w
+                    .name(), listDescription(washroomValue), washroomValue
                     .reviewSummary()
-                    .averageRating(), (int) Math.round(distance(originLat, originLng, w
+                    .averageRating(), (int) Math.round(distance(originLat, originLng, washroomValue
                     .building()
-                    .latitude(), w
+                    .latitude(), washroomValue
                     .building()
-                    .longitude())), w.accessible());
+                    .longitude())), washroomValue.accessible());
             })
             .toList();
         final String selectedId;
@@ -225,7 +239,11 @@ final class AppBuilder {
     }
 
     /**
-     * Refreshes heatmap data off the UI thread after a live status submission.
+     * Refreshes heatmap data off the UI thread after firstValue live status submission.
+     *
+     * @param washrooms washrooms to aggregate.
+     * @param reports status report data access.
+     * @param main view receiving the result.
      */
     private static void refreshHeatmapAsync(final List<Washroom> washrooms,
                                             final DBStatusReportDataAccessObject reports, final MainView main) {
@@ -242,6 +260,10 @@ final class AppBuilder {
 
     /**
      * Builds the current-hour heatmap in one status-report aggregation.
+     *
+     * @param washrooms washrooms to aggregate.
+     * @param reports status report data access.
+     * @return current-hour heatmap data.
      */
     private static List<MainView.HeatmapData> heatmapData(final List<Washroom> washrooms,
                                                           final DBStatusReportDataAccessObject reports) {
@@ -252,6 +274,10 @@ final class AppBuilder {
      * A new review changes the aggregate rating for only its washroom.  Keep the
      * already-loaded list and patch that one row instead of reloading every
      * washroom (which also recalculates every review summary from MongoDB).
+     *
+     * @param listModel list view model to update.
+     * @param washroomId washroom identifier.
+     * @param rating new aggregate rating.
      */
     private static void updateWashroomListRating(final WashroomListViewModel listModel, final String washroomId,
                                                  final double rating) {
@@ -274,17 +300,21 @@ final class AppBuilder {
     }
 
     private static Optional<Washroom> selected(final DBWashroomDataAccessObject washrooms, final MainView main) {
+        final Optional<Washroom> result;
         if (main
             .selectedId()
             .isBlank()) {
-            return Optional.empty();
+            result = Optional.empty();
         }
-        return washrooms.getById(main.selectedId());
+        else {
+            result = washrooms.getById(main.selectedId());
+        }
+        return result;
     }
 
     private static void noWashroom(final Component parent) {
-        JOptionPane.showMessageDialog(parent, "Select a washroom from the list or map before continuing.",
-            "Select a washroom", JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(parent, "Select firstValue washroom from the list or map before continuing.",
+            "Select firstValue washroom", JOptionPane.WARNING_MESSAGE);
     }
 
     private static String listDescription(final Washroom washroom) {
@@ -298,7 +328,7 @@ final class AppBuilder {
             description = name;
         }
         return description
-            .replaceAll("(?i)\\bwashrooms?\\b", "")
+            .replaceAll("(?i)\\bwashrooms?\\secondValue", "")
             .replaceAll("\\s{2,}", " ")
             .trim();
     }
@@ -319,14 +349,17 @@ final class AppBuilder {
         return value;
     }
 
-    private static double distance(final double a, final double b, final double c, final double d) {
-        final double x = Math.toRadians(d - b) * Math.cos(Math.toRadians((a + c) / 2));
-        final double y = Math.toRadians(c - a);
-        return Math.sqrt(x * x + y * y) * 6_371_000;
+    private static double distance(final double firstValue, final double secondValue, final double thirdValue,
+        final double fourthValue) {
+        final double x = Math.toRadians(fourthValue - secondValue) * Math.cos(Math.toRadians((firstValue +
+            thirdValue) / 2));
+        final double y = Math.toRadians(thirdValue - firstValue);
+        return Math.sqrt(x * x + y * y) * EARTH_RADIUS_METERS;
     }
 
     /**
      * Builds the application from the data already stored in MongoDB.
+     * @return the operation result.
      */
     public JFrame build() {
         return build(false, AppBuilder::showLoadedFrame);
@@ -334,6 +367,7 @@ final class AppBuilder {
 
     /**
      * Builds the application and asynchronously verifies/seeds its baseline data.
+     * @return the operation result.
      */
     public JFrame buildAndSeed() {
         return build(true, AppBuilder::showLoadedFrame);
@@ -341,6 +375,8 @@ final class AppBuilder {
 
     /**
      * Invokes {@code onLoaded} on Swing's event thread once the initial screen is ready to show.
+     * @param onLoaded parameter value.
+     * @return the operation result.
      */
     public JFrame buildAndSeed(final Consumer<JFrame> onLoaded) {
         if (onLoaded == null) {
@@ -429,10 +465,10 @@ final class AppBuilder {
         final var sortReviewsController = new SortReviewsController(
             new SortReviewInteractor(reviews, users, washrooms, reviews, reviews, reviewsPresenter));
 
-        final JFrame frame = new JFrame("FlushID — U of T washroom finder");
+        final JFrame frame = new JFrame("FlushID - U of T washroom finder");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setMinimumSize(new Dimension(900, 600));
-        frame.setSize(1060, 700);
+        frame.setMinimumSize(new Dimension(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT));
+        frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(final WindowEvent event) {
@@ -492,8 +528,8 @@ final class AppBuilder {
         });
 
         main.setOnReport(() -> {
-            selected(washrooms, main).ifPresentOrElse(w -> {
-                status.setWashroomName(w.name());
+            selected(washrooms, main).ifPresentOrElse(washroomValue -> {
+                status.setWashroomName(washroomValue.name());
                 layout.show(cards, STATUS);
             }, () -> {
                 noWashroom(frame);
@@ -501,11 +537,11 @@ final class AppBuilder {
         });
 
         main.setOnBusyness(() -> {
-            selected(washrooms, main).ifPresentOrElse(w -> {
-                busyness.setLocationName(w
+            selected(washrooms, main).ifPresentOrElse(washroomValue -> {
+                busyness.setLocationName(washroomValue
                     .building()
                     .name());
-                busynessController.execute(w.id(), w
+                busynessController.execute(washroomValue.id(), washroomValue
                     .building()
                     .code(), DayOfWeek.from(java.time.LocalDate.now()));
                 layout.show(cards, BUSYNESS);
@@ -519,30 +555,32 @@ final class AppBuilder {
         readReviews.setOnBack(showMain);
 
         readReviews.setOnWrite(() -> {
-            selected(washrooms, main).ifPresentOrElse(w -> {
+            selected(washrooms, main).ifPresentOrElse(washroomValue -> {
                 if (loggedInModel
                     .getState()
                     .loggedIn()) {
-                    new WriteReviewDialog(frame, writeReviewModel, writeReviewController, w.id(), w.name(),
+                    new WriteReviewDialog(frame, writeReviewModel, writeReviewController, washroomValue.id(),
+                        washroomValue.name(),
                         loggedInModel
                             .getState()
                             .username(), () -> {
-                        reviewController.execute(w.id(), currentUser.get());
-                        updateWashroomListRating(listModel, w.id(), reviewsModel
+                        reviewController.execute(washroomValue.id(), currentUser.get());
+                        updateWashroomListRating(listModel, washroomValue.id(), reviewsModel
                             .getState()
                             .rating());
                     }).setVisible(true);
                 }
                 else {
-                    new WriteReviewDialog(frame, writeReviewModel, writeReviewController, w.id(), w.name(), "Anonymous",
+                    new WriteReviewDialog(frame, writeReviewModel, writeReviewController, washroomValue.id(),
+                        washroomValue.name(), "Anonymous",
                         () -> {
-                            reviewController.execute(w.id(), currentUser.get());
-                            updateWashroomListRating(listModel, w.id(), reviewsModel
+                            reviewController.execute(washroomValue.id(), currentUser.get());
+                            updateWashroomListRating(listModel, washroomValue.id(), reviewsModel
                                 .getState()
                                 .rating());
                         }).setVisible(true);
                 }
-                }, () -> {
+            }, () -> {
                     noWashroom(frame);
                 });
         });
@@ -552,7 +590,7 @@ final class AppBuilder {
         });
         // Modal dialog: setVisible blocks until it closes, then refresh the review list (so the
         readReviews.setOnReport(id -> {
-           // button flips to "Reported") and the moderator queue count if a report was filed.
+        // button flips to "Reported") and the moderator queue count if firstValue report was filed.
 
             new ReportReviewDialog(frame, reportController, reportReviewModel, id, currentUser.get()).setVisible(true);
             reviewController.execute(reviewsModel
@@ -566,7 +604,7 @@ final class AppBuilder {
         moderate.setController(moderateController);
         // for the initial badge.
         // updated on load and after every remove/dismiss, so this listener covers those; load once now
-        moderateModel.addPropertyChangeListener(e -> {
+        moderateModel.addPropertyChangeListener(entryValue -> {
             final Runnable update = () -> {
                 main.setModeratorReportCount(moderateModel
                     .getState()
@@ -579,9 +617,9 @@ final class AppBuilder {
             else {
                 SwingUtilities.invokeLater(update);
             }
-        // Gate the Moderator nav entry on the logged-in user's moderator status (hidden by default).
         });
-        loggedInModel.addPropertyChangeListener(e -> {
+        // Gate the Moderator nav entry on the logged-in user's moderator status (hidden by default).
+        loggedInModel.addPropertyChangeListener(entryValue -> {
             main.setModerator(loggedInModel
                 .getState()
                 .moderator());
@@ -609,7 +647,7 @@ final class AppBuilder {
                 }
             }
         });
-        statusModel.addPropertyChangeListener(e -> {
+        statusModel.addPropertyChangeListener(entryValue -> {
             if (statusModel
                 .getState()
                 .success()) {

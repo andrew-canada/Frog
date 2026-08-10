@@ -6,6 +6,13 @@ package use_case.sort_review;
 public enum ReviewSortOrder {
     RELEVANCE, MOST_HELPFUL, HIGHEST_RATED, LOWEST_RATED, NEWEST, VOTED_BY_ME;
 
+    /**
+     * Performs this operation.
+     *
+     * @param label parameter value.
+     *
+     * @return the operation result.
+     */
     public static ReviewSortOrder fromDisplayLabel(final String label) {
         return switch (label) {
             case "Most Helpful" -> MOST_HELPFUL;

@@ -26,14 +26,15 @@ public final class LoginInteractor implements LoginInputBoundary {
             .orElse(null);
         if (user == null || !passwords.matches(input.password(), user.passwordHash())) {
             presenter.present(new LoginOutputData(false, null, false, "Incorrect username or password"));
-            return;
         }
-        if (!passwords.isCurrentHash(user.passwordHash())) {
-            user = new User(user.username(), passwords.hash(input.password()), user.personalPlan());
-            users.save(user);
+        else {
+            if (!passwords.isCurrentHash(user.passwordHash())) {
+                user = new User(user.username(), passwords.hash(input.password()), user.personalPlan());
+                users.save(user);
+            }
+            session.setCurrentUser(user);
+            presenter.present(
+                new LoginOutputData(true, user.username(), user.isModerator(), "Welcome back, " + user.username()));
         }
-        session.setCurrentUser(user);
-        presenter.present(
-            new LoginOutputData(true, user.username(), user.isModerator(), "Welcome back, " + user.username()));
     }
 }

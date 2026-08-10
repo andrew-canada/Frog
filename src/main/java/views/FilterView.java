@@ -12,7 +12,7 @@ class FilterView extends JFrame {
     private FilterController controller;
     private FilterPanel filterPanel;
 
-    public FilterView(final Window owner, final String title, final String selected, final FilterController controller,
+    FilterView(final Window owner, final String title, final String selected, final FilterController controller,
                       final double latitude, final double longitude) {
         this.controller = controller;
 
@@ -52,6 +52,5 @@ class FilterView extends JFrame {
     public Washroom.Gender gender() {
         return filterPanel.gender();
     }
-
 
 }

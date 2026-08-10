@@ -11,12 +11,16 @@ import entity.Report;
 public interface ReportedReviewsDataAccessInterface {
 
     /**
+     * Represents this type.
+     */
+    /**
      * @return every report currently on file (across all reviews).
      */
     List<Report> getAllReports();
 
     /**
      * Removes all reports against a review (used when reports are dismissed or the review is removed).
+     * @param reviewId parameter value.
      */
     void deleteReportsForReview(String reviewId);
 }

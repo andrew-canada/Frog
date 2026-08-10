@@ -19,6 +19,10 @@ import use_case.port.AddressLookupGateway;
  * Live GraphHopper forward-geocoding adapter used for address-based map origins.
  */
 public final class GraphhopperGeocodingDataAccessObject implements AddressLookupGateway {
+    private static final int MAGIC_300 = 300;
+    private static final int MAGIC_200 = 200;
+    private static final int MAGIC_20 = 20;
+    private static final int MAGIC_10 = 10;
     private static final URI DEFAULT_ENDPOINT = URI.create("https://graphhopper.com/api/1/geocode");
     private final HttpClient httpClient;
     private final URI endpoint;
@@ -27,7 +31,7 @@ public final class GraphhopperGeocodingDataAccessObject implements AddressLookup
     public GraphhopperGeocodingDataAccessObject(final String apiKey) {
         this(HttpClient
             .newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
+            .connectTimeout(Duration.ofSeconds(MAGIC_10))
             .build(), DEFAULT_ENDPOINT, apiKey);
     }
 
@@ -86,14 +90,14 @@ public final class GraphhopperGeocodingDataAccessObject implements AddressLookup
                 + URLEncoder.encode(apiKey, StandardCharsets.UTF_8));
         final HttpRequest request = HttpRequest
             .newBuilder(requestUri)
-            .timeout(Duration.ofSeconds(20))
+            .timeout(Duration.ofSeconds(MAGIC_20))
             .header("Accept", "application/json")
             .header("User-Agent", "FlushID/1.0")
             .GET()
             .build();
         try {
             final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            if (response.statusCode() < MAGIC_200 || response.statusCode() >= MAGIC_300) {
                 throw new IllegalStateException("GraphHopper returned HTTP " + response.statusCode() + ".");
             }
             return parsePoint(response.body());

@@ -21,23 +21,33 @@ import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginViewModel;
 
 final class LoginView implements ActionListener {
-    private final JPanel panel1, panel2, panel3, panel4;
-    private final JLabel usernameLabel, passwordLabel;
+    private static final String FIELD_CONSOLAS = "Consolas";
+    private static final String FIELD_OK = "OK";
+    private static final String FIELD_CANCEL = "Cancel";
+    private static final String FIELD_CONTINUE_AS_GUEST = "Continue as guest";
+    private static final int LABEL_FONT_SIZE = 14;
+    private static final int TEXT_FIELD_COLUMNS = 12;
+    private final JPanel panel1;
+    private final JPanel panel2;
+    private final JPanel panel3;
+    private final JPanel panel4;
+    private final JLabel usernameLabel;
+    private final JLabel passwordLabel;
     private final JTextField usernameField;
     private final JPasswordField passwordField;
-    private final JButton OKButton, cancelButton, continueAsGuestButton;
+    private final JButton OKButton;
+    private final JButton cancelButton;
+    private final JButton continueAsGuestButton;
     private final JDialog dialog;
     private final LoginViewModel loginViewModel;
     private JFrame windowFrame;
     private LoginController loginController;
 
-
-    public LoginView(final LoginViewModel loginViewModel) {
+    LoginView(final LoginViewModel loginViewModel) {
 
         // this.loginViewModel.addPropertyChangeListener(this);
 
         this.loginViewModel = loginViewModel;
-
 
         dialog = new JDialog(windowFrame, "Entry - FlushID", true);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -65,29 +75,29 @@ final class LoginView implements ActionListener {
         panel1.add(photoLabel);
 
         usernameLabel = new JLabel("Username: ");
-        usernameLabel.setFont(new Font("Consolas", Font.PLAIN, 14));
-        usernameField = new JTextField(12);
-        usernameField.setFont(new Font("Consolas", Font.PLAIN, 14));
+        usernameLabel.setFont(new Font(FIELD_CONSOLAS, Font.PLAIN, LABEL_FONT_SIZE));
+        usernameField = new JTextField(TEXT_FIELD_COLUMNS);
+        usernameField.setFont(new Font(FIELD_CONSOLAS, Font.PLAIN, LABEL_FONT_SIZE));
         panel2.add(usernameLabel);
         panel2.add(usernameField);
 
         passwordLabel = new JLabel("Password: ");
-        passwordLabel.setFont(new Font("Consolas", Font.PLAIN, 14));
-        passwordField = new JPasswordField(12);
-        passwordField.setFont(new Font("Consolas", Font.PLAIN, 14));
+        passwordLabel.setFont(new Font(FIELD_CONSOLAS, Font.PLAIN, LABEL_FONT_SIZE));
+        passwordField = new JPasswordField(TEXT_FIELD_COLUMNS);
+        passwordField.setFont(new Font(FIELD_CONSOLAS, Font.PLAIN, LABEL_FONT_SIZE));
         panel3.add(passwordLabel);
         panel3.add(passwordField);
 
-        OKButton = new JButton("OK");
-        cancelButton = new JButton("Cancel");
-        continueAsGuestButton = new JButton("Continue as guest");
+        OKButton = new JButton(FIELD_OK);
+        cancelButton = new JButton(FIELD_CANCEL);
+        continueAsGuestButton = new JButton(FIELD_CONTINUE_AS_GUEST);
         panel4.add(OKButton);
         panel4.add(cancelButton);
         panel4.add(continueAsGuestButton);
 
-        OKButton.setActionCommand("OK");
-        cancelButton.setActionCommand("Cancel");
-        continueAsGuestButton.setActionCommand("Continue as guest");
+        OKButton.setActionCommand(FIELD_OK);
+        cancelButton.setActionCommand(FIELD_CANCEL);
+        continueAsGuestButton.setActionCommand(FIELD_CONTINUE_AS_GUEST);
         OKButton.addActionListener(this);
         cancelButton.addActionListener(this);
         continueAsGuestButton.addActionListener(this);
@@ -95,14 +105,13 @@ final class LoginView implements ActionListener {
         dialog.pack();
         dialog.setVisible(true);
 
-
     }
 
     @Override
     public void actionPerformed(final ActionEvent event) {
 
         final String eventName = event.getActionCommand();
-        if (eventName.equals("OK")) {
+        if (eventName.equals(FIELD_OK)) {
             // int errorCode = Utilities.requestEntry(usernameField.getText(), passwordField.getText());
             // LoginController.execute()
                 /*if(errorCode == Globals.PROCESS_OK) {
@@ -124,12 +133,12 @@ final class LoginView implements ActionListener {
 
                  */
         }
-        else if (eventName.equals("Cancel")) {
+        else if (eventName.equals(FIELD_CANCEL)) {
            // System.out.println("Cancel pressed. ");
 
             ((Window) dialog.getParent()).dispose();
         }
-        else if (eventName.equals("Continue as guest")) {
+        else if (eventName.equals(FIELD_CONTINUE_AS_GUEST)) {
 
         }
 

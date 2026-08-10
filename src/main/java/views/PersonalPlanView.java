@@ -21,6 +21,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class PersonalPlanView extends JDialog {
+    private static final int SECTION_GAP = 10;
+    private static final int BODY_FONT_SIZE = 14;
+    private static final int FORM_INSET = 5;
 
     public PersonalPlanView(final Window owner, final String plan) {
 
@@ -42,7 +45,7 @@ public final class PersonalPlanView extends JDialog {
             planPanel.setBackground(Theme.PAPER);
             final GridBagConstraints constraints = new GridBagConstraints();
             constraints.fill = GridBagConstraints.BOTH;
-            constraints.insets = new Insets(5, 5, 5, 5);
+            constraints.insets = new Insets(FORM_INSET, FORM_INSET, FORM_INSET, FORM_INSET);
             constraints.weightx = 1.0;
             constraints.weighty = 0.0;
 
@@ -51,7 +54,7 @@ public final class PersonalPlanView extends JDialog {
                 constraints.gridx = x;
                 constraints.gridy = 0;
                 final JPanel dayPanel = new JPanel();
-                dayPanel.add(Theme.label(day.toUpperCase(), 14, Theme.INK));
+                dayPanel.add(Theme.label(day.toUpperCase(), BODY_FONT_SIZE, Theme.INK));
                 planPanel.add(dayPanel, constraints);
                 int y = 1;
                 for (final HashMap<String, String> washroom : washroomList) {
@@ -66,10 +69,10 @@ public final class PersonalPlanView extends JDialog {
                         textArea.setWrapStyleWord(true);
                         textArea.setEditable(false);
                         textArea.setOpaque(false);
-                        textArea.setColumns(10);
+                        textArea.setColumns(SECTION_GAP);
                         final JPanel card = new JPanel(new FlowLayout());
                         card.setBackground(Theme.PAPER);
-                        card.add(Theme.label(washroom.get("time"), 14, Theme.INK));
+                        card.add(Theme.label(washroom.get("time"), BODY_FONT_SIZE, Theme.INK));
                         card.add(textArea);
                         planPanel.add(card, constraints);
                         y++;
@@ -83,21 +86,21 @@ public final class PersonalPlanView extends JDialog {
             personalPlanTitle.setBackground(Theme.PAPER);
             personalPlanTitle.add(Theme.title("Personal Washroom Plan"));
             container.add(personalPlanTitle);
-            container.add(Box.createVerticalStrut(10));
+            container.add(Box.createVerticalStrut(SECTION_GAP));
             container.add(planPanel);
 
         }
-        catch (final Exception e) {
+        catch (final Exception entryValue) {
 
             container.add(Theme.title("Error - Please try generating a new plan"));
 
         }
 
         final JButton back = Theme.button("Back");
-        back.addActionListener(e -> {
+        back.addActionListener(entryValue -> {
             dispose();
         });
-        container.add(Box.createVerticalStrut(10));
+        container.add(Box.createVerticalStrut(SECTION_GAP));
         container.add(back);
         container.revalidate();
         container.repaint();

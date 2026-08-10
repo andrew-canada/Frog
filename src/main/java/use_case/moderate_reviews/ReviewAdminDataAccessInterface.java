@@ -11,12 +11,15 @@ import entity.Review;
 public interface ReviewAdminDataAccessInterface {
 
     /**
+     * Finds a review by its identifier.
+     * @param reviewId parameter value.
      * @return the review with the given id, if it exists.
      */
     Optional<Review> getById(String reviewId);
 
     /**
      * Permanently removes the review with the given id.
+     * @param reviewId parameter value.
      */
     void deleteReview(String reviewId);
 }

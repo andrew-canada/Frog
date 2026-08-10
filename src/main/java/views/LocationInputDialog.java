@@ -19,13 +19,17 @@ import javax.swing.SwingWorker;
 import entity.GeoPoint;
 
 final class LocationInputDialog extends JDialog {
+    private static final int COORDINATE_FIELD_COLUMNS = 10;
+    private static final int ADDRESS_FIELD_COLUMNS = 28;
+    private static final int LABEL_FONT_SIZE = 14;
+    private static final int FORM_INSET = 5;
     private final JTextField address;
     private final JTextField latitude;
     private final JTextField longitude;
     private final Function<String, GeoPoint> addressLookup;
     private final BiConsumer<Double, Double> onSave;
 
-    public LocationInputDialog(final Window owner, final Function<String, GeoPoint> addressLookup,
+    LocationInputDialog(final Window owner, final Function<String, GeoPoint> addressLookup,
                                final BiConsumer<Double, Double> onSave, final Double currLat, final Double currLong,
                                final MapClicker mapClicker) {
         super(owner, "Set your location", ModalityType.APPLICATION_MODAL);
@@ -34,19 +38,19 @@ final class LocationInputDialog extends JDialog {
         final JPanel p = Theme.page();
         p.setLayout(new GridBagLayout());
         final GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(5, 5, 5, 5);
+        c.insets = new Insets(FORM_INSET, FORM_INSET, FORM_INSET, FORM_INSET);
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 0;
         c.gridwidth = 2;
-        p.add(Theme.label("Enter an address or coordinates", 14, Theme.INK), c);
+        p.add(Theme.label("Enter an address or coordinates", LABEL_FONT_SIZE, Theme.INK), c);
         c.gridwidth = 1;
         c.gridy++;
         p.add(new JLabel("Address"), c);
         c.gridx = 1;
-        address = new JTextField(28);
-        latitude = new JTextField(currLat.toString(), 10);
-        longitude = new JTextField(currLong.toString(), 10);
+        address = new JTextField(ADDRESS_FIELD_COLUMNS);
+        latitude = new JTextField(currLat.toString(), COORDINATE_FIELD_COLUMNS);
+        longitude = new JTextField(currLong.toString(), COORDINATE_FIELD_COLUMNS);
         p.add(address, c);
         c.gridx = 0;
         c.gridy++;
@@ -83,10 +87,10 @@ final class LocationInputDialog extends JDialog {
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.NONE;
         p.add(useCoordinates, c);
-        useCoordinates.addActionListener(e -> {
+        useCoordinates.addActionListener(entryValue -> {
             useCoordinates();
         });
-        useAddress.addActionListener(e -> {
+        useAddress.addActionListener(entryValue -> {
             useAddress(useAddress);
         });
         setContentPane(p);
@@ -119,7 +123,7 @@ final class LocationInputDialog extends JDialog {
             return;
         }
         button.setEnabled(false);
-        button.setText("Searching…");
+        button.setText("Searching...");
         new SwingWorker<GeoPoint, Void>() {
             @Override
             protected GeoPoint doInBackground() {

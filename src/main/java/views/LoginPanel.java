@@ -17,6 +17,14 @@ import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginViewModel;
 
 public final class LoginPanel extends JPanel {
+    private static final int SUCCESS_COLOR_BLUE = 80;
+    private static final int SUCCESS_COLOR_GREEN = 125;
+    private static final int SUCCESS_COLOR_RED = 37;
+    private static final int LARGE_VERTICAL_GAP = 16;
+    private static final int SMALL_VERTICAL_GAP = 8;
+    private static final int MEDIUM_VERTICAL_GAP = 12;
+    private static final int SECTION_VERTICAL_GAP = 20;
+    private static final int BODY_FONT_SIZE = 13;
     private static final String DEFAULT_MESSAGE = "Sign in with an account stored in MongoDB.";
     private final JTextField username = new JTextField(18);
     private final JPasswordField password = new JPasswordField(18);
@@ -39,17 +47,17 @@ public final class LoginPanel extends JPanel {
             final JLabel logo = new JLabel(new ImageIcon(logoUrl));
             logo.setAlignmentX(Component.LEFT_ALIGNMENT);
             card.add(logo);
-            card.add(Box.createVerticalStrut(12));
+            card.add(Box.createVerticalStrut(MEDIUM_VERTICAL_GAP));
         }
         card.add(Theme.title("Welcome to FlushID"));
-        card.add(Theme.label("Sign in to save preferences and submit reports.", 13, Theme.MUTED));
-        card.add(Box.createVerticalStrut(20));
+        card.add(Theme.label("Sign in to save preferences and submit reports.", BODY_FONT_SIZE, Theme.MUTED));
+        card.add(Box.createVerticalStrut(SECTION_VERTICAL_GAP));
         card.add(new JLabel("Username"));
         card.add(username);
-        card.add(Box.createVerticalStrut(12));
+        card.add(Box.createVerticalStrut(MEDIUM_VERTICAL_GAP));
         card.add(new JLabel("Password"));
         card.add(password);
-        card.add(Box.createVerticalStrut(16));
+        card.add(Box.createVerticalStrut(LARGE_VERTICAL_GAP));
 
         final JButton login = Theme.primary("Log in");
         final JButton signup = Theme.button("Create account");
@@ -68,11 +76,11 @@ public final class LoginPanel extends JPanel {
             onBack.run();
         });
         card.add(login);
-        card.add(Box.createVerticalStrut(8));
+        card.add(Box.createVerticalStrut(SMALL_VERTICAL_GAP));
         card.add(signup);
-        card.add(Box.createVerticalStrut(8));
+        card.add(Box.createVerticalStrut(SMALL_VERTICAL_GAP));
         card.add(back);
-        card.add(Box.createVerticalStrut(16));
+        card.add(Box.createVerticalStrut(LARGE_VERTICAL_GAP));
         card.add(message);
         add(card);
 
@@ -92,7 +100,8 @@ public final class LoginPanel extends JPanel {
                 message.setForeground(Theme.MUTED);
             }
             else {
-                message.setForeground(state.success() ? new Color(37, 125, 80) : Theme.BERRY);
+                message.setForeground(state.success() ? new Color(SUCCESS_COLOR_RED, SUCCESS_COLOR_GREEN,
+                    SUCCESS_COLOR_BLUE) : Theme.BERRY);
             }
             if (state.success()) {
                 back.setText("View map");

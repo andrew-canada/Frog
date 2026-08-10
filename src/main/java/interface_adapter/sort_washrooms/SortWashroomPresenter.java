@@ -8,26 +8,30 @@ import use_case.sort_washrooms.SortWashroomsOutputBoundary;
 import use_case.sort_washrooms.SortWashroomsOutputData;
 
 public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
+    private static final int MAGIC_6_371_000 = 6_371_000;
     private final WashroomListViewModel listModel;
     private final SortWashroomViewModel sortModel;
-    private final UiDispatcher ui;
+    private final UiDispatcher userInterface;
 
     public SortWashroomPresenter(final WashroomListViewModel listModel, final SortWashroomViewModel sortModel,
-                                 final UiDispatcher ui) {
+                                 final UiDispatcher userInterface) {
         this.listModel = listModel;
         this.sortModel = sortModel;
-        this.ui = ui;
+        this.userInterface = userInterface;
     }
 
-
-    private static double distance(final double a, final double b, final double c, final double d) {
-        final double x = Math.toRadians(d - b) * Math.cos(Math.toRadians((a + c) / 2));
-        final double y = Math.toRadians(c - a);
-        return Math.sqrt(x * x + y * y) * 6_371_000;
+    private static double distance(final double firstValue, final double secondValue, final double thirdValue,
+        final double fourthValue) {
+        final double x = Math.toRadians(fourthValue - secondValue) * Math.cos(Math.toRadians((firstValue +
+            thirdValue) / 2));
+        final double y = Math.toRadians(thirdValue - firstValue);
+        return Math.sqrt(x * x + y * y) * MAGIC_6_371_000;
     }
 
     /**
      * Keeps filtered cards consistent with the initial washroom-list display.
+     * @param washroomName parameter value.
+     * @return the operation result.
      */
     private static String listDescription(final String washroomName) {
         final int separator = washroomName.indexOf('|');
@@ -39,7 +43,7 @@ public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
             description = washroomName;
         }
         return description
-            .replaceAll("(?i)\\bwashrooms?\\b", "")
+            .replaceAll("(?i)\\bwashrooms?\\secondValue", "")
             .replaceAll("\\s{2,}", " ")
             .trim();
     }
@@ -66,7 +70,7 @@ public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
             sortModel.setState(
                 new interface_adapter.sort_washrooms.SortWashroomViewModel.State(true, outputData.washrooms()));
         };
-        ui.dispatch(update);
+        userInterface.dispatch(update);
 
     }
 }

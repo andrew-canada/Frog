@@ -1,8 +1,8 @@
 package interface_adapter.login;
 
-import interface_adapter.common.ViewModel;
+import interface_adapter.common.AbstractViewModel;
 
-public final class LoginViewModel extends ViewModel<LoginViewModel.State> {
+public final class LoginViewModel extends AbstractViewModel<LoginViewModel.State> {
     public LoginViewModel() {
         super(new State(false, "", ""));
     }

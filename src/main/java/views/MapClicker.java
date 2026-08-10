@@ -17,7 +17,7 @@ class MapClicker implements ActionListener {
     private BiConsumer<Double, Double> onSave;
     private Window frame;
 
-    public MapClicker(final MainView.CampusMapPanel map) {
+    MapClicker(final MainView.CampusMapPanel map) {
         this.map = map;
     }
 
@@ -25,8 +25,8 @@ class MapClicker implements ActionListener {
     public void actionPerformed(final ActionEvent e) {
         System.out.println("button clicked!");
         class MapClickListener extends MouseAdapter {
-            final MainView.CampusMapPanel map;
-            final BiConsumer<Double, Double> onSave;
+            private final MainView.CampusMapPanel map;
+            private final BiConsumer<Double, Double> onSave;
 
             MapClickListener(final MainView.CampusMapPanel map, final BiConsumer<Double, Double> onSave) {
                 this.map = map;
@@ -50,11 +50,11 @@ class MapClicker implements ActionListener {
         frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
     }
 
-    public void addOnSave(final BiConsumer<Double, Double> onSave) {
-        this.onSave = onSave;
+    public void addOnSave(final BiConsumer<Double, Double> saveHandler) {
+        this.onSave = saveHandler;
     }
 
-    public void addFrame(final Window frame) {
-        this.frame = frame;
+    public void addFrame(final Window window) {
+        this.frame = window;
     }
 }
