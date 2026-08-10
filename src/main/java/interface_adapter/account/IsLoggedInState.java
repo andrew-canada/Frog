@@ -36,9 +36,7 @@ public class IsLoggedInState {
      * @param username parameter value.
      */
     public void setUsername(final String username) {
-        final String prev = this.username;
         this.username = username;
-        changes.firePropertyChange("state", prev, username);
     }
 
     public boolean getIsLoggedIn() {
@@ -51,9 +49,7 @@ public class IsLoggedInState {
      * @param isLoggedIn parameter value.
      */
     public void setIsLoggedIn(final boolean isLoggedIn) {
-        final boolean prev = this.isLoggedIn;
         this.isLoggedIn = isLoggedIn;
-        changes.firePropertyChange("state", prev, isLoggedIn);
     }
 
 }

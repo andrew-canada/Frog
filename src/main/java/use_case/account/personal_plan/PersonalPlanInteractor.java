@@ -84,6 +84,11 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
         }
     }
 
+    /**
+     * Determines if rawTrips is a positive integer.
+     * @param rawTrips parameter value.
+     * @return the operation result.
+     */
     private static Integer parseTrips(final String rawTrips) {
         Integer result = null;
         try {

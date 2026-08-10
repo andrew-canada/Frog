@@ -1,8 +1,5 @@
 package interface_adapter.account;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
 public class AccountState {
     private static final int VALUE_COUNT = 10;
     private static final int PERSONAL_PLAN_INDEX = 1;
@@ -14,8 +11,6 @@ public class AccountState {
     private static final int DELETE_ACCOUNT_MESSAGE_INDEX = 7;
     private static final int PERSONAL_PLAN_SUCCESS_INDEX = 8;
     private static final int PERSONAL_PLAN_MESSAGE_INDEX = 9;
-
-    private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
 
     private String username;
     private String personalPlan;
@@ -50,14 +45,8 @@ public class AccountState {
     }
 
     /**
-     * Performs this operation.
-     *
-     * @param labelValue parameter value.
+     * Resets the state.
      */
-    public void addPropertyChangeListener(final PropertyChangeListener labelValue) {
-        changes.addPropertyChangeListener(labelValue);
-    }
-
     private void baseResetState() {
         changeUsernameSuccess = false;
         changeUsernameMessage = "";
@@ -70,21 +59,19 @@ public class AccountState {
     }
 
     /**
-     * Performs this operation.
+     * Resents the state when user exits the view.
      */
     public void exitResetState() {
         baseResetState();
-        changes.firePropertyChange("state", "a", "b");
     }
 
     /**
-     * Performs this operation.
+     * Resets the state when user logs out or deletes account.
      */
     public void logoutResetState() {
         baseResetState();
         username = "";
         personalPlan = "";
-        changes.firePropertyChange("state", "a", "b");
     }
 
     public String getUsername() {
@@ -97,9 +84,7 @@ public class AccountState {
      * @param username parameter value.
      */
     public void setUsername(final String username) {
-        final String prev = this.username;
         this.username = username;
-        changes.firePropertyChange("username", prev, username);
     }
 
     public String getPersonalPlan() {
@@ -112,9 +97,7 @@ public class AccountState {
      * @param personalPlan parameter value.
      */
     public void setPersonalPlan(final String personalPlan) {
-        final String prev = this.personalPlan;
         this.personalPlan = personalPlan;
-        changes.firePropertyChange("personalPlan", prev, personalPlan);
     }
 
     public boolean getChangeUsernameSuccess() {
@@ -127,9 +110,7 @@ public class AccountState {
      * @param changeUsernameSuccess parameter value.
      */
     public void setChangeUsernameSuccess(final boolean changeUsernameSuccess) {
-        final boolean prev = this.changeUsernameSuccess;
         this.changeUsernameSuccess = changeUsernameSuccess;
-        changes.firePropertyChange("changeUsernameSuccess", prev, changeUsernameSuccess);
     }
 
     public String getChangeUsernameMessage() {
@@ -142,10 +123,7 @@ public class AccountState {
      * @param changeUsernameMessage parameter value.
      */
     public void setChangeUsernameMessage(final String changeUsernameMessage) {
-        final String prev = this.changeUsernameMessage;
         this.changeUsernameMessage = changeUsernameMessage;
-        changes.firePropertyChange("changeUsernameMessage", prev, changeUsernameMessage);
-
     }
 
     public boolean getChangePasswordSuccess() {
@@ -158,9 +136,7 @@ public class AccountState {
      * @param changePasswordSuccess parameter value.
      */
     public void setChangePasswordSuccess(final boolean changePasswordSuccess) {
-        final boolean prev = this.changePasswordSuccess;
         this.changePasswordSuccess = changePasswordSuccess;
-        changes.firePropertyChange("changePasswordSuccess", prev, changePasswordSuccess);
     }
 
     public String getChangePasswordMessage() {
@@ -173,9 +149,7 @@ public class AccountState {
      * @param changePasswordMessage parameter value.
      */
     public void setChangePasswordMessage(final String changePasswordMessage) {
-        final String prev = this.changePasswordMessage;
         this.changePasswordMessage = changePasswordMessage;
-        changes.firePropertyChange("changePasswordMessage", prev, changePasswordMessage);
     }
 
     public boolean getDeleteAccountSuccess() {
@@ -188,9 +162,7 @@ public class AccountState {
      * @param deleteAccountSuccess parameter value.
      */
     public void setDeleteAccountSuccess(final boolean deleteAccountSuccess) {
-        final boolean prev = this.deleteAccountSuccess;
         this.deleteAccountSuccess = deleteAccountSuccess;
-        changes.firePropertyChange("deleteAccountSuccess", prev, deleteAccountSuccess);
     }
 
     public String getDeleteAccountMessage() {
@@ -203,9 +175,7 @@ public class AccountState {
      * @param deleteAccountMessage parameter value.
      */
     public void setDeleteAccountMessage(final String deleteAccountMessage) {
-        final String prev = this.deleteAccountMessage;
         this.deleteAccountMessage = deleteAccountMessage;
-        changes.firePropertyChange("deleteAccountMessage", prev, deleteAccountMessage);
     }
 
     public boolean getPersonalPlanSuccess() {
@@ -218,9 +188,7 @@ public class AccountState {
      * @param personalPlanSuccess parameter value.
      */
     public void setPersonalPlanSuccess(final boolean personalPlanSuccess) {
-        final boolean prev = this.personalPlanSuccess;
         this.personalPlanSuccess = personalPlanSuccess;
-        changes.firePropertyChange("personalPlanSuccess", prev, personalPlanSuccess);
     }
 
     public String getPersonalPlanMessage() {
@@ -233,9 +201,7 @@ public class AccountState {
      * @param personalPlanMessage parameter value.
      */
     public void setPersonalPlanMessage(final String personalPlanMessage) {
-        final String prev = this.personalPlanMessage;
         this.personalPlanMessage = personalPlanMessage;
-        changes.firePropertyChange("personalPlanMessage", prev, personalPlanMessage);
     }
 
 }

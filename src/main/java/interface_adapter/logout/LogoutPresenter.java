@@ -19,12 +19,8 @@ public final class LogoutPresenter implements LogoutOutputBoundary {
 
     @Override
     public void present() {
-        isLoggedIn
-            .getState()
-            .setIsLoggedIn(false);
-        isLoggedIn
-            .getState()
-            .setUsername("");
+        isLoggedIn.setIsLoggedIn(false);
+        isLoggedIn.setUsername("");
         loggedIn.setState(new LoggedInViewModel.State(false, "Guest", false));
         login.setState(new LoginViewModel.State(false, "", ""));
     }

@@ -38,6 +38,7 @@ import org.jxmapviewer.viewer.GeoPosition;
 import entity.GeoPoint;
 import entity.Washroom;
 import interface_adapter.account.IsLoggedInViewModel;
+import interface_adapter.account.load_account.LoadAccountController;
 import interface_adapter.directions.MapViewModel;
 import interface_adapter.filter.FilterController;
 import interface_adapter.filter.FilterViewModel;
@@ -89,6 +90,7 @@ public final class MainView extends JPanel {
      * Okabe-Ito endpoints keep map values distinguishable with colour-vision deficiencies.
      */
     private final Runnable logoutAction;
+    private final Runnable accountAction;
     private final CardLayout buttonsLayout = new CardLayout();
     private final JPanel buttonsPanel = new JPanel(buttonsLayout);
     /**
@@ -142,20 +144,23 @@ public final class MainView extends JPanel {
      */
     public MainView(final WashroomListViewModel washrooms, final MapViewModel route) {
         this(washrooms, route, new FilterViewModel(), new IsLoggedInViewModel(), () -> {
+        }, () -> {
         });
     }
 
     public MainView(final WashroomListViewModel washrooms, final MapViewModel route, final FilterViewModel filter,
-                    final IsLoggedInViewModel isLoggedIn, final LogoutController logoutController) {
-        this(washrooms, route, filter, isLoggedIn, logoutController::execute);
+                    final IsLoggedInViewModel isLoggedIn, final LogoutController logoutController,
+                    final LoadAccountController loadAccountController) {
+        this(washrooms, route, filter, isLoggedIn, logoutController::execute, loadAccountController::execute);
     }
 
     private MainView(final WashroomListViewModel washrooms, final MapViewModel route, final FilterViewModel filter,
-                     final IsLoggedInViewModel isLoggedIn, final Runnable logoutAction) {
+                     final IsLoggedInViewModel isLoggedIn, final Runnable logoutAction, final Runnable accountAction) {
         this.isLoggedIn = isLoggedIn;
         this.logoutAction = logoutAction;
-        isLoggedIn.getState().addPropertyChangeListener(entryValue -> {
-            if (isLoggedIn.getState().getIsLoggedIn()) {
+        this.accountAction = accountAction;
+        isLoggedIn.addPropertyChangeListener(entryValue -> {
+            if (isLoggedIn.getIsLoggedIn()) {
                 buttonsLayout.show(buttonsPanel, "loggedIn");
             }
             else {
@@ -211,6 +216,7 @@ public final class MainView extends JPanel {
         // hidden until a moderator logs in
         moderatorNav.setVisible(false);
         nav.add(nav("Account", () -> {
+            accountAction.run();
             onAccount.run();
         }));
         nav.add(nav("Report status", () -> {

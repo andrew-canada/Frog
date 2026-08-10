@@ -15,14 +15,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
 
-import interface_adapter.account.AccountState;
 import interface_adapter.account.AccountViewModel;
-import interface_adapter.account.IsLoggedInState;
-import interface_adapter.account.IsLoggedInViewModel;
 import interface_adapter.account.change_password.ChangePasswordController;
 import interface_adapter.account.change_username.ChangeUsernameController;
 import interface_adapter.account.delete_account.DeleteAccountController;
@@ -36,23 +34,22 @@ public final class AccountView extends JPanel {
     private static final int SECTION_GAP = 10;
     private static final int SCROLL_BLOCK_INCREMENT = 192;
     private static final int SCROLL_UNIT_INCREMENT = 32;
-    private static final int TEXT_AREA_COLUMNS = 50;
 
     private final AccountViewModel viewModel;
-    private final IsLoggedInViewModel isLoggedInViewModel;
-    private final JPanel personalPlan = Theme.page();
-    private final JPanel changeUsername = Theme.page();
-    private final JPanel changeUsernameContent = Theme.page();
-    private final JPanel changeUsernameButtons = Theme.page();
-    private final JPanel changePassword = Theme.page();
-    private final JPanel changePasswordContent = Theme.page();
-    private final JPanel changePasswordButtons = Theme.page();
-    private final JPanel deleteAccount = Theme.page();
-    private final JPanel deleteAccountContent = Theme.page();
-    private final JPanel deleteAccountButtons = Theme.page();
+    private final JPanel personalPlan = new JPanel();
+    private final JPanel changeUsername = new JPanel();
+    private final JPanel changeUsernameContent = new JPanel();
+    private final JPanel changeUsernameButtons = new JPanel();
+    private final JPanel changePassword = new JPanel();
+    private final JPanel changePasswordContent = new JPanel();
+    private final JPanel changePasswordButtons = new JPanel();
+    private final JPanel deleteAccount = new JPanel();
+    private final JPanel deleteAccountContent = new JPanel();
+    private final JPanel deleteAccountButtons = new JPanel();
     private final JButton back = Theme.button("<- Back to Map");
     private final JLabel accountLabel = new JLabel();
     private final JLabel personalPlanStatusLabel = new JLabel();
+    private final JLabel personalPlanLoadingLabel = new JLabel();
     private final JFileChooser icsChooser = new JFileChooser();
 
     private final JTextField usernameField = new JTextField(10);
@@ -85,24 +82,17 @@ public final class AccountView extends JPanel {
     private Consumer<String> onViewPlan = id -> {
     };
 
-    public AccountView(final AccountViewModel viewModel, final IsLoggedInViewModel isLoggedInViewModel,
+    public AccountView(final AccountViewModel viewModel,
                        final ChangeUsernameController changeUsernameController,
                        final ChangePasswordController changePasswordController,
                        final DeleteAccountController deleteAccountController,
                        final PersonalPlanController personalPlanController) {
 
         this.viewModel = viewModel;
-        this.isLoggedInViewModel = isLoggedInViewModel;
 
         viewModel
-            .getState()
             .addPropertyChangeListener(entryValue -> {
-                render(viewModel.getState());
-            });
-        isLoggedInViewModel
-            .getState()
-            .addPropertyChangeListener(entryValue -> {
-                render(isLoggedInViewModel.getState());
+                render();
             });
 
         initializeLayout();
@@ -111,7 +101,7 @@ public final class AccountView extends JPanel {
         personalPlanGenerateButton.addActionListener(entryValue -> generatePlan(personalPlanController));
 
         personalPlanViewButton.addActionListener(entryValue -> {
-            onViewPlan.accept(viewModel.getState().getPersonalPlan());
+            onViewPlan.accept(viewModel.getPersonalPlan());
         });
         changeUsernameButton.addActionListener(entryValue -> {
             showUsernameEditor();
@@ -142,7 +132,7 @@ public final class AccountView extends JPanel {
         titleWords.add(accountLabel, BorderLayout.SOUTH);
         title.add(titleWords, BorderLayout.WEST);
         back.addActionListener(entryValue -> {
-            viewModel.getState().exitResetState();
+            viewModel.exitResetState();
             resetAccountView();
             onBack.run();
         });
@@ -181,9 +171,11 @@ public final class AccountView extends JPanel {
         title.add(Theme.title("Personal Washroom Plan"));
         personalPlan.add(title);
         personalPlan.add(Box.createVerticalStrut(SECTION_GAP));
-        final JLabel instructions = Theme.label("Upload your acorn timetable to generate a personal washroom "
-            + "schedule! Download your timetable from Acorn as an .ics file, upload it, then enter the number of "
-            + "trips per day and semester.", LABEL_FONT_SIZE, Theme.INK);
+        final JTextArea instructions = new JTextArea("Upload your acorn timetable to generate a personal washroom "
+            + "schedule!\nDownload your timetable from Acorn as an .ics file, upload it, then enter the number of "
+            + "trips per day and semester.");
+        instructions.setEditable(false);
+        instructions.setOpaque(false);
         personalPlan.add(instructions);
         personalPlan.add(fileUploadPanel());
         personalPlan.add(tripPanel());
@@ -225,6 +217,8 @@ public final class AccountView extends JPanel {
         panel.add(Box.createHorizontalStrut(SECTION_GAP));
         panel.add(personalPlanGenerateButton);
         panel.add(Box.createHorizontalStrut(SECTION_GAP));
+        panel.add(personalPlanLoadingLabel);
+        panel.add(Box.createHorizontalStrut(SECTION_GAP));
         panel.add(personalPlanStatusLabel);
         return panel;
     }
@@ -234,17 +228,23 @@ public final class AccountView extends JPanel {
         section.setLayout(new BoxLayout(section, BoxLayout.Y_AXIS));
         section.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE),
             Theme.pad(SECTION_GAP, SECTION_GAP, SECTION_GAP, SECTION_GAP)));
-        final JPanel title = Theme.page();
+        final JPanel title = new JPanel();
         title.setLayout(new FlowLayout(FlowLayout.LEFT));
         title.add(Theme.title(titleText));
         buttons.setLayout(new FlowLayout(FlowLayout.LEFT));
         buttons.add(initialButton);
+        title.setBackground(Theme.PAPER);
+        content.setBackground(Theme.PAPER);
+        buttons.setBackground(Theme.PAPER);
+        section.setBackground(Theme.PAPER);
         section.add(title);
         section.add(content);
         section.add(buttons);
     }
 
     private void showUsernameEditor() {
+        viewModel.setChangeUsernameSuccess(false);
+        viewModel.setChangeUsernameMessage("");
         changeUsernameContent.removeAll();
         changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
         changeUsernameContent.add(Theme.label("New Username:", LABEL_FONT_SIZE, Theme.INK));
@@ -277,6 +277,8 @@ public final class AccountView extends JPanel {
     }
 
     private void showPasswordEditor() {
+        viewModel.setChangePasswordSuccess(false);
+        viewModel.setChangePasswordMessage("");
         passwordField.setText("");
         confirmPasswordField.setText("");
         changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -306,8 +308,7 @@ public final class AccountView extends JPanel {
         changePasswordContent.add(passwordStatusLabel);
         changePasswordContent.revalidate();
         changePasswordContent.repaint();
-        changePasswordButtons.remove(confirmPasswordButton);
-        changePasswordButtons.remove(cancelPasswordButton);
+        changePasswordButtons.removeAll();
         changePasswordButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
         changePasswordButtons.add(changePasswordButton);
         changePasswordButtons.revalidate();
@@ -315,6 +316,8 @@ public final class AccountView extends JPanel {
     }
 
     private void showDeleteConfirmation() {
+        viewModel.setDeleteAccountSuccess(false);
+        viewModel.setDeleteAccountMessage("");
         deleteAccountContent.setLayout(new FlowLayout(FlowLayout.LEFT));
         deleteAccountContent.add(Theme.label("Are you sure? This action cannot be undone.", LABEL_FONT_SIZE,
             Theme.INK));
@@ -353,8 +356,9 @@ public final class AccountView extends JPanel {
     }
 
     private void generatePlan(final PersonalPlanController controller) {
+        viewModel.setPersonalPlanMessage("");
         personalPlanGenerateButton.setEnabled(false);
-        personalPlanStatusLabel.setText("Loading");
+        personalPlanLoadingLabel.setText("Loading");
         final Timer loadingTimer = new Timer(500, entryValue -> updateLoadingLabel());
         final SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
             @Override
@@ -374,12 +378,12 @@ public final class AccountView extends JPanel {
     }
 
     private void updateLoadingLabel() {
-        final String current = personalPlanStatusLabel.getText();
+        final String current = personalPlanLoadingLabel.getText();
         if (current.endsWith("...")) {
-            personalPlanStatusLabel.setText("Loading");
+            personalPlanLoadingLabel.setText("Loading");
         }
         else {
-            personalPlanStatusLabel.setText(current + ".");
+            personalPlanLoadingLabel.setText(current + ".");
         }
     }
 
@@ -387,62 +391,47 @@ public final class AccountView extends JPanel {
         loadingTimer.stop();
         try {
             worker.get();
-            personalPlanViewButton.doClick();
+            if (viewModel.getPersonalPlanSuccess()) {
+                personalPlanViewButton.doClick();
+            }
+            personalPlanLoadingLabel.setText("");
         }
         catch (final InterruptedException interrupted) {
             Thread.currentThread().interrupt();
-            personalPlanStatusLabel.setText("Please try again");
+            personalPlanLoadingLabel.setText("Please try again");
         }
         catch (final ExecutionException failure) {
-            personalPlanStatusLabel.setText("Please try again");
+            personalPlanLoadingLabel.setText("Please try again");
         }
         finally {
             personalPlanGenerateButton.setEnabled(true);
         }
     }
 
-    private void render(final AccountState state) {
+    private void render() {
 
-        accountLabel.setText(state.getUsername());
+        accountLabel.setText(viewModel.getUsername());
 
-        personalPlanStatusLabel.setText(state.getPersonalPlanMessage());
+        personalPlanStatusLabel.setText(viewModel.getPersonalPlanMessage());
 
-        if (state.getChangeUsernameSuccess()) {
+        if (viewModel.getChangeUsernameSuccess()) {
             cancelUsernameButton.doClick();
-            state.setChangeUsernameSuccess(false);
         }
-        usernameStatusLabel.setText(state.getChangeUsernameMessage());
+        usernameStatusLabel.setText(viewModel.getChangeUsernameMessage());
 
-        if (state.getChangePasswordSuccess()) {
+        if (viewModel.getChangePasswordSuccess()) {
             cancelPasswordButton.doClick();
-            state.setChangePasswordSuccess(false);
         }
-        passwordStatusLabel.setText(state.getChangePasswordMessage());
+        passwordStatusLabel.setText(viewModel.getChangePasswordMessage());
 
-        if (state.getDeleteAccountSuccess()) {
+        if (viewModel.getDeleteAccountSuccess()) {
             back.doClick();
             cancelDeleteAccountButton.doClick();
-            state.setDeleteAccountSuccess(false);
         }
-        deleteAccountLabel.setText(state.getDeleteAccountMessage());
+        deleteAccountLabel.setText(viewModel.getDeleteAccountMessage());
 
         personalPlan.revalidate();
         personalPlan.repaint();
-
-    }
-
-    private void render(final IsLoggedInState state) {
-
-        accountLabel.setText(state.getUsername());
-        viewModel
-            .getState()
-            .setUsername(state.getUsername());
-        if (!state.getIsLoggedIn()) {
-            resetAccountView();
-            viewModel
-                .getState()
-                .logoutResetState();
-        }
 
     }
 
