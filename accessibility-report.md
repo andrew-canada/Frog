@@ -1,13 +1,29 @@
-1. For each Principle of Universal Design, write 2-3 sentences — or point form notes — explaining which features of your
-   program adhere to that principle. If you do not have any such features, you can either:
-
-(a) Describe features that you could implement in the future that would adhere to the principle or
-
-(b) Explain why the principle does not apply to a program like yours.
-
-2. Write a paragraph (3-6 sentences) about who you would market your program towards, if you were to sell or license
-   your program to customers. This could be a specific category of users, such as "students", or more vague, such as "
-   people who like games". Try to give a bit more detail along with the category.
-
-3. Write a paragraph about whether or not your program is less likely to be used by certain demographics. Your
-   discussion here should be informed by the content of our embedded ethics modules this term.
+# 1. Universal Design
+## Flexibility in Use
+### Facilitate the user’s accuracy and precision.
+Buttons are made fairly large, with sufficient space between them; users with impaired fine motor skills or
+high mouse sensitivity can use with little difficulty.
+## Simple and Intuitive Use
+### Avoid segregating or stigmatize any users
+Every user is anonymous, and no features that could allow users to segregate or stigmatize their peers exist.
+### Make provisions for privacy, security, and safety equally available to all users.
+Every user has the same level of privacy, security, and safety. All passwords are hashed, and only info stored about users is used to improve their own UX.
+### Make the design appealing to all users.
+Admittedly, the design of FlushID is fairly bland; however, there is nothing here that would make it unappealing to any user.
+## Perceptible Information
+### Multi-modal redundant presentation of essential information
+Washroom location information is given in both sidebar (text-based) and central map (pictoral), and clicking on a washroom on either one of the user interface elements will also focus the other onto the selected washroom.
+## Tolerance for Error
+### Arrange elements to minimize hazards and errors
+Buttons are made fairly large, with sufficient space between them; users with impaired fine motor skills or high mouse sensitivity can use with little difficulty. Changing your position by clicking on the requires a right-click, as opposed to left-click for everything else; this makes it less likely that a user will mistakenly change their location.
+### Provide fail safe features.
+Except for the feature described above, every use case has a cancel or exit button. Provided the user only accidentally presses one thing, they can recover in just a few seconds.
+## Low Physical Effort
+### Use reasonable operating forces
+Aside from writing reviews and logging in, the entire program can be navigated by mouse, meaning it’s easy for people who have difficulty using a keyboard.
+## Size and Space for Approach and Use
+There is little we can do to improve satisfaction of this principle, as all of its sub-principles are associated with hardware and the physical space surrounding the user, which is impossible to change through software alone; non-applicable.
+# 2. Target Audience
+Currently, our program would be marketed towards people who spend time at UofT St. George campus, including students, faculty members, and other university staff. Students are a particularly major target audience since the app includes a feature that uses student timetables to generate washroom schedules. Visitors are also a big target audience, as they would likely be less familiar with the washroom situation on campus. In the future, generalizing the app to work with all public washrooms would expand the target audience to anyone who cares about washroom quality.
+# 3. Is this program is less likely to be used by certain demographics?
+Our program UI has relatively small text, no visual icons, no option for dark mode, and no text-to-speech feature, which could make it difficult for visually impaired users or users with light sensitivity. It also does not rescale with screen size, so it would be inconvenient to use on smaller screens like phones. Moreover, the program requires a mouse/trackpad/touchscreen and internet connection to function, which could further alienate people with poor or inconsistent access to technology. 
