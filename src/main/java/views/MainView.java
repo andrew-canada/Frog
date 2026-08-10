@@ -11,6 +11,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.MouseListener;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -925,6 +926,13 @@ public final class MainView extends JPanel {
 
         public GeoPosition convertPointToGeoPosition(final Point2D parameterValue) {
             return viewer.convertPointToGeoPosition(parameterValue);
+        }
+
+        @Override
+        public void addMouseListener(final MouseListener listener) {
+            if (viewer != null) {
+                viewer.addMouseListener(listener);
+            }
         }
 
         private record PointData(GeoPoint geoPoint, String label, Color color, String code, String washroomId,

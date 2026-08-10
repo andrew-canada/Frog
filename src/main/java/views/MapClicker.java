@@ -12,8 +12,16 @@ import java.util.function.BiConsumer;
 
 import org.jxmapviewer.viewer.GeoPosition;
 
+/**
+ * Action Listener for the "Right Click on map to select location" button in the LocationInputDialog.
+ *
+ * <p>Adds a MouseAdapter to the given map which listens for right clicks, converts the coordinates from the
+ * mouse coordinates to latitude and longitude, and runs onSave on the latitude and longitude before removing
+ * itself as a MouseAdapter.</p>
+ */
+
 class MapClicker implements ActionListener {
-    private MainView.CampusMapPanel map;
+    private final MainView.CampusMapPanel map;
     private BiConsumer<Double, Double> onSave;
     private Window frame;
 
@@ -23,7 +31,6 @@ class MapClicker implements ActionListener {
 
     @Override
     public void actionPerformed(final ActionEvent e) {
-        System.out.println("button clicked!");
         class MapClickListener extends MouseAdapter {
             private final MainView.CampusMapPanel map;
             private final BiConsumer<Double, Double> onSave;

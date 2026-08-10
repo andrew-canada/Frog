@@ -19,6 +19,9 @@ import javax.swing.SwingWorker;
 
 import entity.GeoPoint;
 
+/**
+ * Modal dialog for entering a location by address, coordinates, or a map click.
+ */
 final class LocationInputDialog extends JDialog {
     private static final int COORDINATE_FIELD_COLUMNS = 10;
     private static final int ADDRESS_FIELD_COLUMNS = 28;

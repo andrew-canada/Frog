@@ -32,6 +32,10 @@ import entity.Washroom;
 import use_case.filter.WashroomFilterCriteria;
 import use_case.filter.WashroomFilterRepository;
 
+/**
+ * MongoDB adapter for washroom records. Each document contains its building reference, location, gender,
+ * accessibility, fixture counts, and description; review summaries are hydrated separately.
+ */
 public class DBWashroomDataAccessObject extends DBDataAccessObject implements WashroomFilterRepository {
     private static final String FIELD_BUILDINGID = "buildingID";
     private static final String FIELD_BUILDINGCODE = "buildingCode";
@@ -269,7 +273,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
             result = entity.Washroom.Gender.valueOf(normalized);
         }
         catch (final IllegalArgumentException ignored) {
-            result = entity.Washroom.Gender.ALL_GENDER;
+            result = entity.Washroom.Gender.NO_INFO;
         }
         return result;
     }
