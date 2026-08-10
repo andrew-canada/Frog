@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CheckStyle-IDEA" serialisationVersion="2">
-    <checkstyleVersion>13.4.1</checkstyleVersion>
+    <checkstyleVersion>13.4.2</checkstyleVersion>
     <scanScope>JavaOnly</scanScope>
     <copyLibs>true</copyLibs>
     <option name="thirdPartyClasspath" />
@@ -20,6 +20,7 @@
           </option>
         </ConfigurationLocation>
         <ConfigurationLocation id="bundled-google-checks" type="BUNDLED" scope="All" description="Google Checks">(bundled)</ConfigurationLocation>
+        <ConfigurationLocation id="ed660edb-fa47-4331-8d59-e3a102d17ebf" type="LOCAL_FILE" scope="All" description="Frog-checks">C:\Users\BRAVO\Documents\0University of Toronto\Summer 2026\CSC207\Frog\mystyle.xml</ConfigurationLocation>
         <ConfigurationLocation id="1fda2cc4-3d35-4e17-9086-e05691ce58bd" type="LOCAL_FILE" scope="All" description="project">C:\Users\sheen\IdeaProjects\Frog\mystyle.xml</ConfigurationLocation>
       </list>
     </option>
