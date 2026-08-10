@@ -28,6 +28,7 @@ public class FilterController {
             case Washroom.Gender.WOMEN -> "WOMEN";
             case Washroom.Gender.MEN -> "MEN";
             case Washroom.Gender.WOMEN_AND_MEN -> "WOMEN_AND_MEN";
+            case Washroom.Gender.NO_INFO -> "NO_INFO";
             case null -> null;
         };
 

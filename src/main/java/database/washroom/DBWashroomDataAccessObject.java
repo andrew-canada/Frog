@@ -269,11 +269,14 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
                 else if (genderStr.equals(entity.Washroom.Gender.WOMEN.toString())) {
                     gender = entity.Washroom.Gender.WOMEN;
                 }
-                else if (genderStr.equals("ALL_GENDER")) {
+                else if (genderStr.equals(Washroom.Gender.ALL_GENDER.toString())) {
                     gender = entity.Washroom.Gender.ALL_GENDER;
                 }
+                else if (genderStr.equals(Washroom.Gender.WOMEN_AND_MEN.toString())) {
+                    gender = entity.Washroom.Gender.WOMEN_AND_MEN;
+                }
                 else {
-                    gender = entity.Washroom.Gender.ALL_GENDER;
+                    gender = entity.Washroom.Gender.NO_INFO;
                 }
 
                 final boolean accessible = obj.getBoolean("accessible");
