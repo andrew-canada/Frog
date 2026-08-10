@@ -1,41 +1,39 @@
-# 1. Universal Design
-## Flexibility in Use
-### Facilitate the user’s accuracy and precision.
-Buttons are made fairly large, with sufficient space between them; users with impaired fine motor skills or
-high mouse sensitivity can use with little difficulty.
-### Avoid segregating or stigmatize any users
-Every user is anonymous, and no features that could allow users to segregate or stigmatize their peers exist.
-### Make provisions for privacy, security, and safety equally available to all users.
-Every user has the same level of privacy, security, and safety. All passwords are hashed, and only info stored about users is used to improve their own UX.
+# FlushID Accessibility Report
 
-## Simple and Intuitive Use
-### Make the design appealing to all users.
-Admittedly, the design of FlushID is fairly bland; however, there is nothing here that would make it unappealing to any user.
-### Provide adaptability to the user’s pace
-There are no time-sensitive actions in flushID; there are no automatically closing pop-ups or quick-time events, and users can go as slow as they like.
+## 1. Principles of Universal Design
 
-## Perceptible Information
-### Multi-modal redundant presentation of essential information
-Washroom location information is given in both sidebar (text-based) and central map (pictoral), and clicking on a washroom on either one of the user interface elements will also focus the other onto the selected washroom.
+### Equitable Use
 
-### Provide compatibility with a variety of techniques or devices used by people with sensory limitations.
+Guests and account holders receive the same essential washroom, review, route, filter, sorting, and live-status information. Accounts add optional personalization and review ownership without hiding core campus information, while moderator-only destructive actions are restricted to protect every user's safety and data integrity. Reviews are anonymous to other viewers to protect users from discrimination. Every user has the same level of privacy, security, and safety. All passwords are hashed, and only info stored about users is used to improve their own UX.
 
-Information about every washroom and review is conveyed by text, meaning screen readers can read aloud our program without skipping over information.
+### Flexibility in Use
 
-## Tolerance for Error
-### Arrange elements to minimize hazards and errors
-Buttons are made fairly large, with sufficient space between them; users with impaired fine motor skills or high mouse sensitivity can use with little difficulty. Changing your position by clicking on the requires a right-click, as opposed to left-click for everything else; this makes it less likely that a user will mistakenly change their location.
-### Provide fail safe features.
-Except for the feature described above, every use case has a cancel or exit button. Provided the user only accidentally presses one thing, they can recover in just a few seconds.
-## Low Physical Effort
-### Use reasonable operating forces
-Aside from writing reviews and logging in, the entire program can be navigated by mouse, meaning it’s easy for people who have difficulty using a keyboard.
-### Minimize sustained physical effort
-This is "baked into" the fact that our program is a PC app. Mouse and keyboard do not require sustained physical effort.
+Users can find a destination by selecting the map or entering an address, then narrow results with independent filters and sorting choices. Large, spaced controls support pointing accuracy, but keyboard navigation and configurable text scaling should be added so mouse use is not the only efficient interaction method.
 
-## Size and Space for Approach and Use
-There is little we can do to improve satisfaction of this principle, as all of its sub-principles are associated with hardware and the physical space surrounding the user, which is impossible to change through software alone; non-applicable.
-# 2. Target Audience
-Currently, our program would be marketed towards people who spend time at UofT St. George campus, including students, faculty members, and other university staff. Students are a particularly major target audience since the app includes a feature that uses student timetables to generate washroom schedules. Visitors are also a big target audience, as they would likely be less familiar with the washroom situation on campus. In the future, generalizing the app to work with all public washrooms would expand the target audience to anyone who cares about washroom quality.
-# 3. Is this program is less likely to be used by certain demographics?
-Our program UI has relatively small text, no visual icons, no option for dark mode, and no text-to-speech feature, which could make it difficult for visually impaired users or users with light sensitivity. It also does not rescale with screen size, so it would be inconvenient to use on smaller screens like phones. Moreover, the program requires a mouse/trackpad/touchscreen and internet connection to function, which could further alienate people with poor or inconsistent access to technology. 
+### Simple and Intuitive Use
+
+Consistent labels, Back/Cancel actions, and synchronized map-and-list selection make the major workflows predictable. There are no time sensitive actions, so users can go as slow as they like. Filters, sorts, reviews, and route results are shown near the washroom context they affect; a future onboarding hint should explain less discoverable gestures such as changing the starting location.
+
+### Perceptible Information
+
+Washroom location is presented redundantly through a labelled list (text-based) and a synchronized map (pictoral), and clicking on a washroom on either one will focus the other onto the selected washroom. Live status is available as text rather than by colour alone. Route distance and time, chart labels, heatmap legends, validation messages, and confirmation text provide additional non-colour cues; screen-reader labels and text alternatives remain important future work.
+
+### Tolerance for Error
+
+Input is validated before account changes or generated plans are persisted, and Back/Cancel actions let users leave workflows without committing changes. Destructive moderator actions are authorization-checked and refresh the queue after completion; confirmation dialogs and an undo window would further reduce the effect of accidental deletion. Buttons are made fairly large, with sufficient space between them; users with impaired fine motor skills or high mouse sensitivity can use them with little difficulty.
+
+### Low Physical Effort
+
+Common tasks—selecting a washroom, changing a sort, applying a filter, and opening reviews—require only a small number of actions. The current mouse-heavy interface can still create effort for some users, so keyboard shortcuts, focus traversal, and fewer precision-dependent interactions are priorities.
+
+### Size and Space for Approach and Use
+
+Buttons are relatively large and separated, reducing accidental activation for users with limited fine-motor precision. The desktop layout does not yet scale well to small or high-DPI displays, so responsive panels, resizable text, and testing at multiple scaling settings are needed.
+
+## 2. Target Audience
+
+FlushID is intended for students, faculty, staff, and visitors who spend time on the University of Toronto St. George campus. Students are a key audience because timetable-based planning can recommend convenient washrooms between scheduled classes. Visitors also benefit because they may not know building locations, accessibility details, or current conditions. A future multi-campus or public-washroom dataset could broaden the audience to anyone who needs reliable washroom information.
+
+## 3. Demographics That May Be Excluded
+
+The current interface may create disability-related exclusion for people who use screen readers, keyboard-only navigation, large text, high-contrast themes, or speech input because those modes are not fully supported. Small fixed-layout text and colour-heavy visualizations can also create barriers for people with low vision, colour-vision differences, or light sensitivity. Requiring a desktop device, pointing hardware, and a stable internet connection can reinforce the digital divide for people with limited or inconsistent access to technology. These are barriers produced by the interaction between the software artifact and the user's environment—not deficits in the user—and should guide future accessibility testing with affected communities. 
