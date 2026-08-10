@@ -73,4 +73,29 @@ final class JUnitBridgeTest {
     void personalPlan() {
         PersonalPlanInteractorTest.run();
     }
+
+    @Test
+    void filtering() {
+        FilterInteractorTest.run();
+    }
+
+    @Test
+    void changeUsername() {
+        ChangeUsernameInteractorTest.run();
+    }
+
+    @Test
+    void changePassword() {
+        ChangePasswordInteractorTest.run();
+    }
+
+    @Test
+    void deleteAccount() {
+        DeleteAccountInteractorTest.run();
+    }
+
+    @Test
+    void domainModels() {
+        DomainModelTest.run();
+    }
 }
