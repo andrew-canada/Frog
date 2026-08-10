@@ -5,6 +5,7 @@ import org.bson.Document;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+import configuration.ApplicationEnvironment;
 
 /**
  * Owns the application's single MongoDB client and exposes its configured database.
@@ -50,15 +51,15 @@ public class DBDataAccessObject implements AutoCloseable {
     }
 
     private static String requiredUri() {
-        final String uri = System.getenv(URI_ENV);
+        final String uri = ApplicationEnvironment.value(URI_ENV);
         if (uri == null || uri.isBlank()) {
-            throw new IllegalStateException("Set the " + URI_ENV + " environment variable before starting FlushID.");
+            throw new IllegalStateException("Configure " + URI_ENV + " before starting FlushID.");
         }
         return uri;
     }
 
     private static String configuredDatabaseName() {
-        final String name = System.getenv(DATABASE_ENV);
+        final String name = ApplicationEnvironment.value(DATABASE_ENV);
         final String result;
         if (name == null || name.isBlank()) {
             result = "FlushID";

@@ -2,6 +2,7 @@ package app;
 
 import java.util.Optional;
 
+import configuration.ApplicationEnvironment;
 import database.DBDataAccessObject;
 import database.enrollment.DBEnrollmentDataAccessObject;
 import database.review.DBReviewDataAccessObject;
@@ -39,9 +40,9 @@ final class ApplicationInfrastructure {
     }
 
     private static String requiredEnvironment(final String name) {
-        final String value = System.getenv(name);
+        final String value = ApplicationEnvironment.value(name);
         if (value == null || value.isBlank()) {
-            throw new IllegalStateException("Set the " + name + " environment variable before starting FlushID.");
+            throw new IllegalStateException("Configure " + name + " before starting FlushID.");
         }
         return value;
     }

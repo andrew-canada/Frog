@@ -33,7 +33,7 @@ public final class GeminiPersonalPlanGenerator implements PersonalPlanGenerator 
                            final List<Washroom> availableWashrooms) {
         final String key = apiKey.get();
         if (key == null || key.isBlank()) {
-            throw new IllegalStateException("Set " + API_KEY_ENV + " to generate a personal plan");
+            throw new IllegalStateException("Configure " + API_KEY_ENV + " to generate a personal plan");
         }
         final Schema washroomSchema = Schema
             .builder()

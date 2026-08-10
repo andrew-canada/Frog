@@ -44,8 +44,7 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
 
     public GraphhopperRouteDataAccessObject(final HttpClient httpClient, final URI endpoint, final String apiKey) {
         if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalArgumentException(
-                "Set the " + API_KEY_ENV + " environment variable before starting FlushID.");
+            throw new IllegalArgumentException("Configure " + API_KEY_ENV + " before starting FlushID.");
         }
         this.httpClient = httpClient;
         this.endpoint = endpoint;
