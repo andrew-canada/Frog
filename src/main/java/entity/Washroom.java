@@ -156,6 +156,8 @@ public final class Washroom {
     public enum Gender {
         ALL_GENDER,
         WOMEN,
-        MEN
+        MEN,
+        WOMEN_AND_MEN,
+        NO_INFO
     }
 }

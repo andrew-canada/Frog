@@ -23,6 +23,18 @@ import entity.MaintenanceIssue;
 import entity.StatusReport;
 import use_case.port.StatusReportRepository;
 
+/**
+ * Status reports are represented in the database as follows:
+ *  - _id: MongoDB required attribute, an ObjectID representing the unique object.
+ *  - washroomId: String, the _id field of the washroom the status report is for.
+ *  - username: String or null, the username of the user who made the report.
+ *  - busyness: Integer 1-5 representing busyness.
+ *  - cleanliness: Integer 1-5 representing cleanliness.
+ *  - issue: String in all caps such as "NONE", "OUT_OF_SOUP" corresponding to a MaintenanceIssue.
+ *  - timestamp: Datetime when the report was made.
+ *  - hourOfDay: Integer, hour in 24 hour time.
+ */
+
 public final class DBStatusReportDataAccessObject implements StatusReportRepository {
     private static final String FIELD_WASHROOMID = "washroomId";
     private static final String FIELD_USERNAME = "username";

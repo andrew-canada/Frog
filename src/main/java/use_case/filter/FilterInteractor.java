@@ -45,10 +45,10 @@ public class FilterInteractor implements FilterInputBoundary {
     @Override
     public void execute(final FilterInputData inputData) {
         final String buildingCode = selectedBuildingCode(inputData.washroomID());
-        final Washroom.Gender gender = parseGender(inputData.gender());
+        final List<Washroom.Gender> genders = parseGenders(inputData.gender());
         final boolean validSelection = inputData.washroomID().isEmpty()
             || buildingCode != null;
-        final boolean validGender = inputData.gender() == null || gender != null;
+        final boolean validGender = inputData.gender() == null || genders != null;
         if (!validSelection) {
             presenter.presentError("Invalid Washroom Selected.");
         }
@@ -57,7 +57,7 @@ public class FilterInteractor implements FilterInputBoundary {
         }
         else {
             final List<Washroom> initialWashrooms = washroomDao.findMatching(
-                new WashroomFilterCriteria(inputData.accessible(), gender, buildingCode, permittedWashroomNames));
+                new WashroomFilterCriteria(inputData.accessible(), genders, buildingCode, permittedWashroomNames));
             if (applyUserFilters(initialWashrooms, inputData)) {
                 filterByCurrentStatus(initialWashrooms, inputData);
                 presenter.present(new FilterOutputData(true, initialWashrooms, inputData.latitude(),
@@ -78,11 +78,17 @@ public class FilterInteractor implements FilterInputBoundary {
         return result;
     }
 
-    private static Washroom.Gender parseGender(final String value) {
-        Washroom.Gender result = null;
+    private static List<Washroom.Gender> parseGenders(final String value) {
+        List<Washroom.Gender> result = null;
         if (value != null) {
             try {
-                result = Washroom.Gender.valueOf(value);
+                final Washroom.Gender requestedGender = Washroom.Gender.valueOf(value);
+                if (requestedGender == Washroom.Gender.WOMEN || requestedGender == Washroom.Gender.MEN) {
+                    result = List.of(requestedGender, Washroom.Gender.WOMEN_AND_MEN);
+                }
+                else {
+                    result = List.of(requestedGender);
+                }
             }
             catch (final IllegalArgumentException invalidGender) {
                 result = null;

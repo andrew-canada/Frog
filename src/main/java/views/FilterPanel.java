@@ -18,6 +18,7 @@ import entity.Washroom;
 
 public final class FilterPanel extends JPanel {
     private static final int MEN_FILTER_VALUE = 3;
+    private static final int WOMEN_AND_MEN_FILTER_VALUE = 4;
     private static final int LABEL_FONT_SIZE = 12;
     private static final int CONTROL_GAP = 8;
     private static final int SECTION_GAP = 10;
@@ -26,7 +27,8 @@ public final class FilterPanel extends JPanel {
     private final JSlider cleanliness = new JSlider(1, 5, 1);
     private final JCheckBox accessible = new JCheckBox("Accessible only");
     private final JCheckBox ownReviews = new JCheckBox("Only washrooms that you've reviewed");
-    private final JComboBox<String> gender = new JComboBox<>(new String[] {"Any gender", "All-gender", "Women", "Men"});
+    private final JComboBox<String> gender = new JComboBox<>(new String[] {"Any gender", "All-gender", "Women",
+        "Men", "Women and Men"});
     private final JCheckBox filterSelectedBuilding = new JCheckBox("Filter to currently selected building");
     private final JCheckBox personalPlan = new JCheckBox("Only washrooms in your personal plan");
 
@@ -159,6 +161,7 @@ public final class FilterPanel extends JPanel {
             case 1 -> Washroom.Gender.ALL_GENDER;
             case 2 -> Washroom.Gender.WOMEN;
             case MEN_FILTER_VALUE -> Washroom.Gender.MEN;
+            case WOMEN_AND_MEN_FILTER_VALUE -> Washroom.Gender.WOMEN_AND_MEN;
             default -> null;
         };
     }

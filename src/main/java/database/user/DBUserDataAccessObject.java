@@ -26,6 +26,12 @@ import use_case.moderate_reviews.ModeratorDataAccessInterface;
 import use_case.port.CurrentUserSession;
 import use_case.port.UserRepository;
 
+/**
+ * User data is represented in the database as follows:
+ *  - _id: MongoDB required attribute, an ObjectID representing the unique user.
+ *  - username: String representing the username for the user.
+ *  - passwordHash: String representing hashed password.
+ */
 public class DBUserDataAccessObject extends DBDataAccessObject
     implements UserRepository, CurrentUserSession, ModeratorDataAccessInterface {
     private static final String FIELD_USERNAME = "username";

@@ -358,9 +358,12 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
             conditions.add(new Condition<>(FIELD_ACCESSIBLE, Operator.EQ, true));
         }
         if (criteria.gender() != null) {
-            conditions.add(new Condition<>(FIELD_GENDER, Operator.EQ, criteria
+            final List<String> genderNames = criteria
                 .gender()
-                .name()));
+                .stream()
+                .map(Enum::name)
+                .toList();
+            conditions.add(new CollectionCondition<>(FIELD_GENDER, Operator.IN, genderNames));
         }
         if (criteria.buildingCode() != null && !criteria
             .buildingCode()
