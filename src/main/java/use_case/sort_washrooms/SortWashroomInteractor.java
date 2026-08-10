@@ -7,25 +7,34 @@ import entity.Washroom;
 import use_case.port.WashroomRepository;
 
 public class SortWashroomInteractor implements SortWashroomsInputBoundary {
-    private final WashroomRepository washroomDAO;
+    private static final int EARTH_RADIUS_METERS = 6_371_000;
+    private final WashroomRepository washroomRepository;
     private final SortWashroomsOutputBoundary presenter;
 
-    public SortWashroomInteractor(final WashroomRepository washroomDAO, final SortWashroomsOutputBoundary presenter) {
-        this.washroomDAO = washroomDAO;
+    public SortWashroomInteractor(final WashroomRepository washroomRepository,
+                                  final SortWashroomsOutputBoundary presenter) {
+        this.washroomRepository = washroomRepository;
         this.presenter = presenter;
     }
 
-    private static double distance(final double a, final double b, final double c, final double d) {
-        final double x = Math.toRadians(d - b) * Math.cos(Math.toRadians((a + c) / 2));
-        final double y = Math.toRadians(c - a);
-        return Math.sqrt(x * x + y * y) * 6_371_000;
+    private static double distance(final double firstValue, final double secondValue, final double thirdValue,
+        final double fourthValue) {
+        final double averageLatitude = (firstValue + thirdValue) / 2;
+        final double x = Math.toRadians(fourthValue - secondValue) * Math.cos(Math.toRadians(averageLatitude));
+        final double y = Math.toRadians(thirdValue - firstValue);
+        return Math.sqrt(x * x + y * y) * EARTH_RADIUS_METERS;
     }
 
     @Override
     public void execute(final SortWashroomInputData inputData) {
         final Comparator<entity.Washroom> comparator;
-        final WashroomSortOrder sortOrder =
-            inputData.sortOrder() == null ? WashroomSortOrder.ALPHABETICAL : inputData.sortOrder();
+        final WashroomSortOrder sortOrder;
+        if (inputData.sortOrder() == null) {
+            sortOrder = WashroomSortOrder.ALPHABETICAL;
+        }
+        else {
+            sortOrder = inputData.sortOrder();
+        }
         comparator = switch (sortOrder) {
             case HIGHEST_RATED -> Comparator
                 .comparing((entity.Washroom washroom) -> {
@@ -51,7 +60,8 @@ public class SortWashroomInteractor implements SortWashroomsInputBoundary {
                 .thenComparing(entity.Washroom::name, String.CASE_INSENSITIVE_ORDER)
                 .thenComparing(entity.Washroom::id);
         };
-        final ArrayList<Washroom> sortedWashroom = new ArrayList<>(washroomDAO.getByIds(inputData.washroomIdList()));
+        final ArrayList<Washroom> sortedWashroom = new ArrayList<>(washroomRepository
+            .getByIds(inputData.washroomIdList()));
         sortedWashroom.sort(comparator);
         presenter.present(new SortWashroomsOutputData(true, sortedWashroom, inputData.lat(), inputData.lng()));
     }

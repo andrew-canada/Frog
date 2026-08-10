@@ -12,12 +12,14 @@ import javax.swing.JTextField;
 
 import interface_adapter.login.SignupController;
 
-
 public final class SignupDialog extends JDialog {
+    private static final int GRID_GAP = 10;
+    private static final int FORM_ROWS = 4;
+
     public SignupDialog(final Window owner, final SignupController controller) {
         super(owner, "Create account", ModalityType.APPLICATION_MODAL);
         final JPanel p = Theme.page();
-        p.setLayout(new GridLayout(4, 2, 10, 10));
+        p.setLayout(new GridLayout(FORM_ROWS, 2, GRID_GAP, GRID_GAP));
 
         final JTextField name = new JTextField();
         final JPasswordField password = new JPasswordField();
@@ -27,10 +29,10 @@ public final class SignupDialog extends JDialog {
         p.add(password);
         final JButton cancel = Theme.button("Cancel");
         final JButton create = Theme.primary("Create account");
-        cancel.addActionListener(e -> {
+        cancel.addActionListener(entryValue -> {
             dispose();
         });
-        create.addActionListener(e -> {
+        create.addActionListener(entryValue -> {
             controller.execute(name.getText(), new String(password.getPassword()));
             dispose();
         });

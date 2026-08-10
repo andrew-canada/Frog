@@ -14,6 +14,17 @@ public final class SortWashroomController {
         this.interactor = interactor;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param latitude parameter value.
+     *
+     * @param longitude parameter value.
+     *
+     * @param sortBy parameter value.
+     *
+     * @param washroomIdList parameter value.
+     */
     public void execute(final String sortBy, final List<String> washroomIdList, final double latitude,
                         final double longitude) {
         CompletableFuture.runAsync(() -> {

@@ -1,5 +1,6 @@
 package app;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.json.Json;
+import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -29,7 +31,7 @@ final class CampusStartup {
         if (input == null) {
             throw new IllegalStateException("Missing data/washrooms.json resource.");
         }
-        try (input; final JsonReader reader = Json.createReader(input)) {
+        try (input; JsonReader reader = Json.createReader(input)) {
             return Set.copyOf(reader
                 .readArray()
                 .stream()
@@ -38,7 +40,7 @@ final class CampusStartup {
                 })
                 .toList());
         }
-        catch (final Exception failure) {
+        catch (final IOException | JsonException failure) {
             throw new IllegalStateException("Could not load data/washrooms.json.", failure);
         }
     }

@@ -1,5 +1,6 @@
 package database.personal_plan;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -10,7 +11,7 @@ import use_case.account.personal_plan.CalendarContentReader;
  */
 public final class FileCalendarContentReader implements CalendarContentReader {
     @Override
-    public String read(final String calendarPath) throws Exception {
+    public String read(final String calendarPath) throws IOException {
         return Files.readString(Path.of(calendarPath));
     }
 }

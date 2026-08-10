@@ -1,8 +1,8 @@
 package interface_adapter.status_report;
 
-import interface_adapter.common.ViewModel;
+import interface_adapter.common.AbstractViewModel;
 
-public final class StatusReportViewModel extends ViewModel<StatusReportViewModel.State> {
+public final class StatusReportViewModel extends AbstractViewModel<StatusReportViewModel.State> {
     public StatusReportViewModel() {
         super(new State(false, 0, ""));
     }

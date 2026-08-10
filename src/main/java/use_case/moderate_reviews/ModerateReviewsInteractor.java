@@ -18,6 +18,7 @@ import use_case.port.WashroomRepository;
  * review or dismiss its reports.
  */
 public final class ModerateReviewsInteractor implements ModerateReviewsInputBoundary {
+    private static final int EM_DASH_CODE_POINT = 8212;
 
     private final ReportedReviewsDataAccessInterface reports;
     private final ReviewAdminDataAccessInterface reviews;
@@ -43,21 +44,21 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
 
     @Override
     public void removeReview(final ModerateReviewsInputData input) {
-        if (denyUnlessModerator(input)) {
-            return;
+        final boolean authorized = !denyUnlessModerator(input);
+        if (authorized) {
+            reviews.deleteReview(input.reviewId());
+            reports.deleteReportsForReview(input.reviewId());
+            present("Review removed.");
         }
-        reviews.deleteReview(input.reviewId());
-        reports.deleteReportsForReview(input.reviewId());
-        present("Review removed.");
     }
 
     @Override
     public void dismissReports(final ModerateReviewsInputData input) {
-        if (denyUnlessModerator(input)) {
-            return;
+        final boolean authorized = !denyUnlessModerator(input);
+        if (authorized) {
+            reports.deleteReportsForReview(input.reviewId());
+            present("Reports dismissed.");
         }
-        reports.deleteReportsForReview(input.reviewId());
-        present("Reports dismissed.");
     }
 
     /**
@@ -65,22 +66,28 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
      * moderator, presents an empty queue with a "Not authorized." message (so no
      * reported reviews are exposed) and reports that the action was blocked.
      *
-     * @return true if the action must be aborted
+     * @param input parameter value.
+     * @return true if the action must be aborted.
      */
     private boolean denyUnlessModerator(final ModerateReviewsInputData input) {
+        final boolean result;
         if (moderators.isModerator(input.moderatorUsername())) {
-            return false;
+            result = false;
         }
-        presenter.present(new ModerateReviewsOutputData(java.util.List.of(), "Not authorized."));
-        return true;
+        else {
+            presenter.present(new ModerateReviewsOutputData(java.util.List.of(), "Not authorized."));
+            result = true;
+        }
+        return result;
     }
 
     private void present(final String message) {
         presenter.present(new ModerateReviewsOutputData(buildQueue(), message));
     }
 
+    // Group reports by the review they target, preserving first-seen order.
+
     private List<ReportedReview> buildQueue() {
-        // Group reports by the review they target, preserving first-seen order.
         final Map<String, List<Report>> byReview = new LinkedHashMap<>();
         for (final Report report : reports.getAllReports()) {
             byReview
@@ -98,17 +105,18 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
             if (review == null) {
                 continue;
             }
+            // Most-reported first so the worst offenders are at the top of the moderator queue.
             queue.add(toReportedReview(review, entry.getValue()));
         }
-        // Most-reported first so the worst offenders are at the top of the moderator queue.
         queue.sort(Comparator
             .comparingInt(ReportedReview::totalReports)
             .reversed());
         return queue;
     }
 
+    // Count how many reports cited each reason, preserving first-seen order.
+
     private ReportedReview toReportedReview(final Review review, final List<Report> reviewReports) {
-        // Count how many reports cited each reason, preserving first-seen order.
         final Map<String, Integer> reasonTotals = new LinkedHashMap<>();
         final List<ReportedReview.AdditionalDetail> details = new ArrayList<>();
         for (final Report report : reviewReports) {
@@ -118,11 +126,17 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
             if (report.details() != null && !report
                 .details()
                 .isBlank()) {
-                final String reason = report
+                final String reason;
+                if (report
                     .reasons()
-                    .isEmpty() ? "Other" : report
-                                           .reasons()
-                                           .get(0);
+                    .isEmpty()) {
+                    reason = "Other";
+                }
+                else {
+                    reason = report
+                        .reasons()
+                        .get(0);
+                }
                 details.add(new ReportedReview.AdditionalDetail(reason, report.details()));
             }
         }
@@ -134,7 +148,7 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
         final String washroomName = washrooms
             .getById(review.washroomId())
             .map(washroom -> {
-                return washroom.name() + " — " + washroom.floor();
+                return washroom.name() + " " + Character.toString(EM_DASH_CODE_POINT) + " " + washroom.floor();
             })
             .orElse(review.washroomId());
 

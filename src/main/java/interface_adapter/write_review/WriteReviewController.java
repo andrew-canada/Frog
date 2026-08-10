@@ -10,6 +10,19 @@ public final class WriteReviewController {
         this.interactor = interactor;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param cleanliness parameter value.
+     *
+     * @param comment parameter value.
+     *
+     * @param rating parameter value.
+     *
+     * @param username parameter value.
+     *
+     * @param washroomId parameter value.
+     */
     public void execute(final String washroomId, final String username, final int rating, final int cleanliness,
                         final String comment) {
         interactor.execute(new WriteReviewInputData(washroomId, username, rating, cleanliness, comment));

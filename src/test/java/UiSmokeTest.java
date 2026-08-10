@@ -121,8 +121,8 @@ final class UiSmokeTest {
             if (child instanceof final Container nested) {
                 try {
                     return buttonNamed(nested, text);
+                // Keep looking through sibling components.
                 } catch (final IllegalArgumentException ignored) {
-                    // Keep looking through sibling components.
                 }
             }
         }

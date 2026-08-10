@@ -13,6 +13,15 @@ public final class ReviewScorer {
     private ReviewScorer() {
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param helpfulVotes parameter value.
+     *
+     * @param ageInDays parameter value.
+     *
+     * @return the operation result.
+     */
     public static double score(final int helpfulVotes, final long ageInDays) {
         return Math.log(1 + helpfulVotes) + RECENCY_WEIGHT * Math.exp(-ageInDays / RECENCY_HALF_LIFE_DAYS);
     }

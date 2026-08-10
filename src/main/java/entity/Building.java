@@ -2,6 +2,10 @@ package entity;
 
 /**
  * A campus building. Coordinates are kept here rather than in UI code.
+ * @param code parameter value.
+ * @param latitude parameter value.
+ * @param longitude parameter value.
+ * @param name parameter value.
  */
 public record Building(String code, String name, double latitude, double longitude) {
     public Building {

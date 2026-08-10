@@ -1,4 +1,4 @@
-public final class TestRunner {
+final class TestRunner {
     public static void main(final String[] args) {
         run("ViewReviewsInteractorTest", ViewReviewsInteractorTest::run);
         run("LoginInteractorTest", LoginInteractorTest::run);

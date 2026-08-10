@@ -13,6 +13,13 @@ public final class SortReviewsController {
         this.interactor = interactor;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param sortBy parameter value.
+     *
+     * @param currentWashroom parameter value.
+     */
     public void execute(final String sortBy, final String currentWashroom) {
         final SortReviewInputData inputData =
             new SortReviewInputData(ReviewSortOrder.fromDisplayLabel(sortBy), currentWashroom);

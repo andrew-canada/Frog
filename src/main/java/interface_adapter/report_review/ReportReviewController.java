@@ -16,6 +16,17 @@ public final class ReportReviewController {
         this.interactor = interactor;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param details parameter value.
+     *
+     * @param reasons parameter value.
+     *
+     * @param reporterUsername parameter value.
+     *
+     * @param reviewId parameter value.
+     */
     public void report(final String reviewId, final String reporterUsername, final List<String> reasons,
                        final String details) {
         interactor.report(new ReportReviewInputData(reviewId, reporterUsername, reasons, details));
