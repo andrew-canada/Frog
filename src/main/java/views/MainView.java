@@ -366,7 +366,7 @@ public final class MainView extends JPanel {
         map.setSelectedWashroom(selectedId);
         for (final WashroomListViewModel.Item item : items) {
             final JPanel card = WashroomCardFactory.create(item, selectedId, this::selectWashroom,
-                onReviews, onDirections);
+                id -> onReviews.accept(id), id -> onDirections.accept(id));
             cardsByWashroomId.put(item.id(), card);
             list.add(card);
             list.add(Box.createVerticalStrut(CARD_PADDING));
