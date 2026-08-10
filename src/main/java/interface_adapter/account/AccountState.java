@@ -44,6 +44,9 @@ public class AccountState {
 
     }
 
+    /**
+     * Resets the state.
+     */
     private void baseResetState() {
         changeUsernameSuccess = false;
         changeUsernameMessage = "";
@@ -56,14 +59,14 @@ public class AccountState {
     }
 
     /**
-     * Performs this operation.
+     * Resents the state when user exits the view.
      */
     public void exitResetState() {
         baseResetState();
     }
 
     /**
-     * Performs this operation.
+     * Resets the state when user logs out or deletes account.
      */
     public void logoutResetState() {
         baseResetState();
