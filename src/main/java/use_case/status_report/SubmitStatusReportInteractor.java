@@ -40,7 +40,7 @@ public final class SubmitStatusReportInteractor implements SubmitStatusReportInp
                 .mapToInt(StatusReport::busyness)
                 .average()
                 .orElse(in.busyness());
-        presenter.present(new SubmitStatusReportOutputData(true, current, "Thanks - live status updated"));
+            presenter.present(new SubmitStatusReportOutputData(true, current, "Thanks - live status updated"));
         }
     }
 }

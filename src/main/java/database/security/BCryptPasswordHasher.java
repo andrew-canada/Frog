@@ -11,7 +11,7 @@ import use_case.port.PasswordHasher;
 /**
  * BCrypt adapter that also verifies hashes from previous application versions.
  */
-public final class BCryptPasswordHasher implements PasswordHasher {
+public final class BcryptPasswordHasher implements PasswordHasher {
     @Override
     public String hash(final String password) {
         return BCrypt.hashpw(password, BCrypt.gensalt());

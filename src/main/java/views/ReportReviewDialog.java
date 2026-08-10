@@ -43,42 +43,12 @@ public final class ReportReviewDialog extends JDialog {
                               final ReportReviewViewModel model, final String reviewId, final String reporter) {
         super(owner, "Report Review", ModalityType.APPLICATION_MODAL);
 
-        final JPanel page = Theme.page();
-        page.setLayout(new BoxLayout(page, BoxLayout.Y_AXIS));
-        page.add(Theme.title("Report Review"));
-        page.add(Box.createVerticalStrut(LARGE_GAP));
-        page.add(left(Theme.label("Why are you reporting this review?", LABEL_FONT_SIZE, Theme.INK)));
-        page.add(Box.createVerticalStrut(SMALL_GAP));
-
-        final List<JCheckBox> boxes = new ArrayList<>();
-        for (final String reason : REASONS) {
-            final JCheckBox box = new JCheckBox(reason);
-            box.setBackground(Theme.PAPER);
-            box.setAlignmentX(Component.LEFT_ALIGNMENT);
-            boxes.add(box);
-            page.add(box);
-        }
-
-        page.add(Box.createVerticalStrut(CONTROL_GAP));
-        page.add(left(Theme.label("Additional details:", LABEL_FONT_SIZE, Theme.INK)));
-        page.add(Box.createVerticalStrut(TINY_GAP));
-        final JTextArea details = new JTextArea(3, 26);
-        details.setLineWrap(true);
-        details.setWrapStyleWord(true);
-        final JScrollPane detailsScroll = new JScrollPane(details);
-        detailsScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
-        detailsScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, DETAILS_MAX_HEIGHT));
-        page.add(detailsScroll);
-
-        page.add(Box.createVerticalStrut(SECTION_GAP));
-        final JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        buttons.setBackground(Theme.PAPER);
-        buttons.setAlignmentX(Component.LEFT_ALIGNMENT);
-        final JButton cancel = Theme.button("Cancel");
-        final JButton submit = Theme.primary("Submit");
-        buttons.add(cancel);
-        buttons.add(submit);
-        page.add(buttons);
+        final ReportControls controls = createControls();
+        final JPanel page = controls.page();
+        final List<JCheckBox> boxes = controls.boxes();
+        final JTextArea details = controls.details();
+        final JButton cancel = controls.cancel();
+        final JButton submit = controls.submit();
 
         cancel.addActionListener(entryValue -> {
             dispose();
@@ -118,5 +88,59 @@ public final class ReportReviewDialog extends JDialog {
     private static JComponent left(final JComponent component) {
         component.setAlignmentX(Component.LEFT_ALIGNMENT);
         return component;
+    }
+
+    private ReportControls createControls() {
+        final JPanel page = Theme.page();
+        page.setLayout(new BoxLayout(page, BoxLayout.Y_AXIS));
+        page.add(Theme.title("Report Review"));
+        page.add(Box.createVerticalStrut(LARGE_GAP));
+        page.add(left(Theme.label("Why are you reporting this review?", LABEL_FONT_SIZE, Theme.INK)));
+        page.add(Box.createVerticalStrut(SMALL_GAP));
+        final List<JCheckBox> boxes = createReasonBoxes(page);
+        page.add(Box.createVerticalStrut(CONTROL_GAP));
+        page.add(left(Theme.label("Additional details:", LABEL_FONT_SIZE, Theme.INK)));
+        page.add(Box.createVerticalStrut(TINY_GAP));
+        final JTextArea details = new JTextArea(3, 26);
+        details.setLineWrap(true);
+        details.setWrapStyleWord(true);
+        final JScrollPane detailsScroll = new JScrollPane(details);
+        detailsScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
+        detailsScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, DETAILS_MAX_HEIGHT));
+        page.add(detailsScroll);
+        page.add(Box.createVerticalStrut(SECTION_GAP));
+        final Buttons buttons = createButtons(page);
+        return new ReportControls(page, boxes, details, buttons.cancel(), buttons.submit());
+    }
+
+    private static List<JCheckBox> createReasonBoxes(final JPanel page) {
+        final List<JCheckBox> boxes = new ArrayList<>();
+        for (final String reason : REASONS) {
+            final JCheckBox box = new JCheckBox(reason);
+            box.setBackground(Theme.PAPER);
+            box.setAlignmentX(Component.LEFT_ALIGNMENT);
+            boxes.add(box);
+            page.add(box);
+        }
+        return boxes;
+    }
+
+    private static Buttons createButtons(final JPanel page) {
+        final JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        buttons.setBackground(Theme.PAPER);
+        buttons.setAlignmentX(Component.LEFT_ALIGNMENT);
+        final JButton cancel = Theme.button("Cancel");
+        final JButton submit = Theme.primary("Submit");
+        buttons.add(cancel);
+        buttons.add(submit);
+        page.add(buttons);
+        return new Buttons(cancel, submit);
+    }
+
+    private record Buttons(JButton cancel, JButton submit) {
+    }
+
+    private record ReportControls(JPanel page, List<JCheckBox> boxes, JTextArea details, JButton cancel,
+                                  JButton submit) {
     }
 }

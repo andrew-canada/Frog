@@ -32,7 +32,7 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
     private static final String FIELD_HOUROFDAY = "hourOfDay";
     private static final String FIELD_TIMESTAMP = "timestamp";
     private static final String FIELD_SEEDKEY = "seedKey";
-    private static final String FIELD__OR = "$or";
+    private static final String FIELD_OR = "$or";
     private static final int MAGIC_24 = 24;
     private static final int MAGIC_5 = 5;
     private final MongoCollection<Document> reports;
@@ -136,23 +136,27 @@ public final class DBStatusReportDataAccessObject implements StatusReportReposit
      */
     @Override
     public Map<String, StatusReport> getCurrentHourForWashrooms(final List<String> washroomIds, final int hour) {
+        final Map<String, StatusReport> result;
         if (washroomIds.isEmpty()) {
-            return Map.of();
+            result = Map.of();
         }
-        final Document currentHour = new Document(FIELD__OR, List.of(new Document(FIELD_HOUROFDAY, hour),
-            new Document("$expr", new Document("$eq", List.of(new Document("$hour", "$timestamp"), hour)))));
-        final List<Document> pipeline = List.of(new Document("$match",
-                new Document(FIELD_WASHROOMID, new Document("$in", washroomIds)).append(FIELD__OR,
-                    currentHour.get(FIELD__OR))),
-            new Document("$sort", new Document(FIELD_TIMESTAMP, -1)), new Document("$group",
-                new Document("_id", "$washroomId").append("latest", new Document("$first", "$$ROOT"))),
-            new Document("$replaceRoot", new Document("newRoot", "$latest")));
-        final Map<String, StatusReport> result = new HashMap<>();
-        for (final Document document : reports.aggregate(pipeline)) {
-            final StatusReport report = toEntity(document);
-            result.put(report.washroomId(), report);
+        else {
+            final Document currentHour = new Document(FIELD_OR, List.of(new Document(FIELD_HOUROFDAY, hour),
+                new Document("$expr", new Document("$eq", List.of(new Document("$hour", "$timestamp"), hour)))));
+            final List<Document> pipeline = List.of(new Document("$match",
+                    new Document(FIELD_WASHROOMID, new Document("$in", washroomIds)).append(FIELD_OR,
+                        currentHour.get(FIELD_OR))),
+                new Document("$sort", new Document(FIELD_TIMESTAMP, -1)), new Document("$group",
+                    new Document("_id", "$washroomId").append("latest", new Document("$first", "$$ROOT"))),
+                new Document("$replaceRoot", new Document("newRoot", "$latest")));
+            final Map<String, StatusReport> currentReports = new HashMap<>();
+            for (final Document document : reports.aggregate(pipeline)) {
+                final StatusReport report = toEntity(document);
+                currentReports.put(report.washroomId(), report);
+            }
+            result = Map.copyOf(currentReports);
         }
-        return Map.copyOf(result);
+        return result;
     }
 
     /**

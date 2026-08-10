@@ -21,8 +21,6 @@ public interface PersonalPlanGenerator {
      *
      * @return the operation result.
      *
-     * @throws Exception if the operation fails.
      */
-    String generate(String calendarContent, int tripsPerDay, String semester, List<Washroom> availableWashrooms)
-            throws Exception;
+    String generate(String calendarContent, int tripsPerDay, String semester, List<Washroom> availableWashrooms);
 }

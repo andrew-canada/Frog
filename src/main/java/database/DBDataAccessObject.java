@@ -14,8 +14,8 @@ public class DBDataAccessObject implements AutoCloseable {
     private static final String DATABASE_ENV = "MONGODB_DATABASE";
 
     private final MongoClient client;
-    protected final MongoDatabase database;
     private final boolean ownsClient;
+    private final MongoDatabase database;
 
     /**
      * Preserves the team DAO constructors while moving credentials to environment variables.

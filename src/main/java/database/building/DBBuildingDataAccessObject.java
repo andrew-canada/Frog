@@ -1,6 +1,5 @@
 package database.building;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -42,12 +41,12 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
     private final MongoCollection<Document> collection;
 
     public DBBuildingDataAccessObject() {
-        collection = database.getCollection("Buildings");
+        collection = database().getCollection("Buildings");
     }
 
     public DBBuildingDataAccessObject(final MongoDatabase database) {
         super(database);
-        collection = database.getCollection("Buildings");
+        collection = database().getCollection("Buildings");
     }
 
     /**
@@ -285,20 +284,6 @@ public class DBBuildingDataAccessObject extends DBDataAccessObject {
         }
 
         return buildings;
-    }
-
-    /**
-     * Main method that demonstrates a building query.
-     *
-     * @param args parameter value.
-     *
-     * @throws FileNotFoundException if the operation fails.
-     */
-    public static void main(final String[] args) throws FileNotFoundException {
-        final DBBuildingDataAccessObject buildingDataAccessObject = new DBBuildingDataAccessObject();
-        final Condition condition = new Condition<>(FIELD_BUILDINGCODE, Operator.NE, "00");
-        System.out.println(buildingDataAccessObject.getMatching(condition));
-
     }
 
     /**

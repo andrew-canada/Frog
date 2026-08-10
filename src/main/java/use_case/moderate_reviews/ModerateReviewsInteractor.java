@@ -44,21 +44,21 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
 
     @Override
     public void removeReview(final ModerateReviewsInputData input) {
-        if (denyUnlessModerator(input)) {
-            return;
+        final boolean authorized = !denyUnlessModerator(input);
+        if (authorized) {
+            reviews.deleteReview(input.reviewId());
+            reports.deleteReportsForReview(input.reviewId());
+            present("Review removed.");
         }
-        reviews.deleteReview(input.reviewId());
-        reports.deleteReportsForReview(input.reviewId());
-        present("Review removed.");
     }
 
     @Override
     public void dismissReports(final ModerateReviewsInputData input) {
-        if (denyUnlessModerator(input)) {
-            return;
+        final boolean authorized = !denyUnlessModerator(input);
+        if (authorized) {
+            reports.deleteReportsForReview(input.reviewId());
+            present("Reports dismissed.");
         }
-        reports.deleteReportsForReview(input.reviewId());
-        present("Reports dismissed.");
     }
 
     /**
@@ -70,11 +70,15 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
      * @return true if the action must be aborted.
      */
     private boolean denyUnlessModerator(final ModerateReviewsInputData input) {
+        final boolean result;
         if (moderators.isModerator(input.moderatorUsername())) {
-            return false;
+            result = false;
         }
-        presenter.present(new ModerateReviewsOutputData(java.util.List.of(), "Not authorized."));
-        return true;
+        else {
+            presenter.present(new ModerateReviewsOutputData(java.util.List.of(), "Not authorized."));
+            result = true;
+        }
+        return result;
     }
 
     private void present(final String message) {
@@ -101,8 +105,8 @@ public final class ModerateReviewsInteractor implements ModerateReviewsInputBoun
             if (review == null) {
                 continue;
             }
+            // Most-reported first so the worst offenders are at the top of the moderator queue.
             queue.add(toReportedReview(review, entry.getValue()));
-        // Most-reported first so the worst offenders are at the top of the moderator queue.
         }
         queue.sort(Comparator
             .comparingInt(ReportedReview::totalReports)

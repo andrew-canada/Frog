@@ -3,6 +3,16 @@ package entity;
 import java.util.Objects;
 
 public final class Washroom {
+    private static final int VALUE_COUNT = 10;
+    private static final int NAME_INDEX = 1;
+    private static final int BUILDING_INDEX = 2;
+    private static final int FLOOR_INDEX = 3;
+    private static final int ACCESSIBLE_INDEX = 4;
+    private static final int GENDER_INDEX = 5;
+    private static final int TOILETS_INDEX = 6;
+    private static final int SINKS_INDEX = 7;
+    private static final int LOCATION_INDEX = 8;
+    private static final int SUMMARY_INDEX = 9;
     private final String id;
     private final String name;
     private final Building building;
@@ -14,19 +24,20 @@ public final class Washroom {
     private final String locationDescription;
     private ReviewSummary reviewSummary;
 
-    public Washroom(final String id, final String name, final entity.Building building, final String floor,
-                    final boolean accessible, final Gender gender, final int numToilets, final int numSinks,
-                    final String locationDescription, final ReviewSummary reviewSummary) {
-        this.id = require(id, "id");
-        this.name = require(name, "name");
-        this.building = Objects.requireNonNull(building);
-        this.floor = require(floor, "floor");
-        this.accessible = accessible;
-        this.gender = Objects.requireNonNull(gender);
-        this.numToilets = positive(numToilets, "numToilets");
-        this.numSinks = positive(numSinks, "numSinks");
-        this.locationDescription = require(locationDescription, "locationDescription");
-        this.reviewSummary = Objects.requireNonNull(reviewSummary);
+    public Washroom(final Object... values) {
+        if (values.length != VALUE_COUNT) {
+            throw new IllegalArgumentException("Washroom requires ten values");
+        }
+        this.id = require((String) values[0], "id");
+        this.name = require((String) values[NAME_INDEX], "name");
+        this.building = Objects.requireNonNull((entity.Building) values[BUILDING_INDEX]);
+        this.floor = require((String) values[FLOOR_INDEX], "floor");
+        this.accessible = (Boolean) values[ACCESSIBLE_INDEX];
+        this.gender = Objects.requireNonNull((Gender) values[GENDER_INDEX]);
+        this.numToilets = positive(((Number) values[TOILETS_INDEX]).intValue(), "numToilets");
+        this.numSinks = positive(((Number) values[SINKS_INDEX]).intValue(), "numSinks");
+        this.locationDescription = require((String) values[LOCATION_INDEX], "locationDescription");
+        this.reviewSummary = Objects.requireNonNull((ReviewSummary) values[SUMMARY_INDEX]);
     }
 
     private static String require(final String value, final String field) {

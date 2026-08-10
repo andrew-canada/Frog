@@ -29,43 +29,45 @@ public final class WriteReviewInteractor implements WriteReviewInputBoundary {
 
     @Override
     public void execute(final WriteReviewInputData input) {
-        if (input.washroomId() == null || input
-            .washroomId()
-            .isBlank()) {
-            presenter.present(new WriteReviewOutputData(false, "Choose a washroom before writing a review."));
-            return;
+        final String validationMessage = validationMessage(input);
+        if (validationMessage != null) {
+            presenter.present(new WriteReviewOutputData(false, validationMessage));
         }
-        if (input.rating() < 1 || input.rating() > MAGIC_5
+        else {
+            final String comment;
+            if (input.comment() == null) {
+                comment = "";
+            }
+            else {
+                comment = input.comment().trim();
+            }
+            final String username;
+            if (input.username() == null || input.username().isBlank()) {
+                username = "Anonymous";
+            }
+            else {
+                username = input.username();
+            }
+            reviews.save(new Review(UUID
+                .randomUUID()
+                .toString(), input.washroomId(), username, input.rating(), input.cleanliness(), comment, 0,
+                LocalDate.now(clock)));
+            presenter.present(new WriteReviewOutputData(true, "Thanks - your review was posted."));
+        }
+    }
+
+    private static String validationMessage(final WriteReviewInputData input) {
+        String result = null;
+        if (input.washroomId() == null || input.washroomId().isBlank()) {
+            result = "Choose a washroom before writing a review.";
+        }
+        else if (input.rating() < 1 || input.rating() > MAGIC_5
                 || input.cleanliness() < 1 || input.cleanliness() > MAGIC_5) {
-            presenter.present(new WriteReviewOutputData(false, "Ratings must be between 1 and 5."));
-            return;
+            result = "Ratings must be between 1 and 5.";
         }
-        final String comment;
-        if (input.comment() == null) {
-            comment = "";
+        else if (input.comment() == null || input.comment().trim().isBlank()) {
+            result = "Write a short review before submitting.";
         }
-        else {
-            comment = input
-                .comment()
-                .trim();
-        }
-        if (comment.isBlank()) {
-            presenter.present(new WriteReviewOutputData(false, "Write a short review before submitting."));
-            return;
-        }
-        final String username;
-        if (input.username() == null || input
-            .username()
-            .isBlank()) {
-            username = "Anonymous";
-        }
-        else {
-            username = input.username();
-        }
-        reviews.save(new Review(UUID
-            .randomUUID()
-            .toString(), input.washroomId(), username, input.rating(), input.cleanliness(), comment, 0,
-            LocalDate.now(clock)));
-        presenter.present(new WriteReviewOutputData(true, "Thanks - your review was posted."));
+        return result;
     }
 }

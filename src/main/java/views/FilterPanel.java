@@ -35,54 +35,61 @@ public final class FilterPanel extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(Theme.PAPER);
         setBorder(Theme.pad(LABEL_FONT_SIZE, LABEL_FONT_SIZE, LABEL_FONT_SIZE, LABEL_FONT_SIZE));
+        addHeading();
+        addSliders();
+        addCheckboxes();
+        addTypeAndButtons(onFilter);
+    }
+
+    private void addHeading() {
         final JLabel heading = Theme.label("Filters", 16, Theme.INK);
-        heading.setFont(heading
-            .getFont()
-            .deriveFont(Font.BOLD));
+        heading.setFont(heading.getFont().deriveFont(Font.BOLD));
         add(heading);
         add(Box.createVerticalStrut(SECTION_GAP));
+    }
 
+    private void addSliders() {
         add(Theme.label("Maximum busyness  -  1 quiet - 5 packed", LABEL_FONT_SIZE, Theme.MUTED));
-        busyness.setBackground(Theme.PAPER);
-        busyness.setMajorTickSpacing(1);
-        busyness.setPaintTicks(true);
+        configureSlider(busyness);
         add(busyness);
         add(Theme.label("Minimum current cleanliness  -  1 poor - 5 spotless", LABEL_FONT_SIZE, Theme.MUTED));
-        cleanliness.setBackground(Theme.PAPER);
-        cleanliness.setMajorTickSpacing(1);
-        cleanliness.setPaintTicks(true);
+        configureSlider(cleanliness);
         add(cleanliness);
+    }
 
-        final JPanel checkboxes = new JPanel();
-        accessible.setBackground(Theme.PAPER);
-        checkboxes.add(accessible);
-        ownReviews.setBackground(Theme.PAPER);
-        checkboxes.add(ownReviews);
-        add(checkboxes);
+    private static void configureSlider(final JSlider slider) {
+        slider.setBackground(Theme.PAPER);
+        slider.setMajorTickSpacing(1);
+        slider.setPaintTicks(true);
+    }
 
-        final JPanel checkboxes2 = new JPanel();
-        filterSelectedBuilding.setBackground(Theme.PAPER);
-        checkboxes2.add(filterSelectedBuilding);
-        personalPlan.setBackground(Theme.PAPER);
-        checkboxes2.add(personalPlan);
-        add(checkboxes2);
+    private void addCheckboxes() {
+        final JPanel first = new JPanel();
+        first.add(configure(accessible));
+        first.add(configure(ownReviews));
+        add(first);
+        final JPanel second = new JPanel();
+        second.add(configure(filterSelectedBuilding));
+        second.add(configure(personalPlan));
+        add(second);
+    }
 
+    private static JCheckBox configure(final JCheckBox checkbox) {
+        checkbox.setBackground(Theme.PAPER);
+        return checkbox;
+    }
+
+    private void addTypeAndButtons(final Runnable onFilter) {
         add(Box.createVerticalStrut(CONTROL_GAP));
         add(Theme.label("Washroom type", LABEL_FONT_SIZE, Theme.MUTED));
         add(gender);
-
         final JPanel buttonPanel = new JPanel();
         final JButton cancel = Theme.button("Cancel");
         final JButton confirm = Theme.primary("Filter");
-        for (final JButton button : new JButton[] {cancel, confirm}) {
-            button.setAlignmentX(Component.LEFT_ALIGNMENT);
-        }
-        cancel.addActionListener(entryValue -> {
-            frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
-        });
-        confirm.addActionListener(entryValue -> {
-            onFilter.run();
-        });
+        cancel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        confirm.setAlignmentX(Component.LEFT_ALIGNMENT);
+        cancel.addActionListener(entryValue -> frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING)));
+        confirm.addActionListener(entryValue -> onFilter.run());
         buttonPanel.add(cancel);
         buttonPanel.add(confirm);
         add(buttonPanel);

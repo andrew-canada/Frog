@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.util.List;
 
 import org.bson.Document;
+import org.bson.json.JsonParseException;
 
 import entity.GeoPoint;
 import use_case.port.AddressLookupGateway;
@@ -50,7 +51,7 @@ public final class GraphhopperGeocodingDataAccessObject implements AddressLookup
         try {
             root = Document.parse(json);
         }
-        catch (final RuntimeException malformed) {
+        catch (final JsonParseException malformed) {
             throw new IllegalStateException("GraphHopper returned invalid address data.", malformed);
         }
         final List<Document> hits = root.getList("hits", Document.class);

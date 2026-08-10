@@ -1,10 +1,12 @@
 package use_case.account.personal_plan;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import entity.User;
@@ -46,42 +48,58 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
             .orElse(null);
         if (user == null) {
             presenter.present(new PersonalPlanOutputData(false, "You need an account", ""));
-            return;
         }
-        if (inputData.calendarPath() == null || !inputData
+        else if (inputData.calendarPath() == null || !inputData
             .calendarPath()
             .endsWith(".ics")) {
             presenter.present(new PersonalPlanOutputData(false, "Please upload a .ics file", ""));
-            return;
         }
-
-        final int tripsPerDay;
-        try {
-            tripsPerDay = Integer.parseInt(inputData.nTrips());
-            if (tripsPerDay < 1) {
-                throw new NumberFormatException();
+        else {
+            final Integer tripsPerDay = parseTrips(inputData.nTrips());
+            if (tripsPerDay == null) {
+                presenter.present(new PersonalPlanOutputData(false,
+                    "Please input a positive whole number of trips", ""));
+            }
+            else {
+                try {
+                    final List<Washroom> availableWashrooms = washrooms.getAll();
+                    final String calendar = calendarReader.read(inputData.calendarPath());
+                    final String generatedPlan =
+                        generator.generate(calendar, tripsPerDay, inputData.semester(), availableWashrooms);
+                    final String personalPlan = normalizePlan(generatedPlan, availableWashrooms);
+                    final User updatedUser = new User(user.username(), user.passwordHash(), personalPlan,
+                        user.moderator());
+                    users.save(updatedUser);
+                    session.setCurrentUser(updatedUser);
+                    presenter.present(new PersonalPlanOutputData(true, "Personal plan generated", personalPlan));
+                }
+                catch (final IOException failure) {
+                    presentGenerationFailure();
+                }
+                catch (final IllegalArgumentException failure) {
+                    presentGenerationFailure();
+                }
             }
         }
-        catch (final RuntimeException invalidTrips) {
-            presenter.present(new PersonalPlanOutputData(false, "Please input a positive whole number of trips", ""));
-            return;
-        }
+    }
 
+    private static Integer parseTrips(final String rawTrips) {
+        Integer result = null;
         try {
-            final List<Washroom> availableWashrooms = washrooms.getAll();
-            final String calendar = calendarReader.read(inputData.calendarPath());
-            final String generatedPlan =
-                generator.generate(calendar, tripsPerDay, inputData.semester(), availableWashrooms);
-            final String personalPlan = normalizePlan(generatedPlan, availableWashrooms);
-            final User updatedUser = new User(user.username(), user.passwordHash(), personalPlan, user.moderator());
-            users.save(updatedUser);
-            session.setCurrentUser(updatedUser);
-            presenter.present(new PersonalPlanOutputData(true, "Personal plan generated", personalPlan));
+            final int trips = Integer.parseInt(rawTrips);
+            if (trips >= 1) {
+                result = trips;
+            }
         }
-        catch (final Exception failure) {
-            presenter.present(
-                new PersonalPlanOutputData(false, "Could not generate a personal plan. Please try again.", ""));
+        catch (final NumberFormatException invalidTrips) {
+            result = null;
         }
+        return result;
+    }
+
+    private void presentGenerationFailure() {
+        presenter.present(new PersonalPlanOutputData(false,
+            "Could not generate a personal plan. Please try again.", ""));
     }
 
     /**
@@ -89,10 +107,11 @@ public final class PersonalPlanInteractor implements PersonalPlanInputBoundary {
      * @param availableWashrooms parameter value.
      * @param generatedPlan parameter value.
      * @return the operation result.
-     * @throws Exception if the plan cannot be parsed.
+     * @throws JsonProcessingException if the plan cannot be parsed.
+     * @throws IllegalArgumentException if the plan contains invalid data.
      */
     private static String normalizePlan(final String generatedPlan, final List<Washroom> availableWashrooms)
-            throws Exception {
+            throws JsonProcessingException {
         final ObjectMapper mapper = new ObjectMapper();
         final List<Map<String, String>> suggestions =
             mapper.readValue(generatedPlan, new TypeReference<List<Map<String, String>>>() {

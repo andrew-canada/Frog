@@ -68,20 +68,23 @@ public final class StatusReportView extends JPanel {
         card.add(message);
         add(card);
         model.addPropertyChangeListener(entryValue -> {
-            final var s = model.getState();
-            if (s.success()) {
-                message.setText(s.message() + String.format("  -  current %.1f/5", s.currentBusyness()));
-            }
-            else {
-                message.setText(s.message());
-            }
-            if (s.success()) {
-                message.setForeground(new Color(SUCCESS_COLOR_RED, SUCCESS_COLOR_GREEN, SUCCESS_COLOR_BLUE));
-            }
-            else {
-                message.setForeground(Theme.BERRY);
-            }
+            updateMessage(model.getState());
         });
+    }
+
+    private void updateMessage(final StatusReportViewModel.State state) {
+        final String text;
+        final Color color;
+        if (state.success()) {
+            text = state.message() + String.format("  -  current %.1f/5", state.currentBusyness());
+            color = new Color(SUCCESS_COLOR_RED, SUCCESS_COLOR_GREEN, SUCCESS_COLOR_BLUE);
+        }
+        else {
+            text = state.message();
+            color = Theme.BERRY;
+        }
+        message.setText(text);
+        message.setForeground(color);
     }
 
     private static JSlider slider() {

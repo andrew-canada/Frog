@@ -1,7 +1,5 @@
 package database.washroom;
 
-import java.io.FileReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -14,12 +12,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -35,7 +27,6 @@ import database.Condition;
 import database.DBDataAccessObject;
 import database.MongoDocuments;
 import database.Operator;
-import database.building.DBBuildingDataAccessObject;
 import entity.ReviewSummary;
 import entity.Washroom;
 import use_case.filter.WashroomFilterCriteria;
@@ -51,12 +42,12 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
     private static final String FIELD_NUMTOILETS = "numToilets";
     private static final String FIELD_NUMSINKS = "numSinks";
     private static final String FIELD_LOCATIONDESCRIPTION = "locationDescription";
-    private static final String FIELD__IFNULL = "$ifNull";
-    private static final String FIELD__ID = "_id";
+    private static final String FIELD_IFNULL = "$ifNull";
+    private static final String FIELD_ID = "_id";
     private static final int MAGIC_6_371_000 = 6_371_000;
     private static final int MAGIC_5 = 5;
 
-    private static final List<String> allowedAttributes = List.of(
+    private static final List<String> ALLOWED_ATTRIBUTES = List.of(
         new String[] {FIELD_BUILDINGID, FIELD_BUILDINGCODE, "seedKey", FIELD_NAME, FIELD_FLOOR, FIELD_GENDER,
             FIELD_ACCESSIBLE, FIELD_NUMTOILETS,
             FIELD_NUMSINKS, FIELD_LOCATIONDESCRIPTION});
@@ -65,13 +56,9 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
     private final MongoCollection<Document> reviews;
 
     private DBWashroomDataAccessObject() {
-        // initializes the MongoClient and MongoDatabase from
-        super();
-       // the set URI
-
-        collection = database.getCollection("Washrooms");
-        buildings = database.getCollection("Buildings");
-        reviews = database.getCollection("Reviews");
+        collection = database().getCollection("Washrooms");
+        buildings = database().getCollection("Buildings");
+        reviews = database().getCollection("Reviews");
     }
 
     public DBWashroomDataAccessObject(final MongoDatabase database) {
@@ -89,13 +76,17 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      */
     private static Bson parseConditions(final Iterable<AbstractCondition<?>> conditions) {
         final List<Bson> filters = new ArrayList<>();
-        conditions.forEach((condition) -> {
+        conditions.forEach(condition -> {
             filters.add(condition.getFilter());
         });
+        final Bson result;
         if (filters.isEmpty()) {
-            return new Document();
+            result = new Document();
         }
-        return Filters.and(filters);
+        else {
+            result = Filters.and(filters);
+        }
+        return result;
     }
 
     /**
@@ -104,7 +95,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @param filter the filter that must be satisfied for the Document to be returned
      * @return The list of valid documents
      */
-    private List<Document> getAll(final Bson filter) {
+    private List<Document> getAllDocuments(final Bson filter) {
         final List<Document> docs = new ArrayList<>();
         return collection
             .find(filter)
@@ -127,29 +118,31 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @return the operation result.
      */
     private List<Washroom> hydrate(final List<Document> washroomDocuments) {
+        final List<Washroom> result;
         if (washroomDocuments.isEmpty()) {
-            return List.of();
+            result = List.of();
         }
-        final Map<String, Document> buildingsById = new HashMap<>();
-        final Map<String, Document> buildingsByCode = new HashMap<>();
-        for (final Document building : buildings.find()) {
-            buildingsById.put(MongoDocuments.id(building), building);
-            buildingsByCode.put(MongoDocuments.string(building, "", FIELD_BUILDINGCODE, "code"), building);
+        else {
+            final Map<String, Document> buildingsById = new HashMap<>();
+            final Map<String, Document> buildingsByCode = new HashMap<>();
+            for (final Document building : buildings.find()) {
+                buildingsById.put(MongoDocuments.id(building), building);
+                buildingsByCode.put(MongoDocuments.string(building, "", FIELD_BUILDINGCODE, "code"), building);
+            }
+            final Set<String> washroomIds = washroomDocuments
+                .stream()
+                .map(MongoDocuments::id)
+                .collect(java.util.stream.Collectors.toSet());
+            final Map<String, ReviewSummary> summaries = reviewSummaries(washroomIds);
+            result = washroomDocuments
+                .stream()
+                .map(document -> createWashroomWithDetails(document, buildingsById, buildingsByCode, summaries))
+                .toList();
         }
-        final Set<String> washroomIds = washroomDocuments
-            .stream()
-            .map(MongoDocuments::id)
-            .collect(java.util.stream.Collectors.toSet());
-        final Map<String, ReviewSummary> summaries = reviewSummaries(washroomIds);
-        return washroomDocuments
-            .stream()
-            .map(document -> {
-                return createWashroom(document, buildingsById, buildingsByCode, summaries);
-            })
-            .toList();
+        return result;
     }
 
-    private Washroom createWashroom(final Document doc, final Map<String, Document> buildingsById,
+    private Washroom createWashroomWithDetails(final Document doc, final Map<String, Document> buildingsById,
                                     final Map<String, Document> buildingsByCode,
                                     final Map<String, ReviewSummary> summaries) {
         final String id = MongoDocuments.id(doc);
@@ -192,7 +185,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @throws RuntimeException if the attribute is not allowed.
      */
     private static void checkAttribute(final AbstractCondition<?> condition) {
-        if (!allowedAttributes.contains(condition.getFieldName())) {
+        if (!ALLOWED_ATTRIBUTES.contains(condition.getFieldName())) {
             throw new RuntimeException("Not a valid attribute");
         }
     }
@@ -210,26 +203,31 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
     }
 
     private Map<String, ReviewSummary> reviewSummaries(final Set<String> washroomIds) {
+        final Map<String, ReviewSummary> result;
         if (washroomIds.isEmpty()) {
-            return Map.of();
+            result = Map.of();
         }
-        final Document washroomReference = new Document(FIELD__IFNULL, List.of("$washroomId", "$washroomID"));
-        final Document rating = new Document(FIELD__IFNULL, List.of("$rating", "$stars"));
-        final Document cleanliness = new Document(FIELD__IFNULL, List.of("$cleanliness", rating));
-        final List<Document> pipeline = List.of(new Document("$match",
-                Filters.or(Filters.in("washroomId", washroomIds), Filters.in("washroomID", washroomIds))),
-            new Document("$group", new Document(FIELD__ID, washroomReference)
-                .append("rating", new Document("$avg", rating))
-                .append("cleanliness", new Document("$avg", cleanliness))
-                .append("count", new Document("$sum", 1))));
-        final Map<String, ReviewSummary> summaries = new HashMap<>();
-        for (final Document summary : reviews.aggregate(pipeline)) {
-            final String washroomId = String.valueOf(summary.get(FIELD__ID));
-            summaries.put(washroomId, new ReviewSummary(clampRating(MongoDocuments.number(summary, 0, "rating")),
-                clampRating(MongoDocuments.number(summary, 0, "cleanliness")),
-                Math.max(0, MongoDocuments.integer(summary, 0, "count"))));
+        else {
+            final Document washroomReference = new Document(FIELD_IFNULL, List.of("$washroomId", "$washroomID"));
+            final Document rating = new Document(FIELD_IFNULL, List.of("$rating", "$stars"));
+            final Document cleanliness = new Document(FIELD_IFNULL, List.of("$cleanliness", rating));
+            final List<Document> pipeline = List.of(new Document("$match",
+                    Filters.or(Filters.in("washroomId", washroomIds), Filters.in("washroomID", washroomIds))),
+                new Document("$group", new Document(FIELD_ID, washroomReference)
+                    .append("rating", new Document("$avg", rating))
+                    .append("cleanliness", new Document("$avg", cleanliness))
+                    .append("count", new Document("$sum", 1))));
+            final Map<String, ReviewSummary> summaries = new HashMap<>();
+            for (final Document summary : reviews.aggregate(pipeline)) {
+                final String washroomId = String.valueOf(summary.get(FIELD_ID));
+                summaries.put(washroomId,
+                    new ReviewSummary(clampRating(MongoDocuments.number(summary, 0, "rating")),
+                        clampRating(MongoDocuments.number(summary, 0, "cleanliness")),
+                        Math.max(0, MongoDocuments.integer(summary, 0, "count"))));
+            }
+            result = summaries;
         }
-        return summaries;
+        return result;
     }
 
     private static entity.Building toApplicationBuilding(final Document document) {
@@ -266,12 +264,25 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
             .toUpperCase(Locale.ROOT)
             .replace('-', '_')
             .replace(' ', '_');
+        entity.Washroom.Gender result;
         try {
-            return entity.Washroom.Gender.valueOf(normalized);
+            result = entity.Washroom.Gender.valueOf(normalized);
         }
         catch (final IllegalArgumentException ignored) {
-            return entity.Washroom.Gender.ALL_GENDER;
+            result = entity.Washroom.Gender.ALL_GENDER;
         }
+        return result;
+    }
+
+    private static Stream<Object> databaseIds(final String id) {
+        final Stream<Object> result;
+        if (ObjectId.isValid(id)) {
+            result = Stream.of(id, new ObjectId(id));
+        }
+        else {
+            result = Stream.of(id);
+        }
+        return result;
     }
 
     private static double clampRating(final double value) {
@@ -284,48 +295,6 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
         return Math.sqrt(x * x + y * y) * MAGIC_6_371_000;
     }
 
-    private static List<entity.Washroom> loadWashrooms(final String filename) throws Exception {
-        final List<entity.Washroom> washroomList = new ArrayList<>();
-        try (Reader reader = new FileReader(filename); JsonReader jsonReader = Json.createReader(reader)) {
-
-            final JsonArray jsonArray = jsonReader.readArray();
-
-            final DBBuildingDataAccessObject dbBuildingDataAccessObject = new DBBuildingDataAccessObject();
-
-            for (final JsonValue value : jsonArray) {
-                final JsonObject obj = (JsonObject) value;
-
-                final String id = obj.getString("ID");
-                final String name = obj.getString(FIELD_NAME);
-                final String genderStr = obj.getString(FIELD_GENDER);
-                entity.Washroom.Gender gender = null;
-                if (genderStr.equals(entity.Washroom.Gender.MEN.toString())) {
-                    gender = entity.Washroom.Gender.MEN;
-                }
-                else if (genderStr.equals(entity.Washroom.Gender.WOMEN.toString())) {
-                    gender = entity.Washroom.Gender.WOMEN;
-                }
-                else if (genderStr.equals("ALL_GENDER")) {
-                    gender = entity.Washroom.Gender.ALL_GENDER;
-                }
-                else {
-                    gender = entity.Washroom.Gender.ALL_GENDER;
-                }
-
-                final boolean accessible = obj.getBoolean(FIELD_ACCESSIBLE);
-                final Condition condition = new Condition(FIELD_BUILDINGCODE, Operator.EQ, id);
-                final List<entity.Building> matchingBuildings = dbBuildingDataAccessObject.getMatching(condition);
-                if (!matchingBuildings.isEmpty()) {
-                    washroomList.add(
-                        new entity.Washroom(id, name, (matchingBuildings.getFirst()), "No data", accessible, gender, 0,
-                            0, "Example description", new ReviewSummary(0, 0, 0)));
-                }
-            }
-        }
-
-        return washroomList;
-    }
-
     /**
      * Writes a single Washroom object to the database.
      *
@@ -334,8 +303,9 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @return the operation result.
      */
     private String write(final Washroom washroom, final String buildingID) {
+        final Document doc;
         if (washroom instanceof final entity.Washroom applicationWashroom) {
-            final Document doc = new Document();
+            doc = new Document();
             doc.append(FIELD_BUILDINGID, buildingID);
             doc.append(FIELD_BUILDINGCODE, applicationWashroom
                 .building()
@@ -353,14 +323,12 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
             doc.append(FIELD_NUMTOILETS, applicationWashroom.numToilets());
             doc.append(FIELD_NUMSINKS, applicationWashroom.numSinks());
             doc.append(FIELD_LOCATIONDESCRIPTION, applicationWashroom.locationDescription());
-            return collection
-                .insertOne(doc)
-                .getInsertedId()
-                .toString();
         }
-        final Document doc = new Document();
-        doc.append(FIELD_BUILDINGID, buildingID);
-        doc.append(FIELD_FLOOR, washroom.floor());
+        else {
+            doc = new Document();
+            doc.append(FIELD_BUILDINGID, buildingID);
+            doc.append(FIELD_FLOOR, washroom.floor());
+        }
 
         return collection
             .insertOne(doc)
@@ -369,40 +337,13 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
     }
 
     /**
-     * Performs this operation.
-     *
-     * @param args parameter value.
-     */
-    public void main(final String[] args) {
-        try {
-            final DBWashroomDataAccessObject dbwashroomDAO = new DBWashroomDataAccessObject();
-            final Condition condition = new Condition<>(FIELD_FLOOR, Operator.NE, "00");
-            dbwashroomDAO.delete(condition);
-            final List<entity.Washroom> washroomList = loadWashrooms("src/main/resources/data/washrooms.json");
-            for (final entity.Washroom washroom : washroomList) {
-                write(washroom, washroom.id());
-                System.out.println(washroom);
-
-            }
-
-        }
-        catch (final Exception entryValue) {
-            System.out.println(entryValue);
-            System.out.println(entryValue.getCause());
-            System.out.println(entryValue.getMessage());
-            System.out.println("Error.");
-        }
-
-    }
-
-    /**
      * Returns all washrooms who satisfy all the given conditions.
      *
      * @param conditions a list of condition objects that the returned washrooms must satisfy
      * @return The washrooms that match all the conditions
      */
-    private List<entity.Washroom> getMatching(final Iterable<AbstractCondition<?>> conditions) {
-        return new ArrayList<>(getMatchingIDMap(conditions).values());
+    private List<entity.Washroom> getMatchingConditions(final Iterable<AbstractCondition<?>> conditions) {
+        return new ArrayList<>(getMatchingIdConditions(conditions).values());
 
     }
 
@@ -431,7 +372,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
             .isEmpty()) {
             conditions.add(new CollectionCondition<>(FIELD_NAME, Operator.IN, criteria.permittedNames()));
         }
-        return getMatching(conditions);
+        return getMatchingConditions(conditions);
     }
 
     /**
@@ -444,7 +385,7 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
 
         final List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
-        return getMatching(conditions);
+        return getMatchingConditions(conditions);
 
     }
 
@@ -454,11 +395,11 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @param conditions a list of condition objects that the returned washrooms must satisfy
      * @return The washrooms that match all the conditions mapped to their IDs in the database.
      */
-    private Map<String, Washroom> getMatchingIDMap(final Iterable<AbstractCondition<?>> conditions) {
+    private Map<String, Washroom> getMatchingIdConditions(final Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
 
         final Bson filter = parseConditions(conditions);
-        final List<Document> docs = getAll(filter);
+        final List<Document> docs = getAllDocuments(filter);
 
         final List<Washroom> sortedWashrooms = hydrate(docs)
             .stream()
@@ -488,29 +429,21 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
 
         final List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
-        return getMatchingIDMap(conditions);
-
-    }
-
-    /**
-     * Deletes every entry in the database that matches the given condition.
-     *
-     * @param condition A AbstractCondition object that the object must satisfy.
-     */
-    private void delete(final AbstractCondition<?> condition) {
-        final List<AbstractCondition<?>> conditions = new ArrayList<>();
-        conditions.add(condition);
-        delete(conditions);
+        return getMatchingIdConditions(conditions);
 
     }
 
     @Override
     public Optional<entity.Washroom> getById(final String id) {
         final Document document = MongoDocuments.findById(collection, id);
+        final Optional<entity.Washroom> result;
         if (document == null) {
-            return Optional.empty();
+            result = Optional.empty();
         }
-        return Optional.of(createWashroom(document));
+        else {
+            result = Optional.of(createWashroom(document));
+        }
+        return result;
     }
 
     @Override
@@ -521,33 +454,29 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
             .filter(id -> {
                 return !id.isBlank();
             })
-            .flatMap(id -> {
-                if (ObjectId.isValid(id)) {
-                    return Stream.<Object>of(id, new ObjectId(id));
-                }
-                return Stream.<Object>of(id);
-            })
+            .flatMap(DBWashroomDataAccessObject::databaseIds)
             .distinct()
             .toList();
+        final List<Washroom> result;
         if (databaseIds.isEmpty()) {
-            return List.of();
+            result = List.of();
         }
-
-        final Map<String, Washroom> washroomsById = hydrate(getAll(Filters.in(FIELD__ID, databaseIds)))
-            .stream()
-            .collect(java.util.stream.Collectors.toMap(Washroom::id, washroom -> {
-                return washroom;
-            }));
-        return ids
-            .stream()
-            .map(washroomsById::get)
-            .filter(Objects::nonNull)
-            .toList();
+        else {
+            final Map<String, Washroom> washroomsById = hydrate(getAllDocuments(Filters.in(FIELD_ID, databaseIds)))
+                .stream()
+                .collect(java.util.stream.Collectors.toMap(Washroom::id, washroom -> washroom));
+            result = ids
+                .stream()
+                .map(washroomsById::get)
+                .filter(Objects::nonNull)
+                .toList();
+        }
+        return result;
     }
 
     @Override
     public List<entity.Washroom> getAll() {
-        return getMatching(List.of())
+        return getMatchingConditions(List.of())
             .stream()
             .map(washroom -> {
                 return washroom;
@@ -561,15 +490,17 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
      * @return the operation result.
      */
     public List<entity.Washroom> getByNames(final Collection<String> names) {
+        final List<entity.Washroom> result;
         if (names.isEmpty()) {
-            return List.of();
+            result = List.of();
         }
-        return getMatching(List.of(new CollectionCondition<>(FIELD_NAME, Operator.IN, names)))
-            .stream()
-            .map(washroom -> {
-                return washroom;
-            })
-            .toList();
+        else {
+            result = getMatchingConditions(List.of(new CollectionCondition<>(FIELD_NAME, Operator.IN, names)))
+                .stream()
+                .map(washroom -> washroom)
+                .toList();
+        }
+        return result;
     }
 
     @Override

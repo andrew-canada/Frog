@@ -11,9 +11,8 @@ import entity.Report;
 public interface ReportedReviewsDataAccessInterface {
 
     /**
-     * Represents this type.
-     */
-    /**
+     * Returns every report currently on file (across all reviews).
+     *
      * @return every report currently on file (across all reviews).
      */
     List<Report> getAllReports();

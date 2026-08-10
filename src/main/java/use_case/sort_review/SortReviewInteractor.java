@@ -74,31 +74,30 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
             .orElse(null);
         if (washroom == null) {
             presenter.presentError("Washroom not found");
-            return;
-        }
-
-        final ReviewSortOrder sortOrder;
-        if (inputData.sortOrder() == null) {
-            sortOrder = ReviewSortOrder.RELEVANCE;
         }
         else {
-            sortOrder = inputData.sortOrder();
-        }
-        final Comparator<entity.Review> comparator = switch (sortOrder) {
-            case RELEVANCE -> Comparator
-                .comparing(SortReviewInteractor::score)
-                .reversed();
-            case MOST_HELPFUL -> Comparator
-                .comparing(entity.Review::getHelpfuls)
-                .reversed();
-            case HIGHEST_RATED -> Comparator
-                .comparing(entity.Review::getStars)
-                .reversed();
-            case LOWEST_RATED -> Comparator.comparing(entity.Review::getStars);
-            case NEWEST -> Comparator
-                .comparing(entity.Review::createdAt)
-                .reversed();
-            case VOTED_BY_ME -> session
+            final ReviewSortOrder sortOrder;
+            if (inputData.sortOrder() == null) {
+                sortOrder = ReviewSortOrder.RELEVANCE;
+            }
+            else {
+                sortOrder = inputData.sortOrder();
+            }
+            final Comparator<entity.Review> comparator = switch (sortOrder) {
+                case RELEVANCE -> Comparator
+                    .comparing(SortReviewInteractor::score)
+                    .reversed();
+                case MOST_HELPFUL -> Comparator
+                    .comparing(entity.Review::getHelpfuls)
+                    .reversed();
+                case HIGHEST_RATED -> Comparator
+                    .comparing(entity.Review::getStars)
+                    .reversed();
+                case LOWEST_RATED -> Comparator.comparing(entity.Review::getStars);
+                case NEWEST -> Comparator
+                    .comparing(entity.Review::createdAt)
+                    .reversed();
+                case VOTED_BY_ME -> session
                 .currentUser()
                 .map(user -> {
                     return Comparator
@@ -112,32 +111,34 @@ public class SortReviewInteractor implements SortReviewInputBoundary {
                 .orElseGet(() -> {
                     return Comparator.comparing(Review::getHelpfuls);
                 });
-        };
-        final ArrayList<Review> sortedReviews = new ArrayList<>(reviewRepository.getReviewsForWashroom(washroom.id()));
-        sortedReviews.sort(comparator);
-        final ReviewSummary summary = ReviewSummary.fromReviews(sortedReviews);
-        final String username = session
-            .currentUser()
-            .map(entity.User::username)
-            .orElse("");
-        final Set<String> reviewIds = sortedReviews
-            .stream()
-            .map(Review::id)
-            .collect(java.util.stream.Collectors.toUnmodifiableSet());
-        final Set<String> votedReviewIds = helpfulVoteRepository.votedReviewIds(reviewIds, username);
-        final Set<String> reportedReviewIds = reportRepository.reportedReviewIds(reviewIds, username);
-        final List<ViewReviewsOutputData.ReviewDisplay> display = sortedReviews
-            .stream()
-            .map(reviewValue -> {
-                return new ViewReviewsOutputData.ReviewDisplay(reviewValue.id(), reviewValue.rating(),
-                     reviewValue.comment(), reviewValue.helpfulCount(), reviewValue.createdAt(),
-                     reviewValue.authorUsername(), votedReviewIds.contains(reviewValue.id()),
-                    reportedReviewIds.contains(reviewValue.id()));
-            })
-            .toList();
-        presenter.present(new ViewReviewsOutputData(washroom.id(), washroom
-            .building()
-            .name(), displayDescription(washroom), summary.averageRating(), summary.averageCleanliness(),
-            summary.reviewCount(), washroom.numToilets(), washroom.numSinks(), display));
+            };
+            final ArrayList<Review> sortedReviews = new ArrayList<>(reviewRepository
+                .getReviewsForWashroom(washroom.id()));
+            sortedReviews.sort(comparator);
+            final ReviewSummary summary = ReviewSummary.fromReviews(sortedReviews);
+            final String username = session
+                .currentUser()
+                .map(entity.User::username)
+                .orElse("");
+            final Set<String> reviewIds = sortedReviews
+                .stream()
+                .map(Review::id)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+            final Set<String> votedReviewIds = helpfulVoteRepository.votedReviewIds(reviewIds, username);
+            final Set<String> reportedReviewIds = reportRepository.reportedReviewIds(reviewIds, username);
+            final List<ViewReviewsOutputData.ReviewDisplay> display = sortedReviews
+                .stream()
+                .map(reviewValue -> {
+                    return new ViewReviewsOutputData.ReviewDisplay(reviewValue.id(), reviewValue.rating(),
+                         reviewValue.comment(), reviewValue.helpfulCount(), reviewValue.createdAt(),
+                         reviewValue.authorUsername(), votedReviewIds.contains(reviewValue.id()),
+                        reportedReviewIds.contains(reviewValue.id()));
+                })
+                .toList();
+            presenter.present(new ViewReviewsOutputData(washroom.id(), washroom
+                .building()
+                .name(), displayDescription(washroom), summary.averageRating(), summary.averageCleanliness(),
+                summary.reviewCount(), washroom.numToilets(), washroom.numSinks(), display));
+        }
     }
 }

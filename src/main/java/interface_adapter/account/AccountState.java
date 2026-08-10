@@ -4,6 +4,16 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 public class AccountState {
+    private static final int VALUE_COUNT = 10;
+    private static final int PERSONAL_PLAN_INDEX = 1;
+    private static final int CHANGE_USERNAME_SUCCESS_INDEX = 2;
+    private static final int CHANGE_USERNAME_MESSAGE_INDEX = 3;
+    private static final int CHANGE_PASSWORD_SUCCESS_INDEX = 4;
+    private static final int CHANGE_PASSWORD_MESSAGE_INDEX = 5;
+    private static final int DELETE_ACCOUNT_SUCCESS_INDEX = 6;
+    private static final int DELETE_ACCOUNT_MESSAGE_INDEX = 7;
+    private static final int PERSONAL_PLAN_SUCCESS_INDEX = 8;
+    private static final int PERSONAL_PLAN_MESSAGE_INDEX = 9;
 
     private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
 
@@ -22,22 +32,20 @@ public class AccountState {
     private boolean personalPlanSuccess;
     private String personalPlanMessage;
 
-    public AccountState(final String username, final String personalPlan, final boolean changeUsernameSuccess,
-                        final String changeUsernameMessage, final boolean changePasswordSuccess,
-                        final String changePasswordMessage, final boolean deleteAccountSuccess,
-                        final String deleteAccountMessage, final boolean personalPlanSuccess,
-                        final String personalPlanMessage) {
-
-        this.username = username;
-        this.personalPlan = personalPlan;
-        this.changeUsernameSuccess = changeUsernameSuccess;
-        this.changeUsernameMessage = changeUsernameMessage;
-        this.changePasswordSuccess = changePasswordSuccess;
-        this.changePasswordMessage = changePasswordMessage;
-        this.deleteAccountSuccess = deleteAccountSuccess;
-        this.deleteAccountMessage = deleteAccountMessage;
-        this.personalPlanSuccess = personalPlanSuccess;
-        this.personalPlanMessage = personalPlanMessage;
+    public AccountState(final Object... values) {
+        if (values.length != VALUE_COUNT) {
+            throw new IllegalArgumentException("AccountState requires ten values");
+        }
+        this.username = (String) values[0];
+        this.personalPlan = (String) values[PERSONAL_PLAN_INDEX];
+        this.changeUsernameSuccess = (Boolean) values[CHANGE_USERNAME_SUCCESS_INDEX];
+        this.changeUsernameMessage = (String) values[CHANGE_USERNAME_MESSAGE_INDEX];
+        this.changePasswordSuccess = (Boolean) values[CHANGE_PASSWORD_SUCCESS_INDEX];
+        this.changePasswordMessage = (String) values[CHANGE_PASSWORD_MESSAGE_INDEX];
+        this.deleteAccountSuccess = (Boolean) values[DELETE_ACCOUNT_SUCCESS_INDEX];
+        this.deleteAccountMessage = (String) values[DELETE_ACCOUNT_MESSAGE_INDEX];
+        this.personalPlanSuccess = (Boolean) values[PERSONAL_PLAN_SUCCESS_INDEX];
+        this.personalPlanMessage = (String) values[PERSONAL_PLAN_MESSAGE_INDEX];
 
     }
 

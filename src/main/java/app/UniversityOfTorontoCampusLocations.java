@@ -16,6 +16,7 @@ final class UniversityOfTorontoCampusLocations {
     private static final double MYHAL_CENTRE_LATITUDE = 43.660837;
     private static final double BAHEN_CENTRE_LONGITUDE = -79.397200;
     private static final double BAHEN_CENTRE_LATITUDE = 43.659600;
+
     private UniversityOfTorontoCampusLocations() {
     }
 

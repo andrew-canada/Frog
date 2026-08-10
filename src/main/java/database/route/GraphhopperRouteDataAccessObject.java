@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.bson.Document;
+import org.bson.json.JsonParseException;
 
 import entity.GeoPoint;
 import entity.Route;
@@ -22,12 +23,12 @@ import use_case.port.RouteGateway;
  * Live GraphHopper Routing API adapter. The API key is supplied at the composition root.
  */
 public final class GraphhopperRouteDataAccessObject implements RouteGateway {
+    public static final String API_KEY_ENV = "GRAPHHOPPER_API_KEY";
     private static final int MAGIC_300 = 300;
     private static final int MAGIC_200 = 200;
     private static final int MAGIC_20 = 20;
     private static final double MAGIC_1000_0 = 1000.0;
     private static final int MAGIC_10 = 10;
-    public static final String API_KEY_ENV = "GRAPHHOPPER_API_KEY";
     private static final URI DEFAULT_ENDPOINT = URI.create("https://graphhopper.com/api/1/route");
 
     private final HttpClient httpClient;
@@ -56,7 +57,7 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
         try {
             root = Document.parse(json);
         }
-        catch (final RuntimeException malformed) {
+        catch (final JsonParseException malformed) {
             throw new IllegalStateException("GraphHopper returned invalid JSON.", malformed);
         }
         final List<Document> paths = root.getList("paths", Document.class);
@@ -69,6 +70,21 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
             throw new IllegalStateException("GraphHopper response did not contain route geometry.");
         }
         final List<?> coordinates = geometry.getList("coordinates", List.class);
+        final List<GeoPoint> points = routePoints(coordinates);
+        final Number distance = path.get("distance", Number.class);
+        final Number time = path.get("time", Number.class);
+        int distanceMeters = 0;
+        if (distance != null) {
+            distanceMeters = (int) Math.round(distance.doubleValue());
+        }
+        int timeSeconds = 0;
+        if (time != null) {
+            timeSeconds = (int) Math.round(time.doubleValue() / MAGIC_1000_0);
+        }
+        return new Route(points, distanceMeters, timeSeconds);
+    }
+
+    private static List<GeoPoint> routePoints(final List<?> coordinates) {
         final List<GeoPoint> points = new ArrayList<>();
         if (coordinates != null) {
             for (final Object coordinate : coordinates) {
@@ -81,16 +97,7 @@ public final class GraphhopperRouteDataAccessObject implements RouteGateway {
         if (points.size() < 2) {
             throw new IllegalStateException("GraphHopper returned incomplete route geometry.");
         }
-        final Number distance = path.get("distance", Number.class);
-        final Number time = path.get("time", Number.class);
-        if (time == null) {
-            return new Route(points, distance == null ? 0 : (int) Math.round(distance.doubleValue()), 0);
-        }
-        if (distance == null) {
-            return new Route(points, 0, (int) Math.round(time.doubleValue() / MAGIC_1000_0));
-        }
-        return new Route(points, (int) Math.round(distance.doubleValue()),
-            (int) Math.round(time.doubleValue() / MAGIC_1000_0));
+        return points;
     }
 
     private static String point(final GeoPoint point) {

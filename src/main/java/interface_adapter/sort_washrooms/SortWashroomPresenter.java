@@ -22,8 +22,8 @@ public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
 
     private static double distance(final double firstValue, final double secondValue, final double thirdValue,
         final double fourthValue) {
-        final double x = Math.toRadians(fourthValue - secondValue) * Math.cos(Math.toRadians((firstValue +
-            thirdValue) / 2));
+        final double x = Math.toRadians(fourthValue - secondValue) * Math.cos(Math.toRadians((firstValue
+            + thirdValue) / 2));
         final double y = Math.toRadians(thirdValue - firstValue);
         return Math.sqrt(x * x + y * y) * MAGIC_6_371_000;
     }
@@ -53,17 +53,7 @@ public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
         final List<WashroomListViewModel.Item> items = outputData
             .washrooms()
             .stream()
-            .map(washroom -> {
-                return new WashroomListViewModel.Item(washroom.id(), washroom
-                    .building()
-                    .name(), listDescription(washroom.name()), washroom
-                    .reviewSummary()
-                    .averageRating(), (int) Math.round(distance(outputData.latitude(), outputData.longitude(), washroom
-                    .building()
-                    .latitude(), washroom
-                    .building()
-                    .longitude())), washroom.accessible());
-            })
+            .map(washroom -> item(outputData, washroom))
             .toList();
         final Runnable update = () -> {
             listModel.setState(new WashroomListViewModel.State(items, null, "Sort by: Nearest", false));
@@ -72,5 +62,14 @@ public class SortWashroomPresenter implements SortWashroomsOutputBoundary {
         };
         userInterface.dispatch(update);
 
+    }
+
+    private static WashroomListViewModel.Item item(final SortWashroomsOutputData outputData,
+                                                    final entity.Washroom washroom) {
+        return new WashroomListViewModel.Item(washroom.id(), washroom.building().name(),
+            listDescription(washroom.name()),
+            washroom.reviewSummary().averageRating(), (int) Math.round(distance(outputData.latitude(),
+                outputData.longitude(), washroom.building().latitude(), washroom.building().longitude())),
+            washroom.accessible());
     }
 }

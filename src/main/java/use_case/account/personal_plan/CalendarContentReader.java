@@ -11,7 +11,7 @@ public interface CalendarContentReader {
      *
      * @return the operation result.
      *
-     * @throws Exception if the operation fails.
+     * @throws java.io.IOException if the operation fails.
      */
-    String read(String calendarPath) throws Exception;
+    String read(String calendarPath) throws java.io.IOException;
 }

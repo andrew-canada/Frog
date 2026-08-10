@@ -27,27 +27,26 @@ public final class GetDirectionsInteractor implements GetDirectionsInputBoundary
             .orElse(null);
         if (w == null) {
             presenter.present(new GetDirectionsOutputData(false, List.of(), 0, 0, "Washroom not found"));
-            return;
         }
-        try {
-            final Route route = routes.getRoute(new GeoPoint(in.originLatitude(), in.originLongitude()), new GeoPoint(w
-                .building()
-                .latitude(), w
-                .building()
-                .longitude()));
-            presenter.present(
-                new GetDirectionsOutputData(true, route.points(), route.distanceMeters(), route.timeSeconds(),
-                    "Route ready"));
-        }
-        catch (final RuntimeException failure) {
-            final String message;
-            if (failure.getMessage() == null) {
-                message = "Directions are temporarily unavailable";
+        else {
+            try {
+                final GeoPoint origin = new GeoPoint(in.originLatitude(), in.originLongitude());
+                final GeoPoint destination = new GeoPoint(w.building().latitude(), w.building().longitude());
+                final Route route = routes.getRoute(origin, destination);
+                presenter.present(
+                    new GetDirectionsOutputData(true, route.points(), route.distanceMeters(), route.timeSeconds(),
+                        "Route ready"));
             }
-            else {
-                message = failure.getMessage();
+            catch (final IllegalStateException failure) {
+                final String message;
+                if (failure.getMessage() == null) {
+                    message = "Directions are temporarily unavailable";
+                }
+                else {
+                    message = failure.getMessage();
+                }
+                presenter.present(new GetDirectionsOutputData(false, List.of(), 0, 0, message));
             }
-            presenter.present(new GetDirectionsOutputData(false, List.of(), 0, 0, message));
         }
     }
 }

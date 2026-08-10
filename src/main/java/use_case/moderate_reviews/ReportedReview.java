@@ -24,6 +24,8 @@ public record ReportedReview(String reviewId, String washroomName, String author
     }
 
     /**
+     * Returns the total number of reports.
+     *
      * @return total number of reports (sum of the reason counts).
      */
     public int totalReports() {
@@ -34,6 +36,8 @@ public record ReportedReview(String reviewId, String washroomName, String author
     }
 
     /**
+     * Returns the number of reports with written details.
+     *
      * @return how many reports include written details (drives the "(N)" button).
      */
     public int additionalDetailsCount() {

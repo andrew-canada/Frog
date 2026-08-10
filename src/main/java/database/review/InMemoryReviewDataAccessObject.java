@@ -56,8 +56,10 @@ public final class InMemoryReviewDataAccessObject
 
     public InMemoryReviewDataAccessObject(final List<Review> seed) {
         reviews.addAll(seed);
-    // --- View Reviews ----------------------------------------------------------
     }
+
+    // --- View Reviews ----------------------------------------------------------
+
     @Override
     public List<Review> getReviewsForWashroom(final String id) {
         return reviews
@@ -73,18 +75,22 @@ public final class InMemoryReviewDataAccessObject
     @Override
     public ReviewSummary getSummary(final String id) {
         final List<Review> found = getReviewsForWashroom(id);
+        final ReviewSummary result;
         if (found.isEmpty()) {
-            return ReviewSummary.empty();
+            result = ReviewSummary.empty();
         }
-        return new ReviewSummary(found
-            .stream()
-            .mapToDouble(Review::rating)
-            .average()
-            .orElse(0), found
-            .stream()
-            .mapToDouble(Review::cleanliness)
-            .average()
-            .orElse(0), found.size());
+        else {
+            result = new ReviewSummary(found
+                .stream()
+                .mapToDouble(Review::rating)
+                .average()
+                .orElse(0), found
+                .stream()
+                .mapToDouble(Review::cleanliness)
+                .average()
+                .orElse(0), found.size());
+        }
+        return result;
     }
 
     @Override
@@ -100,8 +106,15 @@ public final class InMemoryReviewDataAccessObject
     @Override
     public void save(final Review review) {
         reviews.add(review);
-    // --- Helpful votes ---------------------------------------------------------
     }
+
+    @Override
+    public void save(final Report report) {
+        reports.add(report);
+    }
+
+    // --- Helpful votes ---------------------------------------------------------
+
     @Override
     public boolean hasVoted(final String reviewId, final String username) {
         return votesByReview
@@ -150,15 +163,12 @@ public final class InMemoryReviewDataAccessObject
                     new Review(reviewValue.id(), reviewValue.washroomId(), reviewValue.authorUsername(),
                         reviewValue.rating(), reviewValue.cleanliness(), reviewValue.comment(),
                         count, reviewValue.createdAt()));
-                return;
+                break;
             }
         }
+    }
+
     // --- Reports ---------------------------------------------------------------
-    }
-    @Override
-    public void save(final Report report) {
-        reports.add(report);
-    }
 
     @Override
     public boolean hasReported(final String reviewId, final String username) {
@@ -197,8 +207,10 @@ public final class InMemoryReviewDataAccessObject
                 .reviewId()
                 .equals(reviewId);
         });
-    // --- Review admin ----------------------------------------------------------
     }
+
+    // --- Review admin ----------------------------------------------------------
+
     @Override
     public Optional<Review> getById(final String reviewId) {
         return reviews

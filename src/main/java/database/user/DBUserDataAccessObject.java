@@ -33,18 +33,14 @@ public class DBUserDataAccessObject extends DBDataAccessObject
     private static final String FIELD_PERSONALPLAN = "personalPlan";
     private static final String FIELD_ISMODERATOR = "isModerator";
 
-    private static final List<String> allowedAttributes = List.of(new String[] {FIELD_USERNAME, FIELD_PASSWORDHASH,
+    private static final List<String> ALLOWED_ATTRIBUTES = List.of(new String[] {FIELD_USERNAME, FIELD_PASSWORDHASH,
         FIELD_PERSONALPLAN});
     private final MongoCollection<Document> collection;
     private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
     private entity.User currentApplicationUser;
 
     public DBUserDataAccessObject() {
-        // initializes the MongoClient and MongoDatabase from
-        super();
-       // the set URI
-
-        collection = database.getCollection("Users");
+        collection = database().getCollection("Users");
     }
 
     public DBUserDataAccessObject(final MongoDatabase database) {
@@ -60,13 +56,17 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      */
     private static Bson parseConditions(final Iterable<AbstractCondition<?>> conditions) {
         final List<Bson> filters = new ArrayList<>();
-        conditions.forEach((condition) -> {
+        conditions.forEach(condition -> {
             filters.add(condition.getFilter());
         });
+        final Bson result;
         if (filters.isEmpty()) {
-            return new Document();
+            result = new Document();
         }
-        return Filters.and(filters);
+        else {
+            result = Filters.and(filters);
+        }
+        return result;
     }
 
     /**
@@ -101,7 +101,7 @@ public class DBUserDataAccessObject extends DBDataAccessObject
      * @throws RuntimeException if the attribute is not allowed.
      */
     private static void checkAttribute(final AbstractCondition<?> condition) {
-        if (!allowedAttributes.contains(condition.getFieldName())) {
+        if (!ALLOWED_ATTRIBUTES.contains(condition.getFieldName())) {
             throw new RuntimeException("Not a valid attribute");
         }
     }
@@ -119,13 +119,15 @@ public class DBUserDataAccessObject extends DBDataAccessObject
     }
 
     private static String value(final Document document, final String fallback, final String... fields) {
+        String result = fallback;
         for (final String field : fields) {
             final String value = document.getString(field);
             if (value != null && !value.isBlank()) {
-                return value;
+                result = value;
+                break;
             }
         }
-        return fallback;
+        return result;
     }
 
     /**
@@ -188,10 +190,14 @@ public class DBUserDataAccessObject extends DBDataAccessObject
         final Document persisted = collection
             .find(Filters.eq(FIELD_USERNAME, user.username()))
             .first();
+        final String result;
         if (persisted == null) {
-            return user.username();
+            result = user.username();
         }
-        return MongoDocuments.id(persisted);
+        else {
+            result = MongoDocuments.id(persisted);
+        }
+        return result;
     }
 
     /**
@@ -208,17 +214,15 @@ public class DBUserDataAccessObject extends DBDataAccessObject
 
     @Override
     public Optional<entity.User> get(final String username) {
-        List<User> matches = getMatching(List.of(new Condition<>(FIELD_USERNAME, Operator.EQ, username)));
-        if (matches.isEmpty()) {
-            matches = getMatching(List.of(new Condition<>(FIELD_USERNAME, Operator.EQ, username)));
+        final List<User> matches = getMatching(List.of(new Condition<>(FIELD_USERNAME, Operator.EQ, username)));
+        final Optional<entity.User> result;
+        if (matches.isEmpty() || matches.getFirst().passwordHash().isBlank()) {
+            result = Optional.empty();
         }
-        if (matches.isEmpty() || matches
-            .getFirst()
-            .passwordHash()
-            .isBlank()) {
-            return Optional.empty();
+        else {
+            result = Optional.of(matches.getFirst());
         }
-        return Optional.of(matches.getFirst());
+        return result;
     }
 
     @Override

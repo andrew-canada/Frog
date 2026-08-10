@@ -30,6 +30,8 @@ public final class ReadReviewsView extends JPanel {
     private static final float BODY_FONT_SIZE_FLOAT = 14f;
     private static final int CARD_HORIZONTAL_PADDING = 24;
     private static final int CARD_VERTICAL_PADDING = 18;
+    private static final char STAR = 9733;
+    private static final char MIDDLE_DOT = 183;
     private static final Color HELPFUL_GREEN = new Color(0x4C, 0xAF, 0x50);
     private final JLabel title = Theme.title("Reviews");
     private final JLabel subtitle = Theme.label("", 12, Theme.INK);
@@ -108,8 +110,8 @@ public final class ReadReviewsView extends JPanel {
     private void render(final ReviewsViewModel.State parameterValue) {
         title.setText(parameterValue.name());
         subtitle.setText(parameterValue.subtitle());
-        summary.setText(String.format("\u2605 %.1f  \u00B7  Based on %d reviews", parameterValue.rating(),
-            parameterValue.reviewCount()));
+        summary.setText(String.format("%s %.1f  %s  Based on %d reviews", Character.toString(STAR),
+            parameterValue.rating(), Character.toString(MIDDLE_DOT), parameterValue.reviewCount()));
         reviews.removeAll();
         renderReviews(parameterValue.reviews());
         reviews.revalidate();
@@ -118,76 +120,83 @@ public final class ReadReviewsView extends JPanel {
 
     private void renderReviews(final List<ViewReviewsOutputData.ReviewDisplay> parameterValue) {
         for (final ViewReviewsOutputData.ReviewDisplay reviewValue : parameterValue) {
-            final JPanel card = new JPanel(new BorderLayout(10, 10));
-            card.setBackground(Theme.PAPER);
-            card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Theme.LINE),
-                Theme.pad(CARD_VERTICAL_PADDING, CARD_HORIZONTAL_PADDING, CARD_VERTICAL_PADDING,
-                    CARD_HORIZONTAL_PADDING)));
-            final JLabel stars = Theme.label(String.format("* %.1f", reviewValue.rating()), 14, Theme.INK);
-            stars.setFont(stars
-                .getFont()
-                .deriveFont(Font.BOLD));
-            card.add(stars, BorderLayout.WEST);
-            final JTextArea body = new JTextArea(reviewValue.comment());
-            body.setEditable(false);
-            body.setLineWrap(true);
-            body.setWrapStyleWord(true);
-            body.setFont(body
-                .getFont()
-                .deriveFont(BODY_FONT_SIZE_FLOAT));
-            body.setBackground(Theme.PAPER);
-            card.add(body);
-            final JPanel meta = new JPanel();
-            meta.setOpaque(false);
-            meta.setLayout(new BoxLayout(meta, BoxLayout.Y_AXIS));
-            meta.add(Theme.label(reviewValue
-                .date()
-                .format(DateTimeFormatter.ofPattern("MMM d, yyyy")), COUNT_FONT_SIZE, Theme.MUTED));
-            meta.add(Box.createVerticalStrut(COUNT_FONT_SIZE));
-            final JButton helpful = Theme.button("Helpful  -  " + reviewValue.helpfulCount());
-            // Turn off the look-and-feel'parameterValue own button-face painting so our green background
-            if (reviewValue.votedByCurrentUser()) {
-               // actually shows; otherwise the L&F paints its grey face over setBackground().
-
-                helpful.setContentAreaFilled(false);
-                helpful.setOpaque(true);
-                helpful.setBackground(HELPFUL_GREEN);
-                helpful.setForeground(Color.WHITE);
-            }
-            helpful.addActionListener(entryValue -> {
-                onHelpful.accept(reviewValue.reviewId());
-            });
-            meta.add(helpful);
-            meta.add(Box.createVerticalStrut(DETAIL_GAP));
-            final JButton report;
-            if (reviewValue.reportedByCurrentUser()) {
-                report = Theme.button("Reported");
-            }
-            else {
-                report = Theme.button("Report");
-            }
-            // Inert "reported" chip: no action listener (so it can't report again), but kept
-            if (reviewValue.reportedByCurrentUser()) {
-               // enabled so the accent colors render - a disabled button greys its text.
-
-                report.setContentAreaFilled(false);
-                report.setOpaque(true);
-                report.setBackground(Theme.BERRY);
-                report.setForeground(Color.WHITE);
-                report.setBorder(
-                    BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.BERRY.darker()),
-                        Theme.pad(SMALL_GAP, BODY_FONT_SIZE, SMALL_GAP, BODY_FONT_SIZE)));
-                report.setFocusable(false);
-            }
-            else {
-                report.addActionListener(entryValue -> {
-                    onReport.accept(reviewValue.reviewId());
-                });
-            }
-            meta.add(report);
-            card.add(meta, BorderLayout.EAST);
-            reviews.add(card);
+            reviews.add(reviewCard(reviewValue));
         }
+    }
+
+    private JPanel reviewCard(final ViewReviewsOutputData.ReviewDisplay reviewValue) {
+        final JPanel card = new JPanel(new BorderLayout(10, 10));
+        card.setBackground(Theme.PAPER);
+        card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Theme.LINE),
+            Theme.pad(CARD_VERTICAL_PADDING, CARD_HORIZONTAL_PADDING, CARD_VERTICAL_PADDING, CARD_HORIZONTAL_PADDING)));
+        card.add(reviewContent(reviewValue), BorderLayout.CENTER);
+        card.add(reviewActions(reviewValue), BorderLayout.EAST);
+        return card;
+    }
+
+    private static JComponent reviewContent(final ViewReviewsOutputData.ReviewDisplay reviewValue) {
+        final JPanel content = new JPanel(new BorderLayout());
+        content.setOpaque(false);
+        final JLabel stars = Theme.label(String.format("* %.1f", reviewValue.rating()), BODY_FONT_SIZE, Theme.INK);
+        stars.setFont(stars.getFont().deriveFont(Font.BOLD));
+        content.add(stars, BorderLayout.WEST);
+        final JTextArea body = new JTextArea(reviewValue.comment());
+        body.setEditable(false);
+        body.setLineWrap(true);
+        body.setWrapStyleWord(true);
+        body.setFont(body.getFont().deriveFont(BODY_FONT_SIZE_FLOAT));
+        body.setBackground(Theme.PAPER);
+        content.add(body, BorderLayout.CENTER);
+        return content;
+    }
+
+    private JPanel reviewActions(final ViewReviewsOutputData.ReviewDisplay reviewValue) {
+        final JPanel meta = new JPanel();
+        meta.setOpaque(false);
+        meta.setLayout(new BoxLayout(meta, BoxLayout.Y_AXIS));
+        meta.add(Theme.label(reviewValue.date().format(DateTimeFormatter.ofPattern("MMM d, yyyy")), COUNT_FONT_SIZE,
+            Theme.MUTED));
+        meta.add(Box.createVerticalStrut(COUNT_FONT_SIZE));
+        meta.add(helpfulButton(reviewValue));
+        meta.add(Box.createVerticalStrut(DETAIL_GAP));
+        meta.add(reportButton(reviewValue));
+        return meta;
+    }
+
+    private JButton helpfulButton(final ViewReviewsOutputData.ReviewDisplay reviewValue) {
+        final JButton helpful = Theme.button("Helpful  -  " + reviewValue.helpfulCount());
+        if (reviewValue.votedByCurrentUser()) {
+            helpful.setContentAreaFilled(false);
+            helpful.setOpaque(true);
+            helpful.setBackground(HELPFUL_GREEN);
+            helpful.setForeground(Color.WHITE);
+        }
+        helpful.addActionListener(entryValue -> onHelpful.accept(reviewValue.reviewId()));
+        return helpful;
+    }
+
+    private JButton reportButton(final ViewReviewsOutputData.ReviewDisplay reviewValue) {
+        final JButton report;
+        if (reviewValue.reportedByCurrentUser()) {
+            report = reportedButton();
+        }
+        else {
+            report = Theme.button("Report");
+            report.addActionListener(entryValue -> onReport.accept(reviewValue.reviewId()));
+        }
+        return report;
+    }
+
+    private static JButton reportedButton() {
+        final JButton report = Theme.button("Reported");
+        report.setContentAreaFilled(false);
+        report.setOpaque(true);
+        report.setBackground(Theme.BERRY);
+        report.setForeground(Color.WHITE);
+        report.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.BERRY.darker()),
+            Theme.pad(SMALL_GAP, BODY_FONT_SIZE, SMALL_GAP, BODY_FONT_SIZE)));
+        report.setFocusable(false);
+        return report;
     }
 
     public void setOnBack(final Runnable reviewValue) {

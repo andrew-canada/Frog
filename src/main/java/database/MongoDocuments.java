@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 
 import org.bson.Document;
@@ -77,17 +78,21 @@ public final class MongoDocuments {
      * @return the operation result.
      */
     public static boolean referenceMatches(final Object stored, final String expected) {
+        final boolean result;
         if (stored == null || expected == null) {
-            return false;
-        }
-        final String actual;
-        if (stored instanceof final ObjectId objectId) {
-            actual = objectId.toHexString();
+            result = false;
         }
         else {
-            actual = stored.toString();
+            final String actual;
+            if (stored instanceof final ObjectId objectId) {
+                actual = objectId.toHexString();
+            }
+            else {
+                actual = stored.toString();
+            }
+            result = actual.equals(expected) || actual.contains(expected) || expected.contains(actual);
         }
-        return actual.equals(expected) || actual.contains(expected) || expected.contains(actual);
+        return result;
     }
 
     /**
@@ -221,7 +226,7 @@ public final class MongoDocuments {
                     found = true;
                     break;
                 }
-                catch (final RuntimeException ignored) {
+                catch (final DateTimeParseException ignored) {
                     // Try the next schema key.
                 }
             }
@@ -229,7 +234,8 @@ public final class MongoDocuments {
         if (!found) {
             final Object id = document.get(FIELD_ID);
             if (id instanceof final ObjectId objectId) {
-                result = LocalDateTime.ofInstant(Instant.ofEpochSecond(objectId.getTimestamp()), ZoneId.systemDefault());
+                result = LocalDateTime.ofInstant(Instant.ofEpochSecond(objectId.getTimestamp()),
+                    ZoneId.systemDefault());
             }
         }
         return result;

@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Font;
 
 import javax.swing.BorderFactory;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -25,6 +26,7 @@ final class Main {
     private static final int BORDER_COLOR_BLUE = 218;
     private static final int BORDER_COLOR_GREEN = 226;
     private static final int BORDER_COLOR_RED = 228;
+
     private Main() {
     }
 
@@ -34,29 +36,35 @@ final class Main {
      * @param args command-line arguments
      */
     public static void main(final String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            }
-            catch (final Exception ignored) {
-            }
-            UIManager.put("Button.background", Color.WHITE);
-            UIManager.put("Button.foreground", Color.BLACK);
-            final JWindow loading = loadingWindow();
-            loading.setVisible(true);
-            try {
-                new AppBuilder().buildAndSeed(app -> {
-                    loading.dispose();
-                    app.setLocationRelativeTo(null);
-                    app.setVisible(true);
-                });
-            }
-            catch (final RuntimeException failure) {
-                loading.dispose();
-                JOptionPane.showMessageDialog(null, failure.getMessage(), "FlushID could not start",
-                    JOptionPane.ERROR_MESSAGE);
-            }
-        });
+        SwingUtilities.invokeLater(Main::startApplication);
+    }
+
+    private static void startApplication() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }
+        catch (final ClassNotFoundException | InstantiationException | IllegalAccessException
+                     | javax.swing.UnsupportedLookAndFeelException failure) {
+            System.err.println("Could not set the system look and feel: " + failure.getMessage());
+        }
+        UIManager.put("Button.background", Color.WHITE);
+        UIManager.put("Button.foreground", Color.BLACK);
+        final JWindow loading = loadingWindow();
+        loading.setVisible(true);
+        try {
+            new AppBuilder().buildAndSeed(app -> showLoadedApplication(loading, app));
+        }
+        catch (final IllegalStateException failure) {
+            loading.dispose();
+            JOptionPane.showMessageDialog(null, failure.getMessage(), "FlushID could not start",
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private static void showLoadedApplication(final JWindow loading, final JFrame app) {
+        loading.dispose();
+        app.setLocationRelativeTo(null);
+        app.setVisible(true);
     }
 
     private static JWindow loadingWindow() {
