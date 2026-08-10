@@ -15,6 +15,9 @@ public final class TestRunner {
         run("ModerateReviewsInteractorTest", ModerateReviewsInteractorTest::run);
         run("SortingInteractorTest", SortingInteractorTest::run);
         run("PersonalPlanInteractorTest", PersonalPlanInteractorTest::run);
+        run("ChangeUsernameInteractorTest", ChangeUsernameInteractorTest::run);
+        run("ChangePasswordInteractorTest", ChangePasswordInteractorTest::run);
+        run("DeleteAccountInteractorTest", DeleteAccountInteractorTest::run);
         System.out.println("All interactor, adapter, sorting, and UI smoke tests passed.");
     }
 
