@@ -38,10 +38,12 @@ public final class ReportReviewDialog extends JDialog {
     private static final String[] REASONS =
         {"Spam", "Offensive or profane language", "Harassment", "Off-topic", "False or misleading information",
             "Other"};
+    private boolean confirmationShown;
 
     public ReportReviewDialog(final Window owner, final ReportReviewController controller,
                               final ReportReviewViewModel model, final String reviewId, final String reporter) {
         super(owner, "Report Review", ModalityType.APPLICATION_MODAL);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         final ReportControls controls = createControls();
         final JPanel page = controls.page();
@@ -54,6 +56,7 @@ public final class ReportReviewDialog extends JDialog {
             dispose();
         });
         submit.addActionListener(entryValue -> {
+            confirmationShown = false;
             final List<String> reasons = new ArrayList<>();
             for (final JCheckBox box : boxes) {
                 if (box.isSelected()) {
@@ -65,7 +68,8 @@ public final class ReportReviewDialog extends JDialog {
 
         final PropertyChangeListener listener = parameterValue -> {
             final ReportReviewViewModel.State state = model.getState();
-            if (state.submitted()) {
+            if (state.submitted() && isVisible() && !confirmationShown) {
+                confirmationShown = true;
                 JOptionPane.showMessageDialog(this, state.message());
                 if (state.success()) {
                     dispose();

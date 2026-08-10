@@ -35,7 +35,7 @@ final class FilterInteractorTest {
                 washrooms.add(new Washroom(
                     "a",
                     "a",
-                    new Building("a", "a", 44.0, 72.0),
+                    new Building("BA", "a", 44.0, 72.0),
                     "1",
                     true,
                     Washroom.Gender.ALL_GENDER,
@@ -84,6 +84,15 @@ final class FilterInteractorTest {
 
             @Override
             public List<Washroom> findMatching(final WashroomFilterCriteria criteria) {
+                if (criteria.accessibleOnly()) {
+                    return new ArrayList<>(Collections.singleton(washrooms.get(0)));
+                }
+                if (criteria.gender() != null && criteria.gender().contains(Washroom.Gender.WOMEN)) {
+                    return new ArrayList<>(Collections.singleton(washrooms.get(1)));
+                }
+                if (criteria.buildingCode() != null && criteria.buildingCode().equals("BA")) {
+                    return new ArrayList<>(List.of(new Washroom[]{washrooms.get(0), washrooms.get(2)}));
+                }
                 return new ArrayList<>(Collections.singleton(washrooms.get(2)));
             }
         }
@@ -227,6 +236,57 @@ final class FilterInteractorTest {
             && output.out
             .washrooms()
             .size() == 1, "valid filter should only return one washroom here");
+        TestSupport.check(output.out.success()
+                && output.out
+                .washrooms()
+                .getFirst().id().equals("c"), "valid filter should return washroom C here");
+
+        new FilterInteractor(
+                washrooms,
+                reviews,
+                status,
+                users,
+                output,
+                new HashSet<String>()).execute(
+                new FilterInputData(5.0F, 1.0F, true, null, "", false, false, 1.0, 1.0)
+        );
+
+        TestSupport.check(output.out.success()
+                && output.out
+                .washrooms()
+                .getFirst().id().equals("a"), "valid filter should return washroom A here");
+
+        new FilterInteractor(
+                washrooms,
+                reviews,
+                status,
+                users,
+                output,
+                new HashSet<String>()).execute(
+                new FilterInputData(5.0F, 1.0F, false, "WOMEN", "", false, false, 1.0, 1.0)
+        );
+
+        TestSupport.check(output.out.success()
+                && output.out
+                .washrooms()
+                .getFirst().id().equals("b"), "valid filter should return washroom B here");
+
+        new FilterInteractor(
+                washrooms,
+                reviews,
+                status,
+                users,
+                output,
+                new HashSet<String>()).execute(
+                new FilterInputData(5.0F, 1.0F, false, null, "a", false, false, 1.0, 1.0)
+        );
+
+        TestSupport.check(output.out.success()
+                && output.out
+                .washrooms()
+                .stream()
+                .map(Washroom::id).toList()
+                .equals(List.of(new String[]{"a", "c"})), "valid filter should return washrooms A and C here");
     }
 }
 

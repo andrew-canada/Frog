@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -20,8 +21,9 @@ final class MainSidebar {
     }
 
     static JPanel create(final MainView owner, final WashroomListViewModel washrooms, final MainView.CampusMapPanel map,
-                         final FilterController filterController, final SortWashroomController sortController,
-                         final Function<String, GeoPoint> addressLookup) {
+                         final Supplier<FilterController> filterController,
+                         final Supplier<SortWashroomController> sortController,
+                         final Supplier<Function<String, GeoPoint>> addressLookup) {
         final JPanel panel = new JPanel(new BorderLayout(0, 10));
         panel.setPreferredSize(new Dimension(MainView.CONTENT_DIVIDER_LOCATION, 0));
         panel.setBackground(Theme.PAPER);
@@ -40,15 +42,15 @@ final class MainSidebar {
         final WashroomSortDropdownControl sortDropdown = new WashroomSortDropdownControl();
         controls.add(sortDropdown);
         sortDropdown.addActionListener(event -> {
-            sortWashrooms(owner, washrooms, sortController, sortDropdown);
+            sortWashrooms(owner, washrooms, sortController.get(), sortDropdown);
         });
         panel.add(controls, BorderLayout.NORTH);
 
         final MapClicker mapClicker = new MapClicker(map);
-        location.addActionListener(event -> openLocation(owner, addressLookup, mapClicker));
-        filters.addActionListener(event -> openFilters(owner, filterController));
+        location.addActionListener(event -> openLocation(owner, addressLookup.get(), mapClicker));
+        filters.addActionListener(event -> openFilters(owner, filterController.get()));
         clear.addActionListener(event -> {
-            filterController.execute(MainView.STANDARD_STROKE_WIDTH, 1, false, false, false, false,
+            filterController.get().execute(MainView.STANDARD_STROKE_WIDTH, 1, false, false, false, false,
                 owner.selectedId(), null, owner.latitude(), owner.longitude());
         });
         final JScrollPane scroll = new JScrollPane(owner.washroomList());
