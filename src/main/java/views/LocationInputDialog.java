@@ -18,6 +18,10 @@ import javax.swing.SwingWorker;
 
 import entity.GeoPoint;
 
+/**
+ * Popup window for entering location.
+ */
+
 final class LocationInputDialog extends JDialog {
     private final JTextField address;
     private final JTextField latitude;
@@ -39,15 +43,15 @@ final class LocationInputDialog extends JDialog {
         c.gridx = 0;
         c.gridy = 0;
         c.gridwidth = 2;
+        // Enter address label and textbox
         p.add(Theme.label("Enter an address or coordinates", 14, Theme.INK), c);
         c.gridwidth = 1;
         c.gridy++;
         p.add(new JLabel("Address"), c);
         c.gridx = 1;
         address = new JTextField(28);
-        latitude = new JTextField(currLat.toString(), 10);
-        longitude = new JTextField(currLong.toString(), 10);
         p.add(address, c);
+        // Right click on map button
         c.gridx = 0;
         c.gridy++;
         c.anchor = GridBagConstraints.WEST;
@@ -57,6 +61,7 @@ final class LocationInputDialog extends JDialog {
         final JButton clickLocation = Theme.primary("Right click on map to select location");
         clickLocation.addActionListener(mapClicker);
         p.add(clickLocation, c);
+        // Use address button
         final JButton useAddress = Theme.primary("Use address");
         c.gridx = 1;
         c.anchor = GridBagConstraints.EAST;
@@ -67,8 +72,11 @@ final class LocationInputDialog extends JDialog {
         c.gridwidth = 2;
         c.fill = GridBagConstraints.HORIZONTAL;
         p.add(new JSeparator(), c);
+        // Latitude and Longitude textboxes
         c.gridwidth = 1;
         c.gridy++;
+        latitude = new JTextField(currLat.toString(), 10);
+        longitude = new JTextField(currLong.toString(), 10);
         p.add(new JLabel("Latitude"), c);
         c.gridx = 1;
         p.add(latitude, c);
@@ -77,6 +85,7 @@ final class LocationInputDialog extends JDialog {
         p.add(new JLabel("Longitude"), c);
         c.gridx = 1;
         p.add(longitude, c);
+        // Use coordinates button
         final JButton useCoordinates = Theme.primary("Use coordinates");
         c.gridx = 1;
         c.gridy++;
