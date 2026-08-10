@@ -2,6 +2,29 @@
 
 FlushID is a Java Swing desktop application for finding University of Toronto washrooms. It combines an interactive campus map with washroom details, reviews, live crowd reports, directions, and personal planning.
 
+## Contributors
+(In Alphabetical Order)
+ - Andrew
+ - Eleanor
+ - Ian
+ - Mark
+ - Sheena
+   
+## Table of Contents
+
+ - [FlushID](#FlushID)
+ - [Contributors](#Contributors)
+ - [Table of Contents (links to here)](#Table-of-Contents)
+ - [Features](#Features)
+ - [Requirements](#Requirements)
+ - [Configuration](#Configuration)
+ - [Build and run from source](#build-and-run-from-source)
+ - [Build and run the executable fat JAR](#build-and-run-the-executable-fat-jar)
+ - [Data and startup behaviour](#data-and-startup-behavior)
+ - [Project structure](#project-structure)
+ - [Testing and coverage](#testing-and-coverage)
+ - [Feedback](#feedback)
+ - [Contribute to This Project](#contribute-to-this-project)
 ## Features
 
 - Browse washrooms on a draggable, zoomable OpenStreetMap campus map.
@@ -15,9 +38,9 @@ FlushID is a Java Swing desktop application for finding University of Toronto wa
 
 ## Requirements
 
-- JDK 24, matching `maven.compiler.release` in `pom.xml`.
-- Maven 3.9+ to build from source.
-- A graphical desktop environment and internet access for the map and routing service.
+- JDK 24, matching `maven.compiler.release` in `pom.xml`. It can be installed from [here](https://www.oracle.com/ca-en/java/technologies/downloads/).
+- Maven 3.9+ to build from source. It can be installed from [here](https://maven.apache.org/install.html).
+- A graphical desktop environment with a monitor resolution of at least 1500x600 and internet access for the map and routing service.
 - MongoDB database access containing the project washroom/building data.
 - A GraphHopper API key. Gemini is required only when generating a personal plan.
 
@@ -25,12 +48,12 @@ FlushID is a Java Swing desktop application for finding University of Toronto wa
 
 The built JAR bundles `src/main/resources/environment_variables.env` and reads it at startup. The file supplies the MongoDB, GraphHopper, and Gemini values needed by the submission/demo build.
 
-| Setting | Required | Purpose |
-| --- | --- | --- |
-| `MONGODB_URI` | Yes | MongoDB connection string. |
-| `MONGODB_DATABASE` | No | Database name; defaults to `FlushID`. |
-| `GRAPHHOPPER_API_KEY` | Yes | Address lookup and walking directions. |
-| `GEMINI_API_KEY` | Only for personal plans | Gemini timetable-plan generation. |
+| Setting               | Required                | Purpose                                |
+|-----------------------|-------------------------|----------------------------------------|
+| `MONGODB_URI`         | Yes                     | MongoDB connection string.             |
+| `MONGODB_DATABASE`    | No                      | Database name; defaults to `FlushID`.  |
+| `GRAPHHOPPER_API_KEY` | Yes                     | Address lookup and walking directions. |
+| `GEMINI_API_KEY`      | Only for personal plans | Gemini timetable-plan generation.      |
 
 A non-blank process environment variable takes precedence over the bundled value. For example, to override the current PowerShell session:
 
@@ -76,7 +99,7 @@ target/FlushID-1.0-SNAPSHOT.jar
 
 This is a self-contained fat JAR: it includes FlushID's runtime dependencies, bundled resources, configuration file, and `app.Main` entry point. It is the only `target/` artifact intentionally kept under version control; all other build output remains ignored.
 
-## Data and startup behavior
+## Data and startup behaviour
 
 At startup FlushID connects to the configured MongoDB database, loads the bundled set of named washrooms, and prepares database indexes. It also creates baseline review and hourly-status data for those known washrooms when missing. The application does not import the building and washroom collections from JSON, so the configured database must already contain them.
 
@@ -89,7 +112,7 @@ MongoDB stores users, reviews, review reports, status reports, and optional enro
 - `interface_adapter` - controllers, presenters, and observable view models.
 - `database` - MongoDB, GraphHopper, Gemini, and security adapters.
 - `configuration` - bundled-configuration loading with process-environment overrides.
-- `views` - Swing screens, dialogs, map rendering, and chart components.
+- `views` - Swing screens, dialogues, map rendering, and chart components.
 - `app` - composition root, startup loading, and dependency wiring.
 - `src/main/resources` - bundled data, image assets, and environment configuration.
 
@@ -101,4 +124,13 @@ Run the test suite and generate the JaCoCo report with:
 mvn test
 ```
 
-Open `target/site/jacoco/index.html` after the run to inspect coverage. The test suite uses deterministic fakes and local HTTP servers for application behavior and route/geocoding adapter coverage; it does not require live MongoDB, GraphHopper, or Gemini access.
+Open `target/site/jacoco/index.html` after the run to inspect coverage. The test suite uses deterministic fakes and local HTTP servers for application behaviour and route/geocoding adapter coverage; it does not require live MongoDB, GraphHopper, or Gemini access.
+
+
+## Feedback
+
+You can provide us feedback by DMing any member of the FlushID on GitHub.
+
+## Contribute to This Project
+
+Unfortunately, FlushID is not open to contributions as of now. If you would like to contribute, send a message to any one of the existing contributors. You are free to fork this repository, in conformance with the `LICENCE.md`.
