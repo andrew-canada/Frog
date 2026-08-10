@@ -61,6 +61,13 @@ final class UiSmokeTest {
                 list.setState(new WashroomListViewModel.State(
                     List.of(new WashroomListViewModel.Item("w1", "Test building", "Single-user", 4.5, 200, true)), "w1",
                     "Nearest", false));
+                final String[] reviewedWashroom = {""};
+                main.setOnReviews(id -> {
+                    reviewedWashroom[0] = id;
+                });
+                buttonNamed(main, "Reviews").doClick();
+                TestSupport.check(reviewedWashroom[0].equals("w1"),
+                    "review cards should use the latest review callback");
                 busyness.setState(
                     new BusynessViewModel.State(List.of(new BusynessStatsOutputData.HourBucket(8, 0, "no data")),
                         "No data yet"));
