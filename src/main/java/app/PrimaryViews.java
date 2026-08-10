@@ -23,7 +23,8 @@ final class PrimaryViews {
     static PrimaryViews create(final ApplicationInfrastructure infrastructure, final ApplicationModels models,
                                final ApplicationControllers controllers) {
         final MainView main = new MainView(models.features().list(), models.features().map(),
-            models.features().filter(), models.auth().isLoggedIn(), controllers.auth().logout());
+            models.features().filter(), models.auth().isLoggedIn(), controllers.auth().logout(),
+            controllers.account().loadAccount());
         main.setAddressLookup(infrastructure.geocoding()::lookup);
         main.setFilterController(controllers.navigation().filter());
         main.setSortWashroomController(controllers.navigation().sortWashroom());

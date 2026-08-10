@@ -23,12 +23,8 @@ public final class LoginPresenter implements LoginOutputBoundary {
             loggedIn.setState(new LoggedInViewModel.State(true, d.username(), d.moderator()));
         }
         if (d.success()) {
-            isLoggedIn
-                .getState()
-                .setIsLoggedIn(true);
-            isLoggedIn
-                .getState()
-                .setUsername(d.username());
+            isLoggedIn.setIsLoggedIn(true);
+            isLoggedIn.setUsername(d.username());
         }
     }
 }

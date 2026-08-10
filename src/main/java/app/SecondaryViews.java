@@ -24,7 +24,7 @@ final class SecondaryViews {
     }
 
     static SecondaryViews create(final ApplicationModels models, final ApplicationControllers controllers) {
-        final AccountView account = new AccountView(models.features().account(), models.auth().isLoggedIn(),
+        final AccountView account = new AccountView(models.features().account(),
             controllers.account().changeUsername(), controllers.account().changePassword(),
             controllers.account().deleteAccount(), controllers.personalPlan().personalPlan());
         final StatusReportView status = new StatusReportView(models.features().status());

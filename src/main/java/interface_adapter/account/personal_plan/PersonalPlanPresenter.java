@@ -1,6 +1,5 @@
 package interface_adapter.account.personal_plan;
 
-import interface_adapter.account.AccountState;
 import interface_adapter.account.AccountViewModel;
 import use_case.account.personal_plan.PersonalPlanOutputBoundary;
 import use_case.account.personal_plan.PersonalPlanOutputData;
@@ -16,10 +15,11 @@ public final class PersonalPlanPresenter implements PersonalPlanOutputBoundary {
     @Override
     public void present(final PersonalPlanOutputData outputData) {
 
-        final AccountState state = viewModel.getState();
-        state.setPersonalPlanSuccess(outputData.success());
-        state.setPersonalPlan(outputData.personalPlan());
-        state.setPersonalPlanMessage(outputData.message());
+        viewModel.setPersonalPlanSuccess(outputData.success());
+        viewModel.setPersonalPlanMessage(outputData.message());
+        if (outputData.success()) {
+            viewModel.setPersonalPlan(outputData.personalPlan());
+        }
 
     }
 
