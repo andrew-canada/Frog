@@ -375,9 +375,9 @@ public class DBWashroomDataAccessObject extends DBDataAccessObject implements Wa
             conditions.add(new Condition<>("accessible", Operator.EQ, true));
         }
         if (criteria.gender() != null) {
-            conditions.add(new Condition<>("gender", Operator.EQ, criteria
-                .gender()
-                .name()));
+            List<String> genders = new ArrayList<>();
+            criteria.gender().forEach(gender -> genders.add(gender.name()));
+            conditions.add(new CollectionCondition<>("gender", Operator.IN, genders));
         }
         if (criteria.buildingCode() != null && !criteria
             .buildingCode()

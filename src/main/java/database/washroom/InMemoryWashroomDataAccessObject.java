@@ -98,7 +98,7 @@ public final class InMemoryWashroomDataAccessObject implements WashroomFilterRep
                 return !criteria.accessibleOnly() || w.accessible();
             })
             .filter(w -> {
-                return criteria.gender() == null || w.gender() == criteria.gender();
+                return criteria.gender() == null || criteria.gender().contains(w.gender());
             })
             .filter(w -> {
                 return criteria.buildingCode() == null || criteria
