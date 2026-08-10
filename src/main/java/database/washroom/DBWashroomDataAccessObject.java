@@ -41,6 +41,21 @@ import entity.Washroom;
 import use_case.filter.WashroomFilterCriteria;
 import use_case.filter.WashroomFilterRepository;
 
+/**
+ * Class for accessing Washroom data in the MongoDB database. The data is organized as follows:
+ * Each washroom is written with the following properties:
+ *  - _id: MongoDB required property, an ObjectID created by MongoDB representing the unique object.
+ *  - buildingID: the ID of the building the washroom is in, string.
+ *  - buildingCode: The code for the building, string such as "BA".
+ *  - seedKey: String of the form "campus-xx-washroom" where XX is the building code
+ *  - name: String of the name of the washroom.
+ *  - floor: String representing the floor of the building the washroom is on.
+ *  - gender: String, one of "ALL_GENDER", "MEN", "WOMEN".
+ *  - accessible: Boolean, whether the washroom is accessible or not.
+ *  - numToilets: Integer, the number of toilets in the washroom.
+ *  - numSinks: Integer, the number of sinks in the washroom.
+ *  - locationDescription: String, a description of where the washroom is.
+ */
 public class DBWashroomDataAccessObject extends DBDataAccessObject implements WashroomFilterRepository {
 
     private static final List<String> allowedAttributes = List.of(

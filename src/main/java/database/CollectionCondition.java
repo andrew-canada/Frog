@@ -6,6 +6,12 @@ import org.bson.conversions.Bson;
 
 import com.mongodb.client.model.Filters;
 
+/**
+ * Class representing a condition applied to a list of objects,
+ * like CollectionCondition("buildingCode", Operator.IN, {"BA", "CH"}) to represent
+ * the building code of a building being either BA or CH.
+ * @param <T> The type of the value.
+ */
 public class CollectionCondition<T extends Collection<?>> extends AbstractCondition<T> {
 
     private final Bson filter;

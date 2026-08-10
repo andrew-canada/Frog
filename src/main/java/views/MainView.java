@@ -654,6 +654,10 @@ public final class MainView extends JPanel {
         }
     }
 
+    /**
+     * JPanel for the embedded map, draws in the washrooms, heatmaps, and routes.
+     */
+
     final class CampusMapPanel extends JPanel {
         private final JXMapViewer viewer;
         private final Map<String, Rectangle> markerHitTargets = new HashMap<>();
@@ -1041,7 +1045,6 @@ public final class MainView extends JPanel {
 
         @Override
         public void addMouseListener(final MouseListener m) {
-            System.out.println("added mouselistener");
             viewer.addMouseListener(m);
         }
 

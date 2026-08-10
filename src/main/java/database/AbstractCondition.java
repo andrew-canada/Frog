@@ -1,5 +1,9 @@
 package database;
 
+/**
+ * Abstract condition class for allowing methods to accept either a CollectionCondition, and a Condition.
+ */
+
 import org.bson.conversions.Bson;
 
 public abstract class AbstractCondition<T> {
