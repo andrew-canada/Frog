@@ -99,8 +99,9 @@ public final class ReadReviewsView extends JPanel {
                 .getState()
                 .washroomId());
         });
-        text.add(reviewSortDropdownControl);
+
         outer.add(text);
+        buttons.add(reviewSortDropdownControl);
         buttons.add(write);
         buttons.add(back);
         outer.add(buttons, BorderLayout.EAST);
