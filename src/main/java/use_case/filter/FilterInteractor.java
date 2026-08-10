@@ -1,13 +1,7 @@
 package use_case.filter;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -63,10 +57,15 @@ public class FilterInteractor implements FilterInputBoundary {
             }
         }
 
-        Washroom.Gender gender = null;
+        List<Washroom.Gender> genders = null;
         if (inputData.gender() != null) {
             try {
-                gender = Washroom.Gender.valueOf(inputData.gender());
+                genders = new ArrayList<>();
+                genders.add(Washroom.Gender.valueOf(inputData.gender()));
+                if (Washroom.Gender.valueOf(inputData.gender()).equals(Washroom.Gender.WOMEN) ||
+                        Washroom.Gender.valueOf(inputData.gender()).equals(Washroom.Gender.MEN)) {
+                    genders.add(Washroom.Gender.WOMEN_AND_MEN);
+                }
             }
             catch (final IllegalArgumentException invalidGender) {
                 presenter.presentError("Invalid washroom category.");
@@ -74,7 +73,7 @@ public class FilterInteractor implements FilterInputBoundary {
             }
         }
         final List<Washroom> initialWashrooms = washroomDAO.findMatching(
-            new WashroomFilterCriteria(inputData.accessible(), gender, buildingCode, permittedWashroomNames));
+            new WashroomFilterCriteria(inputData.accessible(), genders, buildingCode, permittedWashroomNames));
 
         if (inputData.ownReviews()) {
             final Optional<User> user = session.currentUser();

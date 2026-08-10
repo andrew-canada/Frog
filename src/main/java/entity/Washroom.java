@@ -87,5 +87,5 @@ public final class Washroom {
         this.reviewSummary = Objects.requireNonNull(summary);
     }
 
-    public enum Gender { ALL_GENDER, WOMEN, MEN }
+    public enum Gender { ALL_GENDER, WOMEN, MEN, WOMEN_AND_MEN, NO_INFO }
 }
