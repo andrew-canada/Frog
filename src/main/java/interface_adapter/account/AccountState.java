@@ -4,6 +4,16 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 public class AccountState {
+    private static final int VALUE_COUNT = 10;
+    private static final int PERSONAL_PLAN_INDEX = 1;
+    private static final int CHANGE_USERNAME_SUCCESS_INDEX = 2;
+    private static final int CHANGE_USERNAME_MESSAGE_INDEX = 3;
+    private static final int CHANGE_PASSWORD_SUCCESS_INDEX = 4;
+    private static final int CHANGE_PASSWORD_MESSAGE_INDEX = 5;
+    private static final int DELETE_ACCOUNT_SUCCESS_INDEX = 6;
+    private static final int DELETE_ACCOUNT_MESSAGE_INDEX = 7;
+    private static final int PERSONAL_PLAN_SUCCESS_INDEX = 8;
+    private static final int PERSONAL_PLAN_MESSAGE_INDEX = 9;
 
     private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
 
@@ -22,27 +32,30 @@ public class AccountState {
     private boolean personalPlanSuccess;
     private String personalPlanMessage;
 
-    public AccountState(final String username, final String personalPlan, final boolean changeUsernameSuccess,
-                        final String changeUsernameMessage, final boolean changePasswordSuccess,
-                        final String changePasswordMessage, final boolean deleteAccountSuccess,
-                        final String deleteAccountMessage, final boolean personalPlanSuccess,
-                        final String personalPlanMessage) {
-
-        this.username = username;
-        this.personalPlan = personalPlan;
-        this.changeUsernameSuccess = changeUsernameSuccess;
-        this.changeUsernameMessage = changeUsernameMessage;
-        this.changePasswordSuccess = changePasswordSuccess;
-        this.changePasswordMessage = changePasswordMessage;
-        this.deleteAccountSuccess = deleteAccountSuccess;
-        this.deleteAccountMessage = deleteAccountMessage;
-        this.personalPlanSuccess = personalPlanSuccess;
-        this.personalPlanMessage = personalPlanMessage;
+    public AccountState(final Object... values) {
+        if (values.length != VALUE_COUNT) {
+            throw new IllegalArgumentException("AccountState requires ten values");
+        }
+        this.username = (String) values[0];
+        this.personalPlan = (String) values[PERSONAL_PLAN_INDEX];
+        this.changeUsernameSuccess = (Boolean) values[CHANGE_USERNAME_SUCCESS_INDEX];
+        this.changeUsernameMessage = (String) values[CHANGE_USERNAME_MESSAGE_INDEX];
+        this.changePasswordSuccess = (Boolean) values[CHANGE_PASSWORD_SUCCESS_INDEX];
+        this.changePasswordMessage = (String) values[CHANGE_PASSWORD_MESSAGE_INDEX];
+        this.deleteAccountSuccess = (Boolean) values[DELETE_ACCOUNT_SUCCESS_INDEX];
+        this.deleteAccountMessage = (String) values[DELETE_ACCOUNT_MESSAGE_INDEX];
+        this.personalPlanSuccess = (Boolean) values[PERSONAL_PLAN_SUCCESS_INDEX];
+        this.personalPlanMessage = (String) values[PERSONAL_PLAN_MESSAGE_INDEX];
 
     }
 
-    public void addPropertyChangeListener(final PropertyChangeListener l) {
-        changes.addPropertyChangeListener(l);
+    /**
+     * Performs this operation.
+     *
+     * @param labelValue parameter value.
+     */
+    public void addPropertyChangeListener(final PropertyChangeListener labelValue) {
+        changes.addPropertyChangeListener(labelValue);
     }
 
     private void baseResetState() {
@@ -56,11 +69,17 @@ public class AccountState {
         personalPlanMessage = "";
     }
 
+    /**
+     * Performs this operation.
+     */
     public void exitResetState() {
         baseResetState();
         changes.firePropertyChange("state", "a", "b");
     }
 
+    /**
+     * Performs this operation.
+     */
     public void logoutResetState() {
         baseResetState();
         username = "";
@@ -72,6 +91,11 @@ public class AccountState {
         return username;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param username parameter value.
+     */
     public void setUsername(final String username) {
         final String prev = this.username;
         this.username = username;
@@ -82,6 +106,11 @@ public class AccountState {
         return personalPlan;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param personalPlan parameter value.
+     */
     public void setPersonalPlan(final String personalPlan) {
         final String prev = this.personalPlan;
         this.personalPlan = personalPlan;
@@ -92,6 +121,11 @@ public class AccountState {
         return changeUsernameSuccess;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param changeUsernameSuccess parameter value.
+     */
     public void setChangeUsernameSuccess(final boolean changeUsernameSuccess) {
         final boolean prev = this.changeUsernameSuccess;
         this.changeUsernameSuccess = changeUsernameSuccess;
@@ -102,6 +136,11 @@ public class AccountState {
         return changeUsernameMessage;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param changeUsernameMessage parameter value.
+     */
     public void setChangeUsernameMessage(final String changeUsernameMessage) {
         final String prev = this.changeUsernameMessage;
         this.changeUsernameMessage = changeUsernameMessage;
@@ -113,6 +152,11 @@ public class AccountState {
         return changePasswordSuccess;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param changePasswordSuccess parameter value.
+     */
     public void setChangePasswordSuccess(final boolean changePasswordSuccess) {
         final boolean prev = this.changePasswordSuccess;
         this.changePasswordSuccess = changePasswordSuccess;
@@ -123,6 +167,11 @@ public class AccountState {
         return changePasswordMessage;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param changePasswordMessage parameter value.
+     */
     public void setChangePasswordMessage(final String changePasswordMessage) {
         final String prev = this.changePasswordMessage;
         this.changePasswordMessage = changePasswordMessage;
@@ -133,6 +182,11 @@ public class AccountState {
         return deleteAccountSuccess;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param deleteAccountSuccess parameter value.
+     */
     public void setDeleteAccountSuccess(final boolean deleteAccountSuccess) {
         final boolean prev = this.deleteAccountSuccess;
         this.deleteAccountSuccess = deleteAccountSuccess;
@@ -143,6 +197,11 @@ public class AccountState {
         return deleteAccountMessage;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param deleteAccountMessage parameter value.
+     */
     public void setDeleteAccountMessage(final String deleteAccountMessage) {
         final String prev = this.deleteAccountMessage;
         this.deleteAccountMessage = deleteAccountMessage;
@@ -153,6 +212,11 @@ public class AccountState {
         return personalPlanSuccess;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param personalPlanSuccess parameter value.
+     */
     public void setPersonalPlanSuccess(final boolean personalPlanSuccess) {
         final boolean prev = this.personalPlanSuccess;
         this.personalPlanSuccess = personalPlanSuccess;
@@ -163,6 +227,11 @@ public class AccountState {
         return personalPlanMessage;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param personalPlanMessage parameter value.
+     */
     public void setPersonalPlanMessage(final String personalPlanMessage) {
         final String prev = this.personalPlanMessage;
         this.personalPlanMessage = personalPlanMessage;

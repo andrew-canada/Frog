@@ -3,9 +3,9 @@ package interface_adapter.directions;
 import java.util.List;
 
 import entity.GeoPoint;
-import interface_adapter.common.ViewModel;
+import interface_adapter.common.AbstractViewModel;
 
-public final class MapViewModel extends ViewModel<MapViewModel.State> {
+public final class MapViewModel extends AbstractViewModel<MapViewModel.State> {
     public MapViewModel() {
         super(new State(false, List.of(), "", "", ""));
     }

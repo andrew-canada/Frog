@@ -3,9 +3,9 @@ package interface_adapter.view_reviews;
 import java.util.Comparator;
 import java.util.List;
 
-import interface_adapter.common.ViewModel;
+import interface_adapter.common.AbstractViewModel;
 
-public final class WashroomListViewModel extends ViewModel<WashroomListViewModel.State> {
+public final class WashroomListViewModel extends AbstractViewModel<WashroomListViewModel.State> {
     public WashroomListViewModel() {
         super(new State(List.of(), null, "Sort by: Nearest", false));
     }

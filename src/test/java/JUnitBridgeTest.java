@@ -3,7 +3,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Lets Maven/Surefire execute the dependency-free tests used by TestRunner.
  */
-public final class JUnitBridgeTest {
+final class JUnitBridgeTest {
     @Test
     void viewReviews() {
         ViewReviewsInteractorTest.run();

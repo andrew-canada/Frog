@@ -2,12 +2,7 @@ package views;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
@@ -20,14 +15,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import interface_adapter.account.AccountState;
 import interface_adapter.account.AccountViewModel;
 import interface_adapter.account.IsLoggedInState;
@@ -38,14 +29,28 @@ import interface_adapter.account.delete_account.DeleteAccountController;
 import interface_adapter.account.personal_plan.PersonalPlanController;
 
 public final class AccountView extends JPanel {
+    private static final String FIELD_SELECTED_FILE = "Selected File: ";
+    private static final String FIELD_CANCEL = "Cancel";
+    private static final String FIELD_DELETE_ACCOUNT = "Delete Account";
+    private static final int LABEL_FONT_SIZE = 14;
+    private static final int SECTION_GAP = 10;
+    private static final int SCROLL_BLOCK_INCREMENT = 192;
+    private static final int SCROLL_UNIT_INCREMENT = 32;
+    private static final int TEXT_AREA_COLUMNS = 50;
 
     private final AccountViewModel viewModel;
     private final IsLoggedInViewModel isLoggedInViewModel;
     private final JPanel personalPlan = Theme.page();
     private final JPanel changeUsername = Theme.page();
+    private final JPanel changeUsernameContent = Theme.page();
+    private final JPanel changeUsernameButtons = Theme.page();
     private final JPanel changePassword = Theme.page();
+    private final JPanel changePasswordContent = Theme.page();
+    private final JPanel changePasswordButtons = Theme.page();
     private final JPanel deleteAccount = Theme.page();
-    private final JButton back = Theme.button("← Back to Map");
+    private final JPanel deleteAccountContent = Theme.page();
+    private final JPanel deleteAccountButtons = Theme.page();
+    private final JButton back = Theme.button("<- Back to Map");
     private final JLabel accountLabel = new JLabel();
     private final JLabel personalPlanStatusLabel = new JLabel();
     private final JFileChooser icsChooser = new JFileChooser();
@@ -58,7 +63,7 @@ public final class AccountView extends JPanel {
     private final JLabel deleteAccountLabel = new JLabel();
 
     private final JButton personalPlanUploadFileButton = Theme.button("Upload .ics File");
-    private final JLabel personalPlanSelectedFileLabel = new JLabel("Selected File: ");
+    private final JLabel personalPlanSelectedFileLabel = new JLabel(FIELD_SELECTED_FILE);
     private String personalPlanSelectedFilePath = "";
     private final JTextField personalPlanNumField = new JTextField(10);
     private final String[] semesters = {"Summer", "Fall", "Winter"};
@@ -68,13 +73,13 @@ public final class AccountView extends JPanel {
 
     private final JButton changeUsernameButton = Theme.button("Change Username");
     private final JButton confirmUsernameButton = Theme.button("Confirm Username");
-    private final JButton cancelUsernameButton = Theme.button("Cancel");
+    private final JButton cancelUsernameButton = Theme.button(FIELD_CANCEL);
     private final JButton changePasswordButton = Theme.button("Change Password");
     private final JButton confirmPasswordButton = Theme.button("Confirm Password");
-    private final JButton cancelPasswordButton = Theme.button("Cancel");
-    private final JButton deleteAccountButton = Theme.button("Delete Account");
-    private final JButton confirmDeleteAccountButton = Theme.button("Delete Account");
-    private final JButton cancelDeleteAccountButton = Theme.button("Cancel");
+    private final JButton cancelPasswordButton = Theme.button(FIELD_CANCEL);
+    private final JButton deleteAccountButton = Theme.button(FIELD_DELETE_ACCOUNT);
+    private final JButton confirmDeleteAccountButton = Theme.button(FIELD_DELETE_ACCOUNT);
+    private final JButton cancelDeleteAccountButton = Theme.button(FIELD_CANCEL);
     private Runnable onBack = () -> {
     };
     private Consumer<String> onViewPlan = id -> {
@@ -91,30 +96,53 @@ public final class AccountView extends JPanel {
 
         viewModel
             .getState()
-            .addPropertyChangeListener(e -> {
+            .addPropertyChangeListener(entryValue -> {
                 render(viewModel.getState());
             });
         isLoggedInViewModel
             .getState()
-            .addPropertyChangeListener(e -> {
+            .addPropertyChangeListener(entryValue -> {
                 render(isLoggedInViewModel.getState());
             });
 
-        setLayout(new BorderLayout());
+        initializeLayout();
 
+        personalPlanUploadFileButton.addActionListener(entryValue -> chooseCalendarFile());
+        personalPlanGenerateButton.addActionListener(entryValue -> generatePlan(personalPlanController));
+
+        personalPlanViewButton.addActionListener(entryValue -> {
+            onViewPlan.accept(viewModel.getState().getPersonalPlan());
+        });
+        changeUsernameButton.addActionListener(entryValue -> {
+            showUsernameEditor();
+        });
+        confirmUsernameButton.addActionListener(entryValue -> {
+            changeUsernameController.execute(usernameField.getText());
+        });
+        cancelUsernameButton.addActionListener(entryValue -> resetUsernameEditor());
+        changePasswordButton.addActionListener(entryValue -> showPasswordEditor());
+        confirmPasswordButton.addActionListener(entryValue -> {
+            changePasswordController.execute(String.valueOf(passwordField.getPassword()),
+                String.valueOf(confirmPasswordField.getPassword()));
+        });
+        cancelPasswordButton.addActionListener(entryValue -> resetPasswordEditor());
+        deleteAccountButton.addActionListener(entryValue -> showDeleteConfirmation());
+        confirmDeleteAccountButton.addActionListener(entryValue -> deleteAccountController.execute());
+        cancelDeleteAccountButton.addActionListener(entryValue -> resetDeleteConfirmation());
+
+    }
+
+    private void initializeLayout() {
+        setLayout(new BorderLayout());
         final JPanel title = Theme.page();
         title.setLayout(new BorderLayout());
-
         final JPanel titleWords = Theme.page();
         titleWords.setLayout(new BorderLayout());
         titleWords.add(Theme.title("Account"), BorderLayout.NORTH);
         titleWords.add(accountLabel, BorderLayout.SOUTH);
-
         title.add(titleWords, BorderLayout.WEST);
-        back.addActionListener(e -> {
-            viewModel
-                .getState()
-                .exitResetState();
+        back.addActionListener(entryValue -> {
+            viewModel.getState().exitResetState();
             resetAccountView();
             onBack.run();
         });
@@ -124,372 +152,253 @@ public final class AccountView extends JPanel {
         final JPanel container = Theme.page();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         container.add(personalPlan);
-        container.add(Box.createVerticalStrut(10));
+        container.add(Box.createVerticalStrut(SECTION_GAP));
         container.add(changeUsername);
-        container.add(Box.createVerticalStrut(10));
+        container.add(Box.createVerticalStrut(SECTION_GAP));
         container.add(changePassword);
-        container.add(Box.createVerticalStrut(10));
+        container.add(Box.createVerticalStrut(SECTION_GAP));
         container.add(deleteAccount);
+        buildPersonalPlanPanel();
+        buildAccountSection(changeUsername, "Change Username", changeUsernameContent, changeUsernameButtons,
+            changeUsernameButton);
+        buildAccountSection(changePassword, "Change Password", changePasswordContent, changePasswordButtons,
+            changePasswordButton);
+        buildAccountSection(deleteAccount, FIELD_DELETE_ACCOUNT, deleteAccountContent, deleteAccountButtons,
+            deleteAccountButton);
+        final JScrollPane scrollPane = new JScrollPane(container);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(SCROLL_UNIT_INCREMENT);
+        scrollPane.getVerticalScrollBar().setBlockIncrement(SCROLL_BLOCK_INCREMENT);
+        add(scrollPane, BorderLayout.CENTER);
+    }
 
+    private void buildPersonalPlanPanel() {
         personalPlan.setLayout(new BoxLayout(personalPlan, BoxLayout.Y_AXIS));
         personalPlan.setBackground(Theme.PAPER);
-        personalPlan.setBorder(
-            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
-        final JPanel personalPlanTitle = new JPanel();
-        personalPlanTitle.setLayout(new FlowLayout(FlowLayout.LEFT));
-        personalPlanTitle.setBackground(Theme.PAPER);
-        personalPlanTitle.add(Theme.title("Personal Washroom Plan"));
-        personalPlan.add(personalPlanTitle);
-        personalPlan.add(Box.createVerticalStrut(10));
+        personalPlan.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE),
+            Theme.pad(SECTION_GAP, SECTION_GAP, SECTION_GAP, SECTION_GAP)));
+        final JPanel title = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        title.setBackground(Theme.PAPER);
+        title.add(Theme.title("Personal Washroom Plan"));
+        personalPlan.add(title);
+        personalPlan.add(Box.createVerticalStrut(SECTION_GAP));
+        final JLabel instructions = Theme.label("Upload your acorn timetable to generate a personal washroom "
+            + "schedule! Download your timetable from Acorn as an .ics file, upload it, then enter the number of "
+            + "trips per day and semester.", LABEL_FONT_SIZE, Theme.INK);
+        personalPlan.add(instructions);
+        personalPlan.add(fileUploadPanel());
+        personalPlan.add(tripPanel());
+        personalPlan.add(semesterPanel());
+        personalPlan.add(generateButtonPanel());
+    }
 
-        final JTextArea personalPlanInstructions = new JTextArea(
-            "Upload your acorn timetable to generate a personal washroom schedule!\n"
-                + "To generate plan, download your timetable from Acorn Timetable as an .ics file and upload it here, "
-                + "then enter your desired number of washroom trips per day and the current semester. \n"
-                + "Click the Generate Plan button then the View Plan button to see the schedule (this may take a few "
-                + "minutes)");
-        personalPlanInstructions.setLineWrap(true);
-        personalPlanInstructions.setWrapStyleWord(true);
-        personalPlanInstructions.setEditable(false);
-        personalPlanInstructions.setOpaque(false);
-        personalPlanInstructions.setColumns(50);
-        personalPlan.add(personalPlanInstructions);
+    private JPanel fileUploadPanel() {
+        final JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.setBackground(Theme.PAPER);
+        panel.add(personalPlanUploadFileButton);
+        panel.add(Box.createHorizontalStrut(SECTION_GAP));
+        panel.add(personalPlanSelectedFileLabel);
+        return panel;
+    }
 
-        final JPanel fileUploadPanel = new JPanel();
-        fileUploadPanel.setBackground(Theme.PAPER);
-        fileUploadPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        fileUploadPanel.add(personalPlanUploadFileButton);
-        fileUploadPanel.add(Box.createHorizontalStrut(10));
-        fileUploadPanel.add(personalPlanSelectedFileLabel);
-        personalPlan.add(fileUploadPanel);
-        personalPlan.add(Box.createVerticalStrut(10));
+    private JPanel tripPanel() {
+        final JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.setBackground(Theme.PAPER);
+        panel.add(Theme.label("Number of Washroom Trips Per Day:", LABEL_FONT_SIZE, Theme.INK));
+        panel.add(Box.createHorizontalStrut(SECTION_GAP));
+        panel.add(personalPlanNumField);
+        return panel;
+    }
 
-        final JPanel numTripPanel = new JPanel();
-        numTripPanel.setBackground(Theme.PAPER);
-        numTripPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        numTripPanel.add(Theme.label("Number of Washroom Trips Per Day:", 14, Theme.INK));
-        numTripPanel.add(Box.createHorizontalStrut(10));
-        numTripPanel.add(personalPlanNumField);
-        personalPlan.add(numTripPanel);
-        personalPlan.add(Box.createVerticalStrut(10));
+    private JPanel semesterPanel() {
+        final JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.setBackground(Theme.PAPER);
+        panel.add(Theme.label("Semester:", LABEL_FONT_SIZE, Theme.INK));
+        panel.add(Box.createHorizontalStrut(SECTION_GAP));
+        panel.add(personalPlanSemesterBox);
+        return panel;
+    }
 
-        final JPanel semesterPanel = new JPanel();
-        semesterPanel.setBackground(Theme.PAPER);
-        semesterPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        semesterPanel.add(Theme.label("Semester:", 14, Theme.INK));
-        semesterPanel.add(Box.createHorizontalStrut(10));
-        semesterPanel.add(personalPlanSemesterBox);
-        personalPlan.add(semesterPanel);
-        personalPlan.add(Box.createVerticalStrut(10));
+    private JPanel generateButtonPanel() {
+        final JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.setBackground(Theme.PAPER);
+        panel.add(personalPlanViewButton);
+        panel.add(Box.createHorizontalStrut(SECTION_GAP));
+        panel.add(personalPlanGenerateButton);
+        panel.add(Box.createHorizontalStrut(SECTION_GAP));
+        panel.add(personalPlanStatusLabel);
+        return panel;
+    }
 
-        final JPanel generateButtonPanel = new JPanel();
-        generateButtonPanel.setBackground(Theme.PAPER);
-        generateButtonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        generateButtonPanel.add(personalPlanViewButton);
-        generateButtonPanel.add(Box.createHorizontalStrut(10));
-        generateButtonPanel.add(personalPlanGenerateButton);
-        generateButtonPanel.add(Box.createHorizontalStrut(10));
-        generateButtonPanel.add(personalPlanStatusLabel);
-        personalPlan.add(generateButtonPanel);
+    private static void buildAccountSection(final JPanel section, final String titleText, final JPanel content,
+                                            final JPanel buttons, final JButton initialButton) {
+        section.setLayout(new BoxLayout(section, BoxLayout.Y_AXIS));
+        section.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE),
+            Theme.pad(SECTION_GAP, SECTION_GAP, SECTION_GAP, SECTION_GAP)));
+        final JPanel title = Theme.page();
+        title.setLayout(new FlowLayout(FlowLayout.LEFT));
+        title.add(Theme.title(titleText));
+        buttons.setLayout(new FlowLayout(FlowLayout.LEFT));
+        buttons.add(initialButton);
+        section.add(title);
+        section.add(content);
+        section.add(buttons);
+    }
 
-        changeUsername.setLayout(new BoxLayout(changeUsername, BoxLayout.Y_AXIS));
-        changeUsername.setBorder(
-            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
-        final JPanel changeUsernameTitle = Theme.page();
-        changeUsernameTitle.setLayout(new FlowLayout(FlowLayout.LEFT));
-        changeUsernameTitle.add(Theme.title("Change Username"));
-        final JPanel changeUsernameContent = Theme.page();
-        final JPanel changeUsernameButtons = Theme.page();
+    private void showUsernameEditor() {
+        changeUsernameContent.removeAll();
+        changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+        changeUsernameContent.add(Theme.label("New Username:", LABEL_FONT_SIZE, Theme.INK));
+        changeUsernameContent.add(Box.createHorizontalStrut(SECTION_GAP));
+        changeUsernameContent.add(usernameField);
+        changeUsernameContent.revalidate();
+        changeUsernameContent.repaint();
+        changeUsernameButtons.removeAll();
+        changeUsernameButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+        changeUsernameButtons.add(confirmUsernameButton);
+        changeUsernameButtons.add(Box.createHorizontalStrut(SECTION_GAP));
+        changeUsernameButtons.add(cancelUsernameButton);
+        changeUsernameButtons.add(usernameStatusLabel);
+        changeUsernameButtons.revalidate();
+        changeUsernameButtons.repaint();
+    }
+
+    private void resetUsernameEditor() {
+        usernameField.setText("");
+        changeUsernameContent.removeAll();
+        changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+        changeUsernameContent.add(usernameStatusLabel);
+        changeUsernameContent.revalidate();
+        changeUsernameContent.repaint();
+        changeUsernameButtons.removeAll();
         changeUsernameButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
         changeUsernameButtons.add(changeUsernameButton);
-        changeUsername.add(changeUsernameTitle);
-        changeUsername.add(changeUsernameContent);
-        changeUsername.add(changeUsernameButtons);
+        changeUsernameButtons.revalidate();
+        changeUsernameButtons.repaint();
+    }
 
-        changePassword.setLayout(new BoxLayout(changePassword, BoxLayout.Y_AXIS));
-        changePassword.setBorder(
-            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
-        final JPanel changePasswordTitle = Theme.page();
-        changePasswordTitle.setLayout(new FlowLayout(FlowLayout.LEFT));
-        changePasswordTitle.add(Theme.title("Change Password"));
-        final JPanel changePasswordContent = Theme.page();
-        final JPanel changePasswordButtons = Theme.page();
+    private void showPasswordEditor() {
+        passwordField.setText("");
+        confirmPasswordField.setText("");
+        changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+        changePasswordContent.add(Theme.label("New Password:", LABEL_FONT_SIZE, Theme.INK));
+        changePasswordContent.add(Box.createHorizontalStrut(SECTION_GAP));
+        changePasswordContent.add(passwordField);
+        changePasswordContent.add(Box.createHorizontalStrut(SECTION_GAP));
+        changePasswordContent.add(Theme.label("Confirm Password:", LABEL_FONT_SIZE, Theme.INK));
+        changePasswordContent.add(Box.createHorizontalStrut(SECTION_GAP));
+        changePasswordContent.add(confirmPasswordField);
+        changePasswordContent.add(Box.createHorizontalStrut(SECTION_GAP));
+        changePasswordContent.add(passwordStatusLabel);
+        changePasswordContent.revalidate();
+        changePasswordContent.repaint();
+        changePasswordButtons.remove(changePasswordButton);
+        changePasswordButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+        changePasswordButtons.add(confirmPasswordButton);
+        changePasswordButtons.add(Box.createHorizontalStrut(SECTION_GAP));
+        changePasswordButtons.add(cancelPasswordButton);
+        changePasswordButtons.revalidate();
+        changePasswordButtons.repaint();
+    }
+
+    private void resetPasswordEditor() {
+        changePasswordContent.removeAll();
+        changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
+        changePasswordContent.add(passwordStatusLabel);
+        changePasswordContent.revalidate();
+        changePasswordContent.repaint();
+        changePasswordButtons.remove(confirmPasswordButton);
+        changePasswordButtons.remove(cancelPasswordButton);
         changePasswordButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
         changePasswordButtons.add(changePasswordButton);
-        changePassword.add(changePasswordTitle);
-        changePassword.add(changePasswordContent);
-        changePassword.add(changePasswordButtons);
+        changePasswordButtons.revalidate();
+        changePasswordButtons.repaint();
+    }
 
-        deleteAccount.setLayout(new BoxLayout(deleteAccount, BoxLayout.Y_AXIS));
-        deleteAccount.setBorder(
-            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE), Theme.pad(10, 10, 10, 10)));
-        final JPanel deleteAccountTitle = Theme.page();
-        deleteAccountTitle.setLayout(new FlowLayout(FlowLayout.LEFT));
-        deleteAccountTitle.add(Theme.title("Delete Account"));
-        final JPanel deleteAccountContent = Theme.page();
+    private void showDeleteConfirmation() {
         deleteAccountContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-        final JPanel deleteAccountButtons = Theme.page();
+        deleteAccountContent.add(Theme.label("Are you sure? This action cannot be undone.", LABEL_FONT_SIZE,
+            Theme.INK));
+        deleteAccountContent.revalidate();
+        deleteAccountContent.repaint();
+        deleteAccountButtons.remove(deleteAccountButton);
+        deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+        deleteAccountButtons.add(confirmDeleteAccountButton);
+        deleteAccountButtons.add(Box.createHorizontalStrut(SECTION_GAP));
+        deleteAccountButtons.add(cancelDeleteAccountButton);
+        deleteAccountButtons.revalidate();
+        deleteAccountButtons.repaint();
+    }
+
+    private void resetDeleteConfirmation() {
+        deleteAccountContent.removeAll();
+        deleteAccountContent.revalidate();
+        deleteAccountContent.repaint();
+        deleteAccountButtons.removeAll();
         deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
         deleteAccountButtons.add(deleteAccountButton);
-        deleteAccount.add(deleteAccountTitle);
-        deleteAccount.add(deleteAccountContent);
-        deleteAccount.add(deleteAccountButtons);
+        deleteAccountButtons.revalidate();
+        deleteAccountButtons.repaint();
+    }
 
-        final JScrollPane scrollPane = new JScrollPane(container);
-        scrollPane
-            .getVerticalScrollBar()
-            .setUnitIncrement(32);
-        scrollPane
-            .getVerticalScrollBar()
-            .setBlockIncrement(192);
-        add(scrollPane, BorderLayout.CENTER);
+    private void chooseCalendarFile() {
+        final int result = icsChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            personalPlanSelectedFilePath = icsChooser.getSelectedFile().getAbsolutePath();
+            personalPlanSelectedFileLabel.setText(FIELD_SELECTED_FILE + icsChooser.getSelectedFile().getName());
+        }
+        else if (result == JFileChooser.CANCEL_OPTION) {
+            personalPlanSelectedFilePath = "";
+            personalPlanSelectedFileLabel.setText(FIELD_SELECTED_FILE);
+        }
+    }
 
-        personalPlanUploadFileButton.addActionListener(e -> {
-
-            final int result = icsChooser.showOpenDialog(this);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                personalPlanSelectedFilePath = icsChooser
-                    .getSelectedFile()
-                    .getAbsolutePath();
-                personalPlanSelectedFileLabel.setText("Selected File: " + icsChooser
-                    .getSelectedFile()
-                    .getName());
+    private void generatePlan(final PersonalPlanController controller) {
+        personalPlanGenerateButton.setEnabled(false);
+        personalPlanStatusLabel.setText("Loading");
+        final Timer loadingTimer = new Timer(500, entryValue -> updateLoadingLabel());
+        final SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
+            @Override
+            protected String doInBackground() {
+                controller.execute(personalPlanSelectedFilePath, personalPlanNumField.getText(),
+                    (String) personalPlanSemesterBox.getSelectedItem());
+                return "";
             }
-            else if (result == JFileChooser.CANCEL_OPTION) {
-                personalPlanSelectedFilePath = "";
-                personalPlanSelectedFileLabel.setText("Selected File: ");
+
+            @Override
+            protected void done() {
+                finishPlanGeneration(this, loadingTimer);
             }
+        };
+        loadingTimer.start();
+        worker.execute();
+    }
 
-        });
-
-        personalPlanGenerateButton.addActionListener(e -> {
-
-            personalPlanGenerateButton.setEnabled(false);
-
+    private void updateLoadingLabel() {
+        final String current = personalPlanStatusLabel.getText();
+        if (current.endsWith("...")) {
             personalPlanStatusLabel.setText("Loading");
-            final Timer loadingTimer = new Timer(500, null);
-            loadingTimer.addActionListener(evt -> {
-                final String curr = personalPlanStatusLabel.getText();
-                if (curr.endsWith("...")) {
-                    personalPlanStatusLabel.setText("Loading");
-                }
-                else {
-                    personalPlanStatusLabel.setText(curr + ".");
-                }
-            });
+        }
+        else {
+            personalPlanStatusLabel.setText(current + ".");
+        }
+    }
 
-            final SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
-
-                @Override
-                protected String doInBackground() throws Exception {
-
-                    personalPlanController.execute(personalPlanSelectedFilePath, personalPlanNumField.getText(),
-                        (String) personalPlanSemesterBox.getSelectedItem());
-                    return "";
-
-                }
-
-                @Override
-                protected void done() {
-
-                    loadingTimer.stop();
-                    try {
-                        get();
-                        personalPlanViewButton.doClick();
-                    }
-                    catch (final Exception ex) {
-                        personalPlanStatusLabel.setText("Please try again");
-                    }
-                    finally {
-                        personalPlanGenerateButton.setEnabled(true);
-                    }
-
-                }
-
-            };
-
-            loadingTimer.start();
-            worker.execute();
-
-        });
-
-        personalPlanViewButton.addActionListener(e -> {
-
-            onViewPlan.accept(viewModel
-                .getState()
-                .getPersonalPlan());
-
-        });
-
-        changeUsernameButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent evt) {
-
-                changeUsernameContent.removeAll();
-                changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                changeUsernameContent.add(Theme.label("New Username:", 14, Theme.INK));
-                changeUsernameContent.add(Box.createHorizontalStrut(10));
-                changeUsernameContent.add(usernameField);
-
-                changeUsernameContent.revalidate();
-                changeUsernameContent.repaint();
-
-                    changeUsernameButtons.removeAll();
-                    changeUsernameButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-                    changeUsernameButtons.add(confirmUsernameButton);
-                    changeUsernameButtons.add(Box.createHorizontalStrut(10));
-                    changeUsernameButtons.add(cancelUsernameButton);
-                    changePasswordContent.add(Box.createHorizontalStrut(10));
-                    changeUsernameButtons.add(usernameStatusLabel);
-
-                changeUsernameButtons.revalidate();
-                changeUsernameButtons.repaint();
-
-            }
-        });
-
-        confirmUsernameButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent evt) {
-
-                changeUsernameController.execute(usernameField.getText());
-
-            }
-        });
-
-        cancelUsernameButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent evt) {
-
-                usernameField.setText("");
-                changeUsernameContent.removeAll();
-                changeUsernameContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                changeUsernameContent.add(usernameStatusLabel);
-                changeUsernameContent.revalidate();
-                changeUsernameContent.repaint();
-
-                changeUsernameButtons.removeAll();
-                changeUsernameButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-                changeUsernameButtons.add(changeUsernameButton);
-
-                changeUsernameButtons.revalidate();
-                changeUsernameButtons.repaint();
-
-            }
-        });
-
-        changePasswordButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent evt) {
-
-                passwordField.setText("");
-                confirmPasswordField.setText("");
-                changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                changePasswordContent.add(Theme.label("New Password:", 14, Theme.INK));
-                changePasswordContent.add(Box.createHorizontalStrut(10));
-                changePasswordContent.add(passwordField);
-                changePasswordContent.add(Box.createHorizontalStrut(10));
-                changePasswordContent.add(Theme.label("Confirm Password:", 14, Theme.INK));
-                changePasswordContent.add(Box.createHorizontalStrut(10));
-                changePasswordContent.add(confirmPasswordField);
-                changePasswordContent.add(Box.createHorizontalStrut(10));
-                changePasswordContent.add(passwordStatusLabel);
-
-                changePasswordContent.revalidate();
-                changePasswordContent.repaint();
-
-                changePasswordButtons.remove(changePasswordButton);
-                changePasswordButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-                changePasswordButtons.add(confirmPasswordButton);
-                changePasswordContent.add(Box.createHorizontalStrut(10));
-                changePasswordButtons.add(cancelPasswordButton);
-
-                changePasswordButtons.revalidate();
-                changePasswordButtons.repaint();
-
-            }
-        });
-
-        confirmPasswordButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent evt) {
-
-                changePasswordController.execute(String.valueOf(passwordField.getPassword()),
-                    String.valueOf(confirmPasswordField.getPassword()));
-
-            }
-        });
-
-        cancelPasswordButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent evt) {
-
-                changePasswordContent.removeAll();
-                changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                changePasswordContent.add(passwordStatusLabel);
-                changePasswordContent.revalidate();
-                changePasswordContent.repaint();
-
-                changePasswordButtons.remove(confirmPasswordButton);
-                changePasswordButtons.remove(cancelPasswordButton);
-                changePasswordContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                changePasswordButtons.add(changePasswordButton);
-
-                changePasswordButtons.revalidate();
-                changePasswordButtons.repaint();
-
-            }
-        });
-
-        deleteAccountButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent evt) {
-
-                deleteAccountContent.setLayout(new FlowLayout(FlowLayout.LEFT));
-                deleteAccountContent.add(Theme.label("Are you sure? This action cannot be undone.", 14, Theme.INK));
-
-                deleteAccountContent.revalidate();
-                deleteAccountContent.repaint();
-
-                deleteAccountButtons.remove(deleteAccountButton);
-                deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-                deleteAccountButtons.add(confirmDeleteAccountButton);
-                deleteAccountButtons.add(Box.createHorizontalStrut(10));
-                deleteAccountButtons.add(cancelDeleteAccountButton);
-
-                deleteAccountButtons.revalidate();
-                deleteAccountButtons.repaint();
-
-            }
-        });
-
-        confirmDeleteAccountButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent evt) {
-
-                deleteAccountController.execute();
-
-            }
-        });
-
-        cancelDeleteAccountButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent evt) {
-
-                deleteAccountContent.removeAll();
-                deleteAccountContent.revalidate();
-                deleteAccountContent.repaint();
-
-                    deleteAccountButtons.removeAll();
-                    deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-                    deleteAccountButtons.add(deleteAccountButton);
-
-                deleteAccountButtons.revalidate();
-                deleteAccountButtons.repaint();
-
-            }
-        });
-
+    private void finishPlanGeneration(final SwingWorker<String, Void> worker, final Timer loadingTimer) {
+        loadingTimer.stop();
+        try {
+            worker.get();
+            personalPlanViewButton.doClick();
+        }
+        catch (final InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            personalPlanStatusLabel.setText("Please try again");
+        }
+        catch (final ExecutionException failure) {
+            personalPlanStatusLabel.setText("Please try again");
+        }
+        finally {
+            personalPlanGenerateButton.setEnabled(true);
+        }
     }
 
     private void render(final AccountState state) {
@@ -539,7 +448,7 @@ public final class AccountView extends JPanel {
 
     private void resetAccountView() {
         personalPlanSelectedFilePath = "";
-        personalPlanSelectedFileLabel.setText("Selected File: ");
+        personalPlanSelectedFileLabel.setText(FIELD_SELECTED_FILE);
         personalPlanNumField.setText("");
         personalPlanSemesterBox.setSelectedIndex(0);
         cancelUsernameButton.doClick();
@@ -547,24 +456,12 @@ public final class AccountView extends JPanel {
         cancelDeleteAccountButton.doClick();
     }
 
-    public void setOnViewPlan(final Consumer<String> c) {
-        onViewPlan = c;
+    public void setOnViewPlan(final Consumer<String> thirdValue) {
+        onViewPlan = thirdValue;
     }
 
-    public void setOnBack(final Runnable r) {
-        onBack = r;
-    }
-
-    /**
-     * JSON view model for the Gemini response; parsing is kept in the UI layer.
-     */
-    public static final class WashroomPlan {
-        @JsonProperty("Day of week")
-        public String day;
-        @JsonProperty("Time (nearest hour) of washroom break")
-        public String time;
-        @JsonProperty("Washroom")
-        public String washroom;
+    public void setOnBack(final Runnable reviewValue) {
+        onBack = reviewValue;
     }
 
 }

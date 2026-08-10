@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.util.List;
 
 import org.bson.Document;
+import org.bson.json.JsonParseException;
 
 import entity.GeoPoint;
 import use_case.port.AddressLookupGateway;
@@ -19,6 +20,10 @@ import use_case.port.AddressLookupGateway;
  * Live GraphHopper forward-geocoding adapter used for address-based map origins.
  */
 public final class GraphhopperGeocodingDataAccessObject implements AddressLookupGateway {
+    private static final int HTTP_REDIRECTION_STATUS = 300;
+    private static final int HTTP_SUCCESS_STATUS = 200;
+    private static final int REQUEST_TIMEOUT_SECONDS = 20;
+    private static final int CONNECTION_TIMEOUT_SECONDS = 10;
     private static final URI DEFAULT_ENDPOINT = URI.create("https://graphhopper.com/api/1/geocode");
     private final HttpClient httpClient;
     private final URI endpoint;
@@ -27,7 +32,7 @@ public final class GraphhopperGeocodingDataAccessObject implements AddressLookup
     public GraphhopperGeocodingDataAccessObject(final String apiKey) {
         this(HttpClient
             .newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
+            .connectTimeout(Duration.ofSeconds(CONNECTION_TIMEOUT_SECONDS))
             .build(), DEFAULT_ENDPOINT, apiKey);
     }
 
@@ -46,7 +51,7 @@ public final class GraphhopperGeocodingDataAccessObject implements AddressLookup
         try {
             root = Document.parse(json);
         }
-        catch (final RuntimeException malformed) {
+        catch (final JsonParseException malformed) {
             throw new IllegalStateException("GraphHopper returned invalid address data.", malformed);
         }
         final List<Document> hits = root.getList("hits", Document.class);
@@ -56,8 +61,20 @@ public final class GraphhopperGeocodingDataAccessObject implements AddressLookup
         final Document point = hits
             .getFirst()
             .get("point", Document.class);
-        final Number latitude = point == null ? null : point.get("lat", Number.class);
-        final Number longitude = point == null ? null : point.get("lng", Number.class);
+        final Number latitude;
+        if (point == null) {
+            latitude = null;
+        }
+        else {
+            latitude = point.get("lat", Number.class);
+        }
+        final Number longitude;
+        if (point == null) {
+            longitude = null;
+        }
+        else {
+            longitude = point.get("lng", Number.class);
+        }
         if (latitude == null || longitude == null) {
             throw new IllegalStateException("GraphHopper returned incomplete address data.");
         }
@@ -74,14 +91,14 @@ public final class GraphhopperGeocodingDataAccessObject implements AddressLookup
                 + URLEncoder.encode(apiKey, StandardCharsets.UTF_8));
         final HttpRequest request = HttpRequest
             .newBuilder(requestUri)
-            .timeout(Duration.ofSeconds(20))
+            .timeout(Duration.ofSeconds(REQUEST_TIMEOUT_SECONDS))
             .header("Accept", "application/json")
             .header("User-Agent", "FlushID/1.0")
             .GET()
             .build();
         try {
             final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            if (response.statusCode() < HTTP_SUCCESS_STATUS || response.statusCode() >= HTTP_REDIRECTION_STATUS) {
                 throw new IllegalStateException("GraphHopper returned HTTP " + response.statusCode() + ".");
             }
             return parsePoint(response.body());

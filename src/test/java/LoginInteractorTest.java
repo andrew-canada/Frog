@@ -1,6 +1,6 @@
 import org.mindrot.jbcrypt.BCrypt;
 
-import database.security.BCryptPasswordHasher;
+import database.security.BcryptPasswordHasher;
 import entity.User;
 import interface_adapter.account.IsLoggedInViewModel;
 import interface_adapter.login.LoggedInViewModel;
@@ -56,7 +56,7 @@ final class LoginInteractorTest {
         }
         final Fake fake = new Fake();
         final LoginOutputData[] out = new LoginOutputData[1];
-        new LoginInteractor(fake, fake, new BCryptPasswordHasher(), d -> {
+        new LoginInteractor(fake, fake, new BcryptPasswordHasher(), d -> {
             out[0] = d;
         }).execute(
             new LoginInputData("demo", "secret"));
@@ -102,7 +102,7 @@ final class LoginInteractorTest {
 
         }
         final LegacyFake legacy = new LegacyFake();
-        new LoginInteractor(legacy, legacy, new BCryptPasswordHasher(), d -> {
+        new LoginInteractor(legacy, legacy, new BcryptPasswordHasher(), d -> {
             out[0] = d;
         }).execute(
             new LoginInputData("legacy", "secret"));

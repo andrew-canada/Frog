@@ -16,6 +16,7 @@ import use_case.port.EnrollmentScheduleGateway;
  * Reads timetable-derived meeting rows from MongoDB; an absent collection means no prediction signal.
  */
 public final class DBEnrollmentDataAccessObject implements EnrollmentScheduleGateway {
+    private static final int HOURS_PER_DAY = 24;
     private final MongoCollection<Document> meetings;
 
     public DBEnrollmentDataAccessObject(final MongoDatabase database) {
@@ -33,7 +34,7 @@ public final class DBEnrollmentDataAccessObject implements EnrollmentScheduleGat
             final int start = MongoDocuments.integer(document, 0, "startHour");
             final int end = MongoDocuments.integer(document, 0, "endHour");
             final int enrollment = Math.max(0, MongoDocuments.integer(document, 0, "enrollment", "enrolment"));
-            if (start >= 0 && end > start && end <= 24) {
+            if (start >= 0 && end > start && end <= HOURS_PER_DAY) {
                 result.add(new EnrollmentMeeting(start, end, enrollment));
             }
         }

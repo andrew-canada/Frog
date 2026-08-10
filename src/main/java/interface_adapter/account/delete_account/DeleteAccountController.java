@@ -10,6 +10,9 @@ public final class DeleteAccountController {
         this.interactor = interactor;
     }
 
+    /**
+     * Performs this operation.
+     */
     public void execute() {
         interactor.execute();
     }

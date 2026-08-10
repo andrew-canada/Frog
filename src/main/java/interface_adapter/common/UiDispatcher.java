@@ -5,5 +5,10 @@ package interface_adapter.common;
  */
 @FunctionalInterface
 public interface UiDispatcher {
+    /**
+     * Performs this operation.
+     *
+     * @param update parameter value.
+     */
     void dispatch(Runnable update);
 }

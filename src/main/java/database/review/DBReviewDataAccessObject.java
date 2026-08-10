@@ -34,22 +34,43 @@ import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
 public class DBReviewDataAccessObject extends DBDataAccessObject
     implements ReviewRepository, HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface,
     ReviewAdminDataAccessInterface, ReportedReviewsDataAccessInterface {
+    private static final String FIELD_WASHROOMID_2 = "washroomId";
+    private static final String FIELD_WASHROOMID = "washroomID";
+    private static final String FIELD_AUTHORUSERNAME = "authorUsername";
+    private static final String FIELD_RATING = "rating";
+    private static final String FIELD_CLEANLINESS = "cleanliness";
+    private static final String FIELD_COMMENT = "comment";
+    private static final String FIELD_HELPFULCOUNT = "helpfulCount";
+    private static final String FIELD_CREATEDAT = "createdAt";
+    private static final String FIELD_SEEDKEY = "seedKey";
+    private static final String FIELD_USERNAME = "username";
+    private static final String FIELD_ANONYMOUS = "Anonymous";
+    private static final String FIELD_REVIEWID = "reviewId";
+    private static final String FIELD_REPORTERUSERNAME = "reporterUsername";
+    private static final String FIELD_ID = "_id";
+    private static final String FIELD_DETAILS = "details";
+    private static final int MAX_RATING_LEVEL = 5;
+    private static final int SEED_REVIEW_MONTH = 7;
+    private static final int SEED_REVIEW_YEAR = 2026;
+    private static final int SEED_HELPFUL_COUNT_MODULUS = 9;
+    private static final int SEED_REVIEW_INDEX_FACTOR = 3;
+    private static final int HIGH_RATING_THRESHOLD = 4;
+    private static final double LOW_RATING_THRESHOLD = 1.5;
 
-    static final List<String> allowedAttributes = List.of(
-        new String[] {"washroomID", "authorUsername", "rating", "cleanliness", "comment", "helpfulCount", "createdAt",
-            "seedKey"});
+    private static final List<String> ALLOWED_ATTRIBUTES = List.of(
+        new String[] {FIELD_WASHROOMID, FIELD_AUTHORUSERNAME, FIELD_RATING, FIELD_CLEANLINESS, FIELD_COMMENT,
+            FIELD_HELPFULCOUNT, FIELD_CREATEDAT,
+            FIELD_SEEDKEY});
     private final MongoCollection<Document> collection;
     private final MongoCollection<Document> users;
     private final MongoCollection<Document> reviewVotes;
     private final MongoCollection<Document> reviewReports;
 
     public DBReviewDataAccessObject() {
-        super();    // initializes the MongoClient and MongoDatabase from
-        // the set URI
-        collection = database.getCollection("Reviews");
-        users = database.getCollection("Users");
-        reviewVotes = database.getCollection("ReviewVotes");
-        reviewReports = database.getCollection("ReviewReports");
+        collection = database().getCollection("Reviews");
+        users = database().getCollection("Users");
+        reviewVotes = database().getCollection("ReviewVotes");
+        reviewReports = database().getCollection("ReviewReports");
     }
 
     public DBReviewDataAccessObject(final MongoDatabase database) {
@@ -61,12 +82,12 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     }
 
     /**
-     * Returns all reviews which satisfy all the given conditions, with database IDs
+     * Returns all reviews which satisfy all the given conditions, with database IDs.
      *
      * @param conditions a list of condition objects that the returned reviews must satisfy
      * @return The reviews that match all the conditions mapped to their IDs in the database.
      */
-    public Map<String, Review> getMatchingIDMap(final Iterable<AbstractCondition<?>> conditions) {
+    private Map<String, Review> getMatchingIDMap(final Iterable<AbstractCondition<?>> conditions) {
 
         checkAttribute(conditions);
 
@@ -83,21 +104,28 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     }
 
     /**
-     * Parses a list of AbstractCondition objects into a single Bson filter
+     * Parses a list of AbstractCondition objects into a single Bson filter.
      *
      * @param conditions list of condition objects to be connected by and statements
      * @return a Bson filter representing satisfying all conditions
      */
     private static Bson parseConditions(final Iterable<AbstractCondition<?>> conditions) {
         final List<Bson> filters = new ArrayList<>();
-        conditions.forEach((condition) -> {
+        conditions.forEach(condition -> {
             filters.add(condition.getFilter());
         });
-        return filters.isEmpty() ? new Document() : Filters.and(filters);
+        final Bson result;
+        if (filters.isEmpty()) {
+            result = new Document();
+        }
+        else {
+            result = Filters.and(filters);
+        }
+        return result;
     }
 
     /**
-     * Return a list of Documents which match the specified parameters
+     * Return a list of Documents which match the specified parameters.
      *
      * @param filter the filter that must be satisfied for the Document to be returned
      * @return The list of valid documents
@@ -110,19 +138,19 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     }
 
     /**
-     * Creates a review object out of the inputted Document
+     * Creates a review object out of the inputted Document.
      *
      * @param doc Document containing review data for a specific review
      * @return the review object constructed using that data
      */
     private Review createReview(final Document doc) {
-        final double rating = clamp(MongoDocuments.number(doc, 1, "rating", "stars"));
-        final double cleanliness = clamp(MongoDocuments.number(doc, rating, "cleanliness"));
+        final double rating = clamp(MongoDocuments.number(doc, 1, FIELD_RATING, "stars"));
+        final double cleanliness = clamp(MongoDocuments.number(doc, rating, FIELD_CLEANLINESS));
         return new entity.Review(MongoDocuments.id(doc),
-            MongoDocuments.string(doc, "unknown", "washroomId", "washroomID"), author(doc), rating, cleanliness,
-            MongoDocuments.string(doc, "", "comment", "text"),
-            Math.max(0, MongoDocuments.integer(doc, 0, "helpfulCount", "helpfuls")),
-            MongoDocuments.date(doc, LocalDate.now(), "createdAt", "date"));
+            MongoDocuments.string(doc, "unknown", FIELD_WASHROOMID, FIELD_WASHROOMID), author(doc), rating, cleanliness,
+            MongoDocuments.string(doc, "", FIELD_COMMENT, "text"),
+            Math.max(0, MongoDocuments.integer(doc, 0, FIELD_HELPFULCOUNT, "helpfuls")),
+            MongoDocuments.date(doc, LocalDate.now(), FIELD_CREATEDAT, "date"));
     }
 
     /**
@@ -130,9 +158,10 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
      * runtime exception if it's not a valid attribute.
      *
      * @param condition The condition to check.
+     * @throws RuntimeException if the attribute is not allowed.
      */
     private static void checkAttribute(final AbstractCondition<?> condition) {
-        if (!allowedAttributes.contains(condition.getFieldName())) {
+        if (!ALLOWED_ATTRIBUTES.contains(condition.getFieldName())) {
             throw new RuntimeException("Not a valid attribute");
         }
     }
@@ -150,23 +179,32 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     }
 
     private String author(final Document review) {
-        final String direct = MongoDocuments.string(review, "", "authorUsername", "username");
+        final String direct = MongoDocuments.string(review, "", FIELD_AUTHORUSERNAME, FIELD_USERNAME);
+        final String result;
         if (!direct.isBlank()) {
-            return direct;
+            result = direct;
         }
-        final String userId = MongoDocuments.string(review, "", "userId", "userID");
-        final Document user = MongoDocuments.findById(users, userId);
-        return user == null ? "Anonymous" : MongoDocuments.string(user, "Anonymous", "username", "name");
+        else {
+            final String userId = MongoDocuments.string(review, "", "userId", "userID");
+            final Document user = MongoDocuments.findById(users, userId);
+            if (user == null) {
+                result = FIELD_ANONYMOUS;
+            }
+            else {
+                result = MongoDocuments.string(user, FIELD_ANONYMOUS, FIELD_USERNAME, "name");
+            }
+        }
+        return result;
     }
 
     private static Document documentFor(final entity.Review review) {
-        return new Document("washroomId", review.washroomId())
-            .append("authorUsername", review.authorUsername())
-            .append("rating", review.rating())
-            .append("cleanliness", review.cleanliness())
-            .append("comment", review.comment())
-            .append("helpfulCount", review.helpfulCount())
-            .append("createdAt", Date.from(review
+        return new Document(FIELD_WASHROOMID, review.washroomId())
+            .append(FIELD_AUTHORUSERNAME, review.authorUsername())
+            .append(FIELD_RATING, review.rating())
+            .append(FIELD_CLEANLINESS, review.cleanliness())
+            .append(FIELD_COMMENT, review.comment())
+            .append(FIELD_HELPFULCOUNT, review.helpfulCount())
+            .append(FIELD_CREATEDAT, Date.from(review
                 .createdAt()
                 .atStartOfDay(ZoneId.systemDefault())
                 .toInstant()));
@@ -175,36 +213,55 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     private static SeedReview seedReviewFor(final int washroomIndex, final int reviewIndex) {
         final double rating = 1 + .5 * Math.floorMod(washroomIndex * 2 + reviewIndex * 3, 9);
         final double cleanliness = 1 + .5 * Math.floorMod(washroomIndex * 3 + reviewIndex * 2, 9);
-        final String comment =
-            rating <= 1.5 ? "The supplies were low and the space needed more attention during this visit." :
-                rating <= 3 ? "It was usable, but cleanliness and availability could be more consistent." :
-                rating <= 4 ? "A solid option that was easy to find and reasonably well maintained." :
-                "Clean, well stocked, and convenient for a quick stop between classes.";
-        final String author = reviewIndex == 0 ? "Campus visitor" : "Student reviewer";
-        return new SeedReview(author, rating, cleanliness, comment, Math.floorMod(washroomIndex + reviewIndex * 3, 9),
+        final String comment;
+        if (rating <= LOW_RATING_THRESHOLD) {
+            comment = "The supplies were low and the space needed more attention during this visit.";
+        }
+        else {
+            if (rating <= SEED_REVIEW_INDEX_FACTOR) {
+                comment = "It was usable, but cleanliness and availability could be more consistent.";
+            }
+            else {
+                if (rating <= HIGH_RATING_THRESHOLD) {
+                    comment = "A solid option that was easy to find and reasonably well maintained.";
+                }
+                else {
+                    comment = "Clean, well stocked, and convenient for a quick stop between classes.";
+                }
+            }
+        }
+        final String author;
+        if (reviewIndex == 0) {
+            author = "Campus visitor";
+        }
+        else {
+            author = "Student reviewer";
+        }
+        return new SeedReview(author, rating, cleanliness, comment, Math.floorMod(washroomIndex
+            + reviewIndex * SEED_REVIEW_INDEX_FACTOR, SEED_HELPFUL_COUNT_MODULUS),
             LocalDate
-                .of(2026, 7, 1)
+                .of(SEED_REVIEW_YEAR, SEED_REVIEW_MONTH, 1)
                 .minusDays(washroomIndex * 2L + reviewIndex));
     }
 
     private static double clamp(final double rating) {
-        return Math.max(1, Math.min(5, rating));
+        return Math.max(1, Math.min(MAX_RATING_LEVEL, rating));
     }
 
     /**
-     * Returns all reviews who satisfy all the given conditions
+     * Returns all reviews who satisfy all the given conditions.
      *
      * @param conditions a list of condition objects that the returned reviews must satisfy
      * @return The reviews that match all the conditions
      */
-    public List<Review> getMatching(final Iterable<AbstractCondition<?>> conditions) {
+    private List<Review> getMatchingConditions(final Iterable<AbstractCondition<?>> conditions) {
 
         return new ArrayList<>(getMatchingIDMap(conditions).values());
 
     }
 
     /**
-     * Returns all reviews who satisfy the condition
+     * Returns all reviews who satisfy the condition.
      *
      * @param condition a condition object that the returned reviews must satisfy
      * @return The reviews that match the conditions
@@ -213,7 +270,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
 
         final List<AbstractCondition<?>> conditions = new ArrayList<>();
         conditions.add(condition);
-        return getMatching(conditions);
+        return getMatchingConditions(conditions);
 
     }
 
@@ -221,37 +278,40 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
      * Writes a single Review object to the database.
      *
      * @param review The Review object to be written.
+     * @param userID parameter value.
+     * @param washroomID parameter value.
      */
-    public void write(final Review review, final String userID, final String washroomID) {
+    private void write(final Review review, final String userID, final String washroomID) {
+        final Document doc;
         if (review instanceof final entity.Review applicationReview) {
-            collection.insertOne(documentFor(applicationReview));
-            return;
+            doc = documentFor(applicationReview);
         }
-        final Document doc = new Document();
-        doc.append("userID", userID);
-        doc.append("washroomID", washroomID);
-        doc.append("stars", review.getStars());
-        doc.append("text", review.getText());
-        doc.append("helpfuls", review.getHelpfuls());
-        doc.append("unhelpfuls", review.getUnhelpfuls());
-
+        else {
+            doc = new Document();
+            doc.append("userID", userID);
+            doc.append(FIELD_WASHROOMID, washroomID);
+            doc.append("stars", review.getStars());
+            doc.append("text", review.getText());
+            doc.append("helpfuls", review.getHelpfuls());
+            doc.append("unhelpfuls", review.getUnhelpfuls());
+        }
         collection.insertOne(doc);
     }
 
     /**
-     * Deletes every entry in the database that matches the given conditions
+     * Deletes every entry in the database that matches the given conditions.
      *
      * @param conditions List of AbstractCondition objects. An object must satisfy
      *                   all conditions to be deleted
      */
-    public void delete(final Iterable<AbstractCondition<?>> conditions) {
+    private void delete(final Iterable<AbstractCondition<?>> conditions) {
         checkAttribute(conditions);
         final Bson filter = parseConditions(conditions);
         collection.deleteMany(filter);
     }
 
     /**
-     * Deletes every entry in the database that matches the given condition
+     * Deletes every entry in the database that matches the given condition.
      *
      * @param condition A AbstractCondition object that the object must satisfy.
      */
@@ -265,7 +325,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     public List<entity.Review> getReviewsForWashroom(final String washroomId) {
         final List<entity.Review> result = new ArrayList<>();
         for (final Document document : collection.find(
-            Filters.or(Filters.eq("washroomId", washroomId), Filters.eq("washroomID", washroomId)))) {
+            Filters.or(Filters.eq(FIELD_WASHROOMID, washroomId), Filters.eq(FIELD_WASHROOMID, washroomId)))) {
             result.add(createReview(document));
         }
         return List.copyOf(result);
@@ -274,25 +334,29 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     @Override
     public entity.ReviewSummary getSummary(final String washroomId) {
         final List<entity.Review> found = getReviewsForWashroom(washroomId);
+        final entity.ReviewSummary result;
         if (found.isEmpty()) {
-            return entity.ReviewSummary.empty();
+            result = entity.ReviewSummary.empty();
         }
-        return new entity.ReviewSummary(found
-            .stream()
-            .mapToDouble(entity.Review::rating)
-            .average()
-            .orElse(0), found
-            .stream()
-            .mapToDouble(entity.Review::cleanliness)
-            .average()
-            .orElse(0), found.size());
+        else {
+            result = new entity.ReviewSummary(found
+                .stream()
+                .mapToDouble(entity.Review::rating)
+                .average()
+                .orElse(0), found
+                .stream()
+                .mapToDouble(entity.Review::cleanliness)
+                .average()
+                .orElse(0), found.size());
+        }
+        return result;
     }
 
     @Override
     public List<entity.Review> getReviewsByUser(final String username) {
         final List<entity.Review> result = new ArrayList<>();
         for (final Document document : collection.find(
-            Filters.or(Filters.eq("authorUsername", username), Filters.eq("username", username)))) {
+            Filters.or(Filters.eq(FIELD_AUTHORUSERNAME, username), Filters.eq(FIELD_USERNAME, username)))) {
             result.add(createReview(document));
         }
         return List.copyOf(result);
@@ -303,13 +367,25 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
         write(review, review.authorUsername(), review.washroomId());
     }
 
+    @Override
+    public void save(final Report report) {
+        reviewReports.insertOne(new Document(FIELD_REVIEWID, report.reviewId())
+            .append(FIELD_REPORTERUSERNAME, report.reporterUsername())
+            .append("reasons", report.reasons())
+            .append(FIELD_DETAILS, report.details())
+            .append(FIELD_CREATEDAT, report
+                .createdAt()
+                .toString()));
+    }
+
     /**
      * Adds two persistent written reviews to every JSON-sourced washroom without duplicating them.
+     * @param washrooms parameter value.
      */
     public void ensureJsonReviews(final List<entity.Washroom> washrooms) {
         final Set<String> existingSeedKeys = new HashSet<>();
-        for (final Document review : collection.find(Filters.regex("seedKey", "^json-review-"))) {
-            existingSeedKeys.add(MongoDocuments.string(review, "", "seedKey"));
+        for (final Document review : collection.find(Filters.regex(FIELD_SEEDKEY, "^json-review-"))) {
+            existingSeedKeys.add(MongoDocuments.string(review, "", FIELD_SEEDKEY));
         }
         final List<Document> newReviews = new ArrayList<>();
         for (int washroomIndex = 0; washroomIndex < washrooms.size(); washroomIndex++) {
@@ -323,7 +399,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
                 final entity.Review review =
                     new entity.Review(seedKey, washroom.id(), seed.author(), seed.rating(), seed.cleanliness(),
                         seed.comment(), seed.helpfulCount(), seed.createdAt());
-                newReviews.add(documentFor(review).append("seedKey", seedKey));
+                newReviews.add(documentFor(review).append(FIELD_SEEDKEY, seedKey));
             }
         }
         if (!newReviews.isEmpty()) {
@@ -335,39 +411,45 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
      * Creates indexes used by grouped summaries and the "my reviews" filter.
      */
     public void ensurePerformanceIndexes() {
-        collection.createIndex(Indexes.ascending("washroomId"));
-        collection.createIndex(Indexes.ascending("washroomID"));
-        collection.createIndex(Indexes.ascending("authorUsername"));
-        reviewVotes.createIndex(Indexes.compoundIndex(Indexes.ascending("username"), Indexes.ascending("reviewId")));
+        collection.createIndex(Indexes.ascending(FIELD_WASHROOMID));
+        collection.createIndex(Indexes.ascending(FIELD_WASHROOMID));
+        collection.createIndex(Indexes.ascending(FIELD_AUTHORUSERNAME));
+        reviewVotes.createIndex(Indexes.compoundIndex(Indexes.ascending(FIELD_USERNAME),
+            Indexes.ascending(FIELD_REVIEWID)));
         reviewReports.createIndex(
-            Indexes.compoundIndex(Indexes.ascending("reporterUsername"), Indexes.ascending("reviewId")));
+            Indexes.compoundIndex(Indexes.ascending(FIELD_REPORTERUSERNAME), Indexes.ascending(FIELD_REVIEWID)));
     }
 
     // --- Helpful votes ---------------------------------------------------------
+
     @Override
     public boolean hasVoted(final String reviewId, final String username) {
         return reviewVotes
-            .find(Filters.and(Filters.eq("reviewId", reviewId), Filters.eq("username", username)))
+            .find(Filters.and(Filters.eq(FIELD_REVIEWID, reviewId), Filters.eq(FIELD_USERNAME, username)))
             .first() != null;
     }
 
     @Override
     public Set<String> votedReviewIds(final Collection<String> reviewIds, final String username) {
+        final Set<String> result;
         if (reviewIds.isEmpty() || username == null || username.isBlank()) {
-            return Set.of();
+            result = Set.of();
         }
-        final Set<String> votedIds = new HashSet<>();
-        for (final Document vote : reviewVotes.find(
-            Filters.and(Filters.in("reviewId", reviewIds), Filters.eq("username", username)))) {
-            votedIds.add(MongoDocuments.string(vote, "", "reviewId"));
+        else {
+            final Set<String> votedIds = new HashSet<>();
+            for (final Document vote : reviewVotes.find(
+                Filters.and(Filters.in(FIELD_REVIEWID, reviewIds), Filters.eq(FIELD_USERNAME, username)))) {
+                votedIds.add(MongoDocuments.string(vote, "", FIELD_REVIEWID));
+            }
+            result = Set.copyOf(votedIds);
         }
-        return Set.copyOf(votedIds);
+        return result;
     }
 
     @Override
     public void addVote(final String reviewId, final String username) {
         if (!hasVoted(reviewId, username)) {
-            reviewVotes.insertOne(new Document("reviewId", reviewId).append("username", username));
+            reviewVotes.insertOne(new Document(FIELD_REVIEWID, reviewId).append(FIELD_USERNAME, username));
             adjustHelpful(reviewId, 1);
         }
     }
@@ -375,7 +457,8 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     @Override
     public void removeVote(final String reviewId, final String username) {
         if (hasVoted(reviewId, username)) {
-            reviewVotes.deleteOne(Filters.and(Filters.eq("reviewId", reviewId), Filters.eq("username", username)));
+            reviewVotes.deleteOne(Filters.and(Filters.eq(FIELD_REVIEWID, reviewId), Filters.eq(FIELD_USERNAME,
+                username)));
             adjustHelpful(reviewId, -1);
         }
     }
@@ -383,41 +466,35 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     private void adjustHelpful(final String reviewId, final int delta) {
         final Document document = MongoDocuments.findById(collection, reviewId);
         if (document != null) {
-            collection.updateOne(Filters.eq("_id", document.get("_id")),
-                new Document("$inc", new Document("helpfulCount", delta)));
+            collection.updateOne(Filters.eq(FIELD_ID, document.get(FIELD_ID)),
+                new Document("$inc", new Document(FIELD_HELPFULCOUNT, delta)));
         }
     }
 
     // --- Reports ---------------------------------------------------------------
-    @Override
-    public void save(final Report report) {
-        reviewReports.insertOne(new Document("reviewId", report.reviewId())
-            .append("reporterUsername", report.reporterUsername())
-            .append("reasons", report.reasons())
-            .append("details", report.details())
-            .append("createdAt", report
-                .createdAt()
-                .toString()));
-    }
 
     @Override
     public boolean hasReported(final String reviewId, final String username) {
         return reviewReports
-            .find(Filters.and(Filters.eq("reviewId", reviewId), Filters.eq("reporterUsername", username)))
+            .find(Filters.and(Filters.eq(FIELD_REVIEWID, reviewId), Filters.eq(FIELD_REPORTERUSERNAME, username)))
             .first() != null;
     }
 
     @Override
     public Set<String> reportedReviewIds(final Collection<String> reviewIds, final String username) {
+        final Set<String> result;
         if (reviewIds.isEmpty() || username == null || username.isBlank()) {
-            return Set.of();
+            result = Set.of();
         }
-        final Set<String> reportedIds = new HashSet<>();
-        for (final Document report : reviewReports.find(
-            Filters.and(Filters.in("reviewId", reviewIds), Filters.eq("reporterUsername", username)))) {
-            reportedIds.add(MongoDocuments.string(report, "", "reviewId"));
+        else {
+            final Set<String> reportedIds = new HashSet<>();
+            for (final Document report : reviewReports.find(
+                Filters.and(Filters.in(FIELD_REVIEWID, reviewIds), Filters.eq(FIELD_REPORTERUSERNAME, username)))) {
+                reportedIds.add(MongoDocuments.string(report, "", FIELD_REVIEWID));
+            }
+            result = Set.copyOf(reportedIds);
         }
-        return Set.copyOf(reportedIds);
+        return result;
     }
 
     @Override
@@ -425,31 +502,47 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
         final List<Report> result = new ArrayList<>();
         for (final Document document : reviewReports.find()) {
             final List<String> reasons = document.getList("reasons", String.class);
-            result.add(new Report(MongoDocuments.id(document), MongoDocuments.string(document, "", "reviewId"),
-                MongoDocuments.string(document, "Anonymous", "reporterUsername", "username"),
-                reasons == null ? List.of() : reasons, MongoDocuments.string(document, "", "details"),
-                MongoDocuments.dateTime(document, LocalDateTime.now(), "createdAt")));
+            if (reasons == null) {
+                result.add(new Report(MongoDocuments.id(document), MongoDocuments.string(document, "", FIELD_REVIEWID),
+                    MongoDocuments.string(document, FIELD_ANONYMOUS, FIELD_REPORTERUSERNAME, FIELD_USERNAME), List.of(),
+                    MongoDocuments.string(document, "", FIELD_DETAILS),
+                    MongoDocuments.dateTime(document, LocalDateTime.now(), FIELD_CREATEDAT)));
+            }
+            else {
+                result.add(new Report(MongoDocuments.id(document), MongoDocuments.string(document, "", FIELD_REVIEWID),
+                    MongoDocuments.string(document, FIELD_ANONYMOUS, FIELD_REPORTERUSERNAME, FIELD_USERNAME), reasons,
+                    MongoDocuments.string(document, "", FIELD_DETAILS),
+                    MongoDocuments.dateTime(document, LocalDateTime.now(), FIELD_CREATEDAT)));
+            }
         }
         return List.copyOf(result);
     }
 
     @Override
     public void deleteReportsForReview(final String reviewId) {
-        reviewReports.deleteMany(Filters.eq("reviewId", reviewId));
+        reviewReports.deleteMany(Filters.eq(FIELD_REVIEWID, reviewId));
     }
 
     // --- Review admin ----------------------------------------------------------
+
     @Override
     public Optional<entity.Review> getById(final String reviewId) {
         final Document document = MongoDocuments.findById(collection, reviewId);
-        return document == null ? Optional.empty() : Optional.of(createReview(document));
+        final Optional<entity.Review> result;
+        if (document == null) {
+            result = Optional.empty();
+        }
+        else {
+            result = Optional.of(createReview(document));
+        }
+        return result;
     }
 
     @Override
     public void deleteReview(final String reviewId) {
         final Document document = MongoDocuments.findById(collection, reviewId);
         if (document != null) {
-            collection.deleteOne(Filters.eq("_id", document.get("_id")));
+            collection.deleteOne(Filters.eq(FIELD_ID, document.get(FIELD_ID)));
         }
     }
 

@@ -82,11 +82,9 @@ final class ViewReviewsInteractorTest {
         final use_case.report_review.ReviewReportDataAccessInterface reports =
             new use_case.report_review.ReviewReportDataAccessInterface() {
                 @Override
-                @Override
                 public void save(final Report report) {
                 }
 
-                @Override
                 @Override
                 public boolean hasReported(final String r, final String u) {
                     return false;

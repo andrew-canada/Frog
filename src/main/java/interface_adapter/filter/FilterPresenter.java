@@ -9,32 +9,43 @@ import use_case.filter.FilterOutputBoundary;
 import use_case.filter.FilterOutputData;
 
 public class FilterPresenter implements FilterOutputBoundary {
+    private static final int EARTH_RADIUS_METERS = 6_371_000;
     private final WashroomListViewModel listModel;
     private final FilterViewModel filterModel;
-    private final UiDispatcher ui;
+    private final UiDispatcher userInterface;
 
     public FilterPresenter(final FilterViewModel filterViewModel, final WashroomListViewModel listModel,
-                           final UiDispatcher ui) {
+                           final UiDispatcher userInterface) {
 
         this.filterModel = filterViewModel;
         this.listModel = listModel;
-        this.ui = ui;
+        this.userInterface = userInterface;
     }
 
-    private static double distance(final double a, final double b, final double c, final double d) {
-        final double x = Math.toRadians(d - b) * Math.cos(Math.toRadians((a + c) / 2));
-        final double y = Math.toRadians(c - a);
-        return Math.sqrt(x * x + y * y) * 6_371_000;
+    private static double distance(final double firstValue, final double secondValue, final double thirdValue,
+        final double fourthValue) {
+        final double x = Math.toRadians(fourthValue - secondValue) * Math.cos(Math.toRadians((firstValue
+            + thirdValue) / 2));
+        final double y = Math.toRadians(thirdValue - firstValue);
+        return Math.sqrt(x * x + y * y) * EARTH_RADIUS_METERS;
     }
 
     /**
      * Keeps filtered cards consistent with the initial washroom-list display.
+     * @param washroomName parameter value.
+     * @return the operation result.
      */
     private static String listDescription(final String washroomName) {
         final int separator = washroomName.indexOf('|');
-        final String description = separator >= 0 ? washroomName.substring(separator + 1) : washroomName;
+        final String description;
+        if (separator >= 0) {
+            description = washroomName.substring(separator + 1);
+        }
+        else {
+            description = washroomName;
+        }
         return description
-            .replaceAll("(?i)\\bwashrooms?\\b", "")
+            .replaceAll("(?i)\\bwashrooms?\\secondValue", "")
             .replaceAll("\\s{2,}", " ")
             .trim();
     }
@@ -44,23 +55,13 @@ public class FilterPresenter implements FilterOutputBoundary {
         final List<WashroomListViewModel.Item> items = outputData
             .washrooms()
             .stream()
-            .map(washroom -> {
-                return new WashroomListViewModel.Item(washroom.id(), washroom
-                    .building()
-                    .name(), listDescription(washroom.name()), washroom
-                    .reviewSummary()
-                    .averageRating(), (int) Math.round(distance(outputData.latitude(), outputData.longitude(), washroom
-                    .building()
-                    .latitude(), washroom
-                    .building()
-                    .longitude())), washroom.accessible());
-            })
+            .map(washroom -> item(outputData, washroom))
             .toList();
         final Runnable update = () -> {
             listModel.setState(new WashroomListViewModel.State(items, null, "Sort by: Nearest", false));
             filterModel.setState(new FilterViewModel.State(true, outputData.washrooms(), ""));
         };
-        ui.dispatch(update);
+        userInterface.dispatch(update);
 
     }
 
@@ -70,6 +71,15 @@ public class FilterPresenter implements FilterOutputBoundary {
             () -> {
                 filterModel.setState(new FilterViewModel.State(false, new ArrayList<>(), message));
             };
-        ui.dispatch(update);
+        userInterface.dispatch(update);
+    }
+
+    private static WashroomListViewModel.Item item(final FilterOutputData outputData,
+                                                    final entity.Washroom washroom) {
+        return new WashroomListViewModel.Item(washroom.id(), washroom.building().name(),
+            listDescription(washroom.name()),
+            washroom.reviewSummary().averageRating(), (int) Math.round(distance(outputData.latitude(),
+                outputData.longitude(), washroom.building().latitude(), washroom.building().longitude())),
+            washroom.accessible());
     }
 }

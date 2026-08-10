@@ -6,6 +6,8 @@ import use_case.port.PasswordHasher;
 import use_case.port.UserRepository;
 
 public final class SignupInteractor implements SignupInputBoundary {
+    private static final int MINIMUM_PASSWORD_LENGTH = 4;
+    private static final int MINIMUM_USERNAME_LENGTH = 3;
     private final UserRepository users;
     private final PasswordHasher passwords;
     private final CurrentUserSession session;
@@ -21,23 +23,29 @@ public final class SignupInteractor implements SignupInputBoundary {
 
     @Override
     public void execute(final SignupInputData input) {
-        final String name = input.username() == null ? "" : input
-                                                            .username()
-                                                            .trim();
-        if (name.length() < 3 || input.password() == null || input
+        final String name;
+        if (input.username() == null) {
+            name = "";
+        }
+        else {
+            name = input
+                .username()
+                .trim();
+        }
+        if (name.length() < MINIMUM_USERNAME_LENGTH || input.password() == null || input
             .password()
-            .length() < 4) {
+            .length() < MINIMUM_PASSWORD_LENGTH) {
             presenter.present(
                 new SignupOutputData(false, null, "Use 3+ characters for the name and 4+ for the password"));
-            return;
         }
-        if (users.existsByName(name)) {
+        else if (users.existsByName(name)) {
             presenter.present(new SignupOutputData(false, null, "That username is already taken"));
-            return;
         }
-        final User user = new User(name, passwords.hash(input.password()), "");
-        users.save(user);
-        session.setCurrentUser(user);
-        presenter.present(new SignupOutputData(true, name, "Account created for " + name));
+        else {
+            final User user = new User(name, passwords.hash(input.password()), "");
+            users.save(user);
+            session.setCurrentUser(user);
+            presenter.present(new SignupOutputData(true, name, "Account created for " + name));
+        }
     }
 }

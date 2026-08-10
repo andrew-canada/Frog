@@ -10,6 +10,13 @@ public final class ViewReviewsController {
         this.interactor = interactor;
     }
 
+    /**
+     * Performs this operation.
+     *
+     * @param washroomId parameter value.
+     *
+     * @param username parameter value.
+     */
     public void execute(final String washroomId, final String username) {
         interactor.execute(new ViewReviewsInputData(washroomId, username));
     }

@@ -12,23 +12,30 @@ import java.util.function.BiConsumer;
 
 import org.jxmapviewer.viewer.GeoPosition;
 
-public class MapClicker implements ActionListener {
-    MainView.CampusMapPanel map;
-    BiConsumer<Double, Double> onSave;
-    Window frame;
+/**
+ * Action Listener for the "Right Click on map to select location" button in the LocationInputDialog.
+ *
+ * <p>Adds a MouseAdapter to the given map which listens for right clicks, converts the coordinates from the
+ * mouse coordinates to latitude and longitude, and runs onSave on the latitude and longitude before removing
+ * itself as a MouseAdapter.</p>
+ */
 
-    public MapClicker(final MainView.CampusMapPanel map) {
+class MapClicker implements ActionListener {
+    private final MainView.CampusMapPanel map;
+    private BiConsumer<Double, Double> onSave;
+    private Window frame;
+
+    MapClicker(final MainView.CampusMapPanel map) {
         this.map = map;
     }
 
     @Override
     public void actionPerformed(final ActionEvent e) {
-        System.out.println("button clicked!");
         class MapClickListener extends MouseAdapter {
-            final MainView.CampusMapPanel map;
-            final BiConsumer<Double, Double> onSave;
+            private final MainView.CampusMapPanel map;
+            private final BiConsumer<Double, Double> onSave;
 
-            public MapClickListener(final MainView.CampusMapPanel map, final BiConsumer<Double, Double> onSave) {
+            MapClickListener(final MainView.CampusMapPanel map, final BiConsumer<Double, Double> onSave) {
                 this.map = map;
                 this.onSave = onSave;
             }
@@ -50,11 +57,11 @@ public class MapClicker implements ActionListener {
         frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
     }
 
-    public void addOnSave(final BiConsumer<Double, Double> onSave) {
-        this.onSave = onSave;
+    public void addOnSave(final BiConsumer<Double, Double> saveHandler) {
+        this.onSave = saveHandler;
     }
 
-    public void addFrame(final Window frame) {
-        this.frame = frame;
+    public void addFrame(final Window window) {
+        this.frame = window;
     }
 }
