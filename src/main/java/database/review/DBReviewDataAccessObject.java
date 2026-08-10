@@ -34,8 +34,10 @@ import use_case.vote_helpful.HelpfulVoteDataAccessInterface;
 public class DBReviewDataAccessObject extends DBDataAccessObject
     implements ReviewRepository, HelpfulVoteDataAccessInterface, ReviewReportDataAccessInterface,
     ReviewAdminDataAccessInterface, ReportedReviewsDataAccessInterface {
-    private static final String FIELD_WASHROOMID_2 = "washroomId";
-    private static final String FIELD_WASHROOMID = "washroomID";
+    /** Field used by existing review documents. */
+    private static final String FIELD_WASHROOM_ID_LEGACY = "washroomId";
+    /** Field used when this application persists a review. */
+    private static final String FIELD_WASHROOM_ID = "washroomID";
     private static final String FIELD_AUTHORUSERNAME = "authorUsername";
     private static final String FIELD_RATING = "rating";
     private static final String FIELD_CLEANLINESS = "cleanliness";
@@ -58,7 +60,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     private static final double LOW_RATING_THRESHOLD = 1.5;
 
     private static final List<String> ALLOWED_ATTRIBUTES = List.of(
-        new String[] {FIELD_WASHROOMID, FIELD_AUTHORUSERNAME, FIELD_RATING, FIELD_CLEANLINESS, FIELD_COMMENT,
+        new String[] {FIELD_WASHROOM_ID, FIELD_AUTHORUSERNAME, FIELD_RATING, FIELD_CLEANLINESS, FIELD_COMMENT,
             FIELD_HELPFULCOUNT, FIELD_CREATEDAT,
             FIELD_SEEDKEY});
     private final MongoCollection<Document> collection;
@@ -147,7 +149,8 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
         final double rating = clamp(MongoDocuments.number(doc, 1, FIELD_RATING, "stars"));
         final double cleanliness = clamp(MongoDocuments.number(doc, rating, FIELD_CLEANLINESS));
         return new entity.Review(MongoDocuments.id(doc),
-            MongoDocuments.string(doc, "unknown", FIELD_WASHROOMID, FIELD_WASHROOMID), author(doc), rating, cleanliness,
+            MongoDocuments.string(doc, "unknown", FIELD_WASHROOM_ID, FIELD_WASHROOM_ID_LEGACY), author(doc),
+            rating, cleanliness,
             MongoDocuments.string(doc, "", FIELD_COMMENT, "text"),
             Math.max(0, MongoDocuments.integer(doc, 0, FIELD_HELPFULCOUNT, "helpfuls")),
             MongoDocuments.date(doc, LocalDate.now(), FIELD_CREATEDAT, "date"));
@@ -198,7 +201,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     }
 
     private static Document documentFor(final entity.Review review) {
-        return new Document(FIELD_WASHROOMID, review.washroomId())
+        return new Document(FIELD_WASHROOM_ID, review.washroomId())
             .append(FIELD_AUTHORUSERNAME, review.authorUsername())
             .append(FIELD_RATING, review.rating())
             .append(FIELD_CLEANLINESS, review.cleanliness())
@@ -289,7 +292,7 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
         else {
             doc = new Document();
             doc.append("userID", userID);
-            doc.append(FIELD_WASHROOMID, washroomID);
+            doc.append(FIELD_WASHROOM_ID, washroomID);
             doc.append("stars", review.getStars());
             doc.append("text", review.getText());
             doc.append("helpfuls", review.getHelpfuls());
@@ -324,11 +327,15 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
     @Override
     public List<entity.Review> getReviewsForWashroom(final String washroomId) {
         final List<entity.Review> result = new ArrayList<>();
-        for (final Document document : collection.find(
-            Filters.or(Filters.eq(FIELD_WASHROOMID, washroomId), Filters.eq(FIELD_WASHROOMID, washroomId)))) {
+        for (final Document document : collection.find(washroomIdFilter(washroomId))) {
             result.add(createReview(document));
         }
         return List.copyOf(result);
+    }
+
+    static Bson washroomIdFilter(final String washroomId) {
+        return Filters.or(Filters.eq(FIELD_WASHROOM_ID, washroomId),
+            Filters.eq(FIELD_WASHROOM_ID_LEGACY, washroomId));
     }
 
     @Override
@@ -411,8 +418,8 @@ public class DBReviewDataAccessObject extends DBDataAccessObject
      * Creates indexes used by grouped summaries and the "my reviews" filter.
      */
     public void ensurePerformanceIndexes() {
-        collection.createIndex(Indexes.ascending(FIELD_WASHROOMID));
-        collection.createIndex(Indexes.ascending(FIELD_WASHROOMID));
+        collection.createIndex(Indexes.ascending(FIELD_WASHROOM_ID));
+        collection.createIndex(Indexes.ascending(FIELD_WASHROOM_ID_LEGACY));
         collection.createIndex(Indexes.ascending(FIELD_AUTHORUSERNAME));
         reviewVotes.createIndex(Indexes.compoundIndex(Indexes.ascending(FIELD_USERNAME),
             Indexes.ascending(FIELD_REVIEWID)));
