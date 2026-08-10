@@ -235,10 +235,10 @@ public final class AccountView extends JPanel {
         section.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Theme.LINE),
             Theme.pad(SECTION_GAP, SECTION_GAP, SECTION_GAP, SECTION_GAP)));
         final JPanel title = Theme.page();
-        title.setLayout(new BorderLayout());
-        title.add(Theme.title(titleText), BorderLayout.WEST);
-        buttons.setLayout(new BorderLayout());
-        buttons.add(initialButton, BorderLayout.WEST);
+        title.setLayout(new FlowLayout(FlowLayout.LEFT));
+        title.add(Theme.title(titleText));
+        buttons.setLayout(new FlowLayout(FlowLayout.LEFT));
+        buttons.add(initialButton);
         section.add(title);
         section.add(content);
         section.add(buttons);
@@ -257,7 +257,7 @@ public final class AccountView extends JPanel {
         changeUsernameButtons.add(confirmUsernameButton);
         changeUsernameButtons.add(Box.createHorizontalStrut(SECTION_GAP));
         changeUsernameButtons.add(cancelUsernameButton);
-        changeUsernameButtons.add(usernameStatusLabel, BorderLayout.EAST);
+        changeUsernameButtons.add(usernameStatusLabel);
         changeUsernameButtons.revalidate();
         changeUsernameButtons.repaint();
     }
@@ -333,8 +333,7 @@ public final class AccountView extends JPanel {
         deleteAccountContent.removeAll();
         deleteAccountContent.revalidate();
         deleteAccountContent.repaint();
-        deleteAccountButtons.remove(confirmDeleteAccountButton);
-        deleteAccountButtons.remove(cancelDeleteAccountButton);
+        deleteAccountButtons.removeAll();
         deleteAccountButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
         deleteAccountButtons.add(deleteAccountButton);
         deleteAccountButtons.revalidate();
