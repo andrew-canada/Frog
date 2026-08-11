@@ -81,8 +81,6 @@ You can also run `app.Main` from IntelliJ. The bundled configuration resource is
 
 The executable JAR is already committed to the repository. After cloning, run it directly without installing Maven or building from source:
 
-**IMPORTANT**: Please supply a fresh GEMINI_API_KEY to ``\Frog\src\main\resources\environment_variables.env`` and rebuild the JAR. Our Gemini API keys pushed to the repo keep getting scraped, causing the personal plan generation to fail.
-
 ```powershell
 java -jar target\FlushID-1.0-SNAPSHOT.jar
 ```
